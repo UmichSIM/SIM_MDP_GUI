@@ -4,14 +4,11 @@ sys.path.append("..")
 
 import carla
 import time
-import datetime
 
 from backend.intersection_settings_helper import write_intersection_settings, read_intersection_settings
 
 from backend.carla_env import CARLA_ENV # self-written class that provides help functions
-from backend.multiple_vehicle_control import VehicleControl
-from backend.initial_intersection import  create_intersections, get_ego_spectator, get_ego_left_spectator
-from backend.full_path_vehicle import LeadVehicleControl, FollowVehicleControl
+from backend.initial_intersection import create_intersections
 
 from backend.intersection_definition import get_traffic_lights
 from backend.intersection_backend import IntersectionBackend

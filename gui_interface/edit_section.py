@@ -1,10 +1,7 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
-import freeway_window
 import vehicle
-import add_vehicles
 import edit_vehicle
 import section_vector
 

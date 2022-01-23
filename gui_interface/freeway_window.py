@@ -3,15 +3,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 from functools import partial
-from multiprocessing import Process
 import sys
-import edit_section
 import section_vector
 import add_vehicles
 import vehicle
 import edit_vehicle
 import edit_vehicle_ego
-import carla_vehicle_list
 import start_sim_pop_up
 import back_home_pop_up
 import home as primary

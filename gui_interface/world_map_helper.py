@@ -5,8 +5,6 @@ Created on Mon Jul  6 19:49:58 2020
 
 @author: shijiliu
 """
-import carla
-from configobj import ConfigObj
 
 PIXELS_PER_METER = 12
 #-------Utils function--------#
