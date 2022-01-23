@@ -1,14 +1,8 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QFont, QPixmap
-import sys
 import edit_section
-import freeway_window
-import home as primary
 
 
-page_list = []  # type: List[int]
+page_list = []  # type: list[int]
 
 
 def populate(vec, val, window):

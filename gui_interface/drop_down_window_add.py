@@ -1,9 +1,6 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QFont, QPixmap
-import edit_section
-import freeway_window
+from PyQt5.QtGui import QFont
 import home as primary
 import carla_vehicle_list
 

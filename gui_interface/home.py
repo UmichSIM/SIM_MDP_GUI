@@ -1,13 +1,10 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont
 import sys
 import freeway_window as Fway
 import intersection_window as Inter
 
-import time
-import glob
-import os
 import sys
 sys.path.append("..")
 

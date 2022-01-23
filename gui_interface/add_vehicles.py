@@ -1,11 +1,7 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
-import sys
-import edit_section
 import drop_down_window_add
-import drop_down_window_edit
 import vehicle
 import carla_vehicle_list
 
