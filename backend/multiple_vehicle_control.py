@@ -29,6 +29,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
+# Make this some sort of base Vehicle Controller class
 class VehicleControl(object):
     def __init__(self,env,vehicle_config, delta_seconds, allow_collision = True):
         '''
@@ -113,11 +114,13 @@ class VehicleControl(object):
         # allow collision or not
         # if collision is not allowed, vehicle will abruptly stop when too close to another vehicle
         self.allow_collision = allow_collision
-        
+
+    # Vehicle Class
     def get_vehicle_transform(self):
         transform = self.env.get_transform_3d(self.model_uniquename)
         return transform
-        
+
+    # Part of a Controller Class
     def _get_PI_controller(self):
         '''
         Effects: create a discrete state-space PI controller
@@ -130,7 +133,9 @@ class VehicleControl(object):
                                                             #since our simulation is discrete
         sys = control.tf2ss(sys) # transform transfer function into state space.
         self.sys = sys  # the system is created for this vehicle
-        
+
+    # Determines the current speed delta and derives a throttle control
+    # Controller class
     def speed_control(self):
         '''
         Effects: get the reference speed, current (measured) speed and initial values
@@ -164,7 +169,9 @@ class VehicleControl(object):
         #self.init_values.append(x0[-1])
         throttle = y0[-1]
         return throttle
-    
+
+    # Figures out what is at the end of the vehicle's current trajectory
+    # Controller class
     def get_target_index(self,location_2d, current_forward_speed, trajectory):
         '''
         Get the target for the vehicle to navigate to
@@ -205,7 +212,8 @@ class VehicleControl(object):
             end_trajectory = False
             
         return ind, end_trajectory
-    
+
+    # Controller class
     def pure_pursuit_control(self,vehicle_pos_2d, current_forward_speed, trajectory, ref_speed_list, prev_index):
         '''
         
@@ -261,12 +269,13 @@ class VehicleControl(object):
         Lf = self.k * current_forward_speed + self.Lfc
         
         delta = math.atan2(2.0 * self.L * math.sin(alpha) / Lf, 1.0)
-        #print("delta == ", delta, "yaw == ", yaw)
         
         current_ref_speed = ref_speed_list[index]
         
         return delta, current_ref_speed, index, end_trajectory
-    
+
+    # Applies pure_pursuit control to the vehicle (not sure why this is needed)
+    # Controller class
     def pure_pursuit_control_wrapper(self):
         '''
         Apply one step control to the vehicle, store essential information for further use
@@ -332,7 +341,8 @@ class VehicleControl(object):
             
         self.env.apply_vehicle_control(self.model_uniquename, vehicle_control) # apply control to vehicle
         return end_trajectory
-    
+
+    # Updates the internal state of the vehicle according to pursuit control but doesn't update the vehicle at all
     def fake_pure_pursuit_control_wrapper(self):
         '''
         Get one step control to the vehicle, store essential information for further use
@@ -401,21 +411,18 @@ class VehicleControl(object):
         #self.env.apply_vehicle_control(self.model_uniquename, vehicle_control) # apply control to vehicle
         return end_trajectory
     
-    
+
+    # Controller class
     def _obey_traffic_light(self, current_ref_speed):
         # the vehicle should take traffic lights into account when it is required 
         # to obey lights and is going straight or turning left
         self.blocked_by_light = False
-        
-        
-        
+
         if not self.obey_traffic_lights:
             return current_ref_speed
         if self.command == "right":
             return current_ref_speed
-        
-        
-        
+
         # get the location of the vehicle
         curr_transform = self.env.get_transform_2d(self.model_uniquename)
         curr_location = curr_transform[0]
@@ -469,56 +476,9 @@ class VehicleControl(object):
                 return current_ref_speed
         
         return current_ref_speed
-        
-        '''
-        # check light state
-        #state = self.env.get_traffic_light_state(self.model_uniquename)
-        
-        if self.vehicle_config['vehicle_type'] == 'lead':
-            print(state)
-        
-        if state == carla.TrafficLightState.Red or state == carla.TrafficLightState.Yellow:
-            # add an indication that the vehicle is blocked by the traffic light
-            self.blocked_by_light = True
-            abrupt_stop_vel = carla.Vector3D(x = 0,y = 0,z = 0)
-            
-            if self.stop_choice == "abrupt":
-                self.env.set_vehicle_velocity(self.model_uniquename , abrupt_stop_vel) # immediately stop vehicle
-                return 0.0 # abrupt stop
-            else:
-                curr_transform = self.env.get_transform_2d(self.model_uniquename)
-                curr_location = curr_transform[0]
-                
-                if self.vehicle_config["vehicle_type"] == "other":
-                    
-                    target_location = self.stop_ref_point
-                    distance = math.sqrt((curr_location[0] - target_location.x)**2 + (curr_location[1] - target_location.y)**2)
-                    #print(distance)
-                    if distance < 1.0: # close to target enough
-                        self.env.set_vehicle_velocity(self.model_uniquename , abrupt_stop_vel) # stop vehicle when close enough to reference
-                        return 0.0
-                    else:
-                        return current_ref_speed
-                else: # full path vehicle
-                    smallest_distance = np.inf
-                    
-                    # get the smallest distance from the vehicle to target stop point
-                    for target_location in self.stop_ref_point:
-                        distance = math.sqrt((curr_location[0] - target_location.x)**2 + (curr_location[1] - target_location.y)**2)
-                        if distance < smallest_distance:
-                            smallest_distance = distance
-                            
-                    if smallest_distance < 1.0: # close to target enough
-                        self.env.set_vehicle_velocity(self.model_uniquename , abrupt_stop_vel) # stop vehicle when close enough to reference
-                        return 0.0
-                    else:
-                        return current_ref_speed
-            
-            return 0.0 # stop the car immediately
-        
-        return current_ref_speed # obey light and light is green
-        '''
-    
+
+
+    # Controller Class
     def _obey_safety_distance(self, current_ref_speed):
         
         has_vehicle_in_front, distance = self.env.check_vehicle_in_front(self.model_uniquename, self.safety_distance)
@@ -534,10 +494,12 @@ class VehicleControl(object):
             return 0.0
         
         return current_ref_speed
-    
+
+    # Vehicle Class
     def _destroy_vehicle(self):
         self.env.destroy_vehicle(self.model_uniquename)
-        
+
+    # Vehicle Class
     def _display_vehicle_type(self):
         vehicle_type = self.vehicle_config["vehicle_type"]
         vehicle_transform = self.get_vehicle_transform()
@@ -554,7 +516,8 @@ class VehicleControl(object):
         elif vehicle_type == "follow":
             self.env.world.debug.draw_string(debug_location,text = "follow", color = blue, life_time = self.env.delta_seconds)
         
-    
+    # Main simulation loop
+    # In a base Experiment class
 def multiple_vehicle_control(env,intersection_list):
     vehicle_list = []
     while True:

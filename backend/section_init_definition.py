@@ -6,6 +6,7 @@ Created on Wed Jul 22 11:24:10 2020
 @author: shijiliu
 """
 
+## MAJORITY OF THIS IS JUST REPEATED FROM THE PREVIOUS FILE
 
 import sys
 sys.path.append("..")

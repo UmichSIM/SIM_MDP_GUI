@@ -10,6 +10,7 @@ Created on Tue Aug 11 10:54:49 2020
 import socket
 import time
 
+# This stuff doesn't even function and there's a million better ways to handle user input that this
 class HumanEgoControlServer():
     def __init__(self):
         

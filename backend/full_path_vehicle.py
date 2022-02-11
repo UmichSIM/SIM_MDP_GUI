@@ -10,15 +10,11 @@ Created on Wed Jul  8 11:06:32 2020
 import carla
 import numpy as np
 from collections import deque
-import time
 import math
 
 import control # the python-control package, install first
 
-from backend.generate_path_omit_regulation import generate_path
-from backend.intersection_definition import Intersection, get_traffic_lights, get_trajectory, smooth_trajectory
-from backend.carla_env import CARLA_ENV # self-written class that provides help functions, should be in the same folder
-from configobj import ConfigObj
+from backend.intersection_definition import get_trajectory
 from backend.multiple_vehicle_control import VehicleControl
 
 import copy
@@ -33,6 +29,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
+# LeadVehicleController class (derives from Vehicle Controller)
 class LeadVehicleControl(VehicleControl):
     # the LeadVehicleControl has two different modes:
     # normal full path mode: vehicle follows normal full path
@@ -50,7 +47,8 @@ class LeadVehicleControl(VehicleControl):
         # generate waypoints for pausing the car
         self._get_pause_waypoints()
         self.mode = "normal"
-        
+
+    # Method in either Vehicle or Controller class
     def _get_pause_waypoints(self):
         '''
         generate a list of waypoints for the pause path
@@ -63,10 +61,10 @@ class LeadVehicleControl(VehicleControl):
 
         '''
         bb = self.vehicle_config["bounding_box"]
+        # Makes a weird curve to the right (currently direction restricted, assumes direction of vehicle is straight ahead)
         self.pause_waypoint_list = [(0.0,0.0),(bb.x, -bb.y ),(bb.x * 2,-bb.y * 2),(bb.x * 3, -bb.y * 3),(bb.x * 4, -bb.y * 3.5),(bb.x * 5, -bb.y * 3.5),(bb.x * 6, -bb.y * 3.5),(bb.x * 7, -bb.y * 3.5)]
-                                   #[(0.0,0.0),(2 * bb.x, 0.0),(bb.x * 3,bb.y / 2),(bb.x * 4, bb.y),(bb.x * 5, bb.y * 2),(bb.x * 6, bb.y * 2),(bb.x * 8, bb.y * 2)]
-                                   #[(0.0,0.0),(bb.x, 0.0),(bb.x * 2,-bb.y / 2),(bb.x * 3, -bb.y),(bb.x * 4, -bb.y)]
-        
+
+    # Method in Vehicle Class
     def _get_unit_left_vector(self,yaw):
         # get the left vector (y axis)
         right_yaw = (yaw + 90) % 360
@@ -74,7 +72,8 @@ class LeadVehicleControl(VehicleControl):
         left_vector = np.array([math.cos(rad_yaw),math.sin(rad_yaw)])
         left_vector = left_vector / np.linalg.norm(left_vector)
         return left_vector
-        
+
+    # Controller class
     def _generate_pause_path(self):
         '''
         generate a path for the vehicle to right shift a certain value and then stop.
@@ -115,7 +114,8 @@ class LeadVehicleControl(VehicleControl):
                 loc1 = carla.Location(x = smoothed_full_trajectory[ii - 1][0], y = smoothed_full_trajectory[ii - 1][1], z = 0.0)
                 loc2 = carla.Location(x = smoothed_full_trajectory[ii][0], y = smoothed_full_trajectory[ii][1], z = 0.0)
                 self.env.world.debug.draw_arrow(loc1, loc2, thickness = 0.05, arrow_size = 0.1, color = red, life_time=0.0, persistent_lines=True)
-        
+
+    # Method of Controller class
     def change_mode(self, mode):
         '''
         change vehicle mode
@@ -147,7 +147,7 @@ class LeadVehicleControl(VehicleControl):
             self.trajectory = copy.copy(self.pause_path_trajectory)
             self.mode = mode
 
-
+    # Control class
     def pure_pursuit_control_wrapper(self):
         '''
         Apply one step control to the vehicle, store essential information for further use
@@ -185,10 +185,7 @@ class LeadVehicleControl(VehicleControl):
         
         # If vehicle obey traffic lights and is going straight / turning left, check the traffic light state
         current_ref_speed = self._obey_traffic_light(current_ref_speed)
-        
-        #if self.debug_vehicle:
-        #    print("current_ref_speed == ",current_ref_speed)
-        
+
         self.ref_speeds.append(current_ref_speed)
         self.reference_speed.append(current_ref_speed)
         
@@ -220,7 +217,7 @@ class LeadVehicleControl(VehicleControl):
         self.env.apply_vehicle_control(self.model_uniquename, vehicle_control) # apply control to vehicle
         return end_trajectory            
     
-
+# FollowVehicleController (derives from VehicleController)
 class FollowVehicleControl(VehicleControl):
     # the FollowVehicle class is created for both ego and follow vehicle
     # this kind of vehicle has 2 modes:
@@ -232,7 +229,8 @@ class FollowVehicleControl(VehicleControl):
         
         # control mode
         self.mode = "speed"
-        
+
+    # Method of Control Class
     def _get_distance_controller(self,delta_seconds):
         '''
         Effects: create distance controller
@@ -250,7 +248,8 @@ class FollowVehicleControl(VehicleControl):
         
         
         self.distance_sys = sys
-        
+
+    # Controller class
     def _get_distance_control_reference_speed(self):
         '''
         
@@ -289,7 +288,7 @@ class FollowVehicleControl(VehicleControl):
         
         return ref_speed
     
-    
+    # Controller class
     def use_distance_mode(self, follow_distance):
         # change the mode
         self.mode = "distance"
@@ -309,10 +308,12 @@ class FollowVehicleControl(VehicleControl):
         
         # get the controller for distance control
         self._get_distance_controller(self.env.delta_seconds)
-        
+
+    # Controller class (maybe make one set_mode function)
     def use_speed_mode(self):
         self.mode = "speed"
-        
+
+    # Not sure, maybe Vehicle class
     def get_current_distance(self, target_transform):
         '''
         get the real distance between the vehicle and the one it is following
@@ -349,7 +350,7 @@ class FollowVehicleControl(VehicleControl):
         self.ref_distance.append(self.follow_distance)
         self.curr_distance.append(distance)
         
-    
+    # Controller class (not quite sure what's going on here)
     def pure_pursuit_control(self,vehicle_pos_2d, current_forward_speed, trajectory, ref_speed_list, prev_index):
         
         # override the pure_pursuit_control method

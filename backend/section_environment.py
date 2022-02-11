@@ -43,7 +43,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
-
+# Likely move most of this into a base FreewayExperiment class (all specific freeway experiments should derive from this)
 class FreewayEnv(object):
     # this class holds all methods related to create a simulation environment for freeway
     def __init__(self, env, number_of_sections, max_speed = 30.0, min_speed = 15.0):
@@ -108,7 +108,8 @@ class FreewayEnv(object):
     # public methods
     def get_section_list(self):
         return self.section_list
-    
+
+    # Vehicle class
     def get_vehicle_bounding_box(self,uniquename):
         '''
         get the bounding box of the vehicle by uniquename
@@ -123,7 +124,8 @@ class FreewayEnv(object):
         '''
         new_bb = self.env.get_vehicle_bounding_box(uniquename)
         return new_bb
-    
+
+    # Section class
     def add_ego_vehicle(self, model_name = "vehicle.tesla.model3", safety_distance = 15.0, vehicle_color = None):
         # wrapper for add_ego_vehicle function of the init_section
         
@@ -151,7 +153,8 @@ class FreewayEnv(object):
         
         uniquename = self.section_list[0].add_ego_vehicle(model_name = model_name, safety_distance = safety_distance, vehicle_color = vehicle_color)
         return uniquename
-    
+
+    # Section class
     def edit_ego_vehicle(self, model_name = "vehicle.tesla.model3", safety_distance = 15.0, vehicle_color = None):
         # wrapper for edit_ego_vehicle function of the init_section
         '''
@@ -174,7 +177,8 @@ class FreewayEnv(object):
         '''
         uniquename = self.section_list[0].edit_ego_vehicle(model_name = model_name, safety_distance = safety_distance, vehicle_color = vehicle_color)
         return uniquename
-    
+
+    # Section class
     def add_full_path_vehicle(self, model_name = "vehicle.tesla.model3", vehicle_type ="lead", choice = "subject", command = "speed", command_start_time = 0.0, gap = 10.0, safety_distance = 15.0, lead_follow_distance = 20.0, vehicle_color = None):
         # wrapper for add_full_path_vehicle of the init_section
         '''
@@ -216,7 +220,7 @@ class FreewayEnv(object):
     
         return uniquename
     
-    
+    # Section class
     def remove_full_path_vehicle(self, uniquename):
         '''
         remove a full path vehicle based on its uniquename
@@ -241,7 +245,8 @@ class FreewayEnv(object):
                                                                                                     # sections
         
         return removed
-        
+
+    # Vehicle class
     def edit_full_path_vehicle_init_setting(self, uniquename, vehicle_type, choice, model_name = "vehicle.tesla.model3",   command = "speed", command_start_time = 0.0, gap = 10.0, safety_distance = 15.0, lead_follow_distance = 20.0, vehicle_color = None):
         # wrapper for the edit_full_path_vehicle function of the init section
         '''
@@ -293,7 +298,8 @@ class FreewayEnv(object):
             self.section_list[ii]._update_vehicle_uniquename(vehicle_type = vehicle_type, choice = choice,index = index,uniquename = new_uniquename)
         
         return new_uniquename
-    
+
+    # Vehicle class
     def edit_normal_section_setting(self, section_id, vehicle_type, choice, vehicle_index, command = "speed", command_start_time = 0.0):
         '''
         function for editing vehicle settings for normal section
@@ -326,7 +332,8 @@ class FreewayEnv(object):
         
         # edit the section settings
         section.edit_full_path_vehicle_local_setting(vehicle_type, choice, vehicle_index, command = command, command_start_time = command_start_time)
-    
+
+    # Simulation loop, move this into the base experiment class
     def SectionBackend(self, spectator_mode = None, allow_collision = True, enable_human_control = False):
         '''
         back end function for the freeway

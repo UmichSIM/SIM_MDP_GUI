@@ -6,7 +6,7 @@ Created on Mon Jun 15 20:50:23 2020
 @author: shijiliu
 """
 
-
+## THIS WHOLE FILE IS JUST COPY PASTED FROM THE MULTIPLE_VEHICLE_CONTROL.py, remove this
 
 
 import carla
@@ -35,6 +35,7 @@ waypoint_separation = 4.0
 # enable/disable debug mode to draw trajectory points in carla
 DEBUG = True
 
+# Repeat of Multiple_Vehicle_Control::get_Pi_Controller
 def get_PI_controller(delta_seconds):
     '''
     Effects: create a discrete state-space PI controller
