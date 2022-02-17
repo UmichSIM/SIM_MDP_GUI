@@ -32,7 +32,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
-# API Helper
+# API Helper - relocated on 2/16/2022 to ApiHelpers.py
 def config_world(world, synchrony = True, delta_seconds = 0.02):
         '''
         Effects
@@ -70,14 +70,9 @@ class CARLA_ENV():
         self.walker_dict = {}
         self.sensor_dict = {}
         self.config_env(synchrony = False)
-        #self.synchrony = synchrony
-        #self.delta_seconds = delta_seconds
-        
         self.distance_between_vehicles = ConfigObj() # store the distance between vehicles
         
         # get the length of all vehicles
-
-
         vehicle_length_config_directory = os.path.join('backend', 'vehicle_length_config.txt')
         
         currentDirectory = os.path.join(os.path.dirname(os.getcwd()),  vehicle_length_config_directory)
@@ -128,7 +123,7 @@ class CARLA_ENV():
         self.vehicle_dict[vehicle.type_id + '_' + str(vehicle.id)] = vehicle
         return vehicle.type_id + '_' + str(vehicle.id)
 
-    # Method in Vehicle Class
+    # Method in Vehicle Class - relocated on 2/16/22 to Vehicle.py
     def move_vehicle_location(self, uniquename, spawn_point):
         '''
         
@@ -150,13 +145,13 @@ class CARLA_ENV():
         vehicle = self.vehicle_dict[uniquename]
         vehicle.set_transform(spawn_point)
 
-    # Method in Vehicle Class
+    # Method in Experiment Class - marked as redundant on 2/16/22
     def destroy_vehicle(self, uniquename):
         if uniquename in self.vehicle_dict:
             self.vehicle_dict[uniquename].destroy() # destroy the vehicle in carla
             self.vehicle_dict.pop(uniquename) # remove the vehicle from dictionary
 
-    # Method in Vehicle Class
+    # Method in Vehicle Class - relocated on 2/16/22 to Vehicle.py
     def get_vehicle_model_length(self, model_name):
         '''
         
@@ -180,7 +175,7 @@ class CARLA_ENV():
         
         return length
 
-    # Method in Vehicle Class
+    # Method in Vehicle Class - marked as redundant on 2/26/2022
     def get_vehicle_bounding_box(self, uniquename):
         '''
         
@@ -200,11 +195,10 @@ class CARLA_ENV():
         ret_vehicle_bb = None
         if uniquename in self.vehicle_dict:
             ret_vehicle_bb = self.vehicle_dict[uniquename].bounding_box.extent
-            
-            
+
         return ret_vehicle_bb
         
-    # Method in Experiment Class
+    # Method in Experiment Class - relocated on 2/16/22 to Experiment.py
     def destroy_actors(self):
         '''
         Effects
@@ -228,7 +222,7 @@ class CARLA_ENV():
         self.sensor_dict.clear()
         print("destroyed all actors")
 
-    # Method of Controller class (called on a specific vehicle)
+    # Method of Controller class - marked as redundant on 2/16/22 (exists in the base carla.Vehicle class)
     def apply_vehicle_control(self, uniquename, vehicle_control):
         '''
         Effects: apply control to a specific vehicle
@@ -248,7 +242,7 @@ class CARLA_ENV():
         vehicle = self.vehicle_dict[uniquename]
         vehicle.apply_control(vehicle_control)
 
-    # Private method of the vehicle class (used by the controller class)
+    # Private method of the vehicle class - marked as redundant on 2/16/22 (exists in base carla.Vehicle class "set_target_velocity")
     def set_vehicle_velocity(self, uniquename, vehicle_velocity):
         '''
         
@@ -268,7 +262,7 @@ class CARLA_ENV():
         vehicle = self.vehicle_dict[uniquename]
         vehicle.set_target_velocity(vehicle_velocity)
         
-    # Method of the Vehicle class
+    # Method of the Vehicle class - relocated on 2/16/22 to Vehicle.py
     def get_forward_speed(self, uniquename):
         '''
         Get the forward speed of the vehicle
@@ -287,7 +281,7 @@ class CARLA_ENV():
         velocity = vehicle.get_velocity()
         return (velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2)**0.5
 
-    # Probably not necessary
+    # Probably not necessary - marked as redundant on 2/16/22
     def vehicle_available(self, uniquename):
         '''
         check whether the vehicle exists
@@ -308,7 +302,7 @@ class CARLA_ENV():
         else:
             return False
 
-    # Method of Vehicle Class
+    # Method of Vehicle Class - relocation on 2/16/22 to Vehicle.py
     def get_transform_2d(self, uniquename):
         '''
         
@@ -330,7 +324,7 @@ class CARLA_ENV():
         
         return (location_2d,yaw)
 
-    # Method of Vehicle class
+    # Method of Vehicle class - marked as unneeded on 2/16/22
     def get_transform_3d(self, uniquename):
         '''
         
@@ -351,7 +345,7 @@ class CARLA_ENV():
         
         return transform
 
-    # Method of Vehicle Class (takes in list of all other vehicles)
+    # Method of Vehicle Class (takes in list of all other vehicles) - relocated on 2/16/22 to Vehicle.py
     def update_vehicle_distance(self):
         '''
         Update the distance between each 2 vehicles
@@ -430,9 +424,7 @@ class CARLA_ENV():
                 norm_forward_vector_2d = forward_vector_2d / np.linalg.norm(forward_vector_2d)
                 dot_product = np.dot(norm_vec1_2,norm_forward_vector_2d)
                 angle = np.arccos(dot_product)
-                
-                
-                
+
                 if angle < np.arctan(vehicle_bb.y /  vehicle_bb.x):#np.arcsin((vehicle_bb.y  + 1) / distance_with_other_vehicle[name]):#np.arctan(vehicle_bb.y / vehicle_bb.x): 
                     has_vehicle_in_front = True
                     distance = np.dot(vec1_2,forward_vector_2d)

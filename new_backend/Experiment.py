@@ -13,7 +13,29 @@ Referenced By:
 
 """
 
-class Experiment():
+import Vehicle
+import Section
+import carla
+from typing import List
+
+
+class Experiment:
 
     def __init__(self):
-        pass
+        self.vehicle_list: List[Vehicle] = []
+        self.pedestrian_list: List[carla.Walker] = []
+        self.section_list: List[Section] = []
+        self.sensor_list: List[carla.Sensor] = []
+
+    def destroy_actors(self) -> None:
+        """
+        Destroys all of the actors that have been spawned in the Carla simulation.
+
+        :return: None
+        """
+        for vehicle in self.vehicle_list:
+            vehicle.destroy()
+        for pedestrian in self.pedestrian_list:
+            pedestrian.destroy()
+        for sensor in self.sensor_list:
+            sensor.destroy()

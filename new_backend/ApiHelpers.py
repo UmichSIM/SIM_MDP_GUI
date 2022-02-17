@@ -11,3 +11,22 @@ References:
 Referenced By:
 
 """
+
+import carla
+
+
+def config_world(world: carla.World, synchrony: bool = True, delta_seconds: float = 0.02) -> None:
+    """
+    Configures the CARLA world to use certain synchrony and timestep settings.
+
+    Carla Documentation:  https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/
+
+    :param world: a carld.World object representing the current simulation world
+    :param synchrony: a bool representing whether synchrony should be applied to the world
+    :param delta_seconds: a float representing the worlds timestep
+    :return:
+    """
+    settings = world.get_settings()
+    settings.synchronous_mode = synchrony
+    settings.fixed_delta_seconds = delta_seconds
+    world.apply_settings(settings)
