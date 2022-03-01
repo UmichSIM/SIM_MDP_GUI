@@ -13,6 +13,19 @@ Referenced By:
 """
 
 import carla
+from enum import Enum
+
+
+class ExperimentType(Enum):
+    INTERSECTION = 1
+    FREEWAY = 2
+
+
+class WorldDirection(Enum):
+    FORWARD = 1
+    BACKWARD = 2
+    LEFT = 3
+    RIGHT = 4
 
 
 def config_world(world: carla.World, synchrony: bool = True, delta_seconds: float = 0.02) -> None:

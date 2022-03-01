@@ -15,6 +15,7 @@ Referenced By:
 
 import Section
 
+
 class Intersection(Section):
 
     def __init__(self):

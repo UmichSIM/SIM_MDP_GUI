@@ -432,7 +432,7 @@ class CARLA_ENV():
             
         return has_vehicle_in_front, distance
 
-    # Likely redundant but double check
+    # Likely redundant but double check - marked as redundant on 2/28/22
     def check_vehicle_in_front_freeway(self, uniquename, safety_distance):
         '''
         greatly narrow the front view for freeway
@@ -488,7 +488,7 @@ class CARLA_ENV():
             
         return has_vehicle_in_front, distance
 
-    # Make a single check Vehicle in direction function
+    # Make a single check Vehicle in direction function - marked as redundant on 2/28/22
     def check_vehicle_in_back_freeway(self, uniquename, safety_distance):
         '''
         
@@ -546,7 +546,7 @@ class CARLA_ENV():
             
         return has_vehicle_in_back, smallest_distance
 
-    # Make single check vehicle in direction function
+    # Make single check vehicle in direction function - relocated to Vehicle.py on 2/28/22
     def check_vehicle_in_right(self, uniquename, safety_distance = 6):
         '''
         function checking whether a right vehicle is too close to the current vehicle
@@ -603,7 +603,7 @@ class CARLA_ENV():
                 
         return has_vehicle_in_right, smallest_distance
 
-    # Make single check vehicle in direction function
+    # Make single check vehicle in direction function - relocated to Vehicle.py on 2/28/22
     def check_vehicle_in_left(self, uniquename, safety_distance = 6):
         '''
         function checking whether a left vehicle is too close to the current vehicle
@@ -658,7 +658,7 @@ class CARLA_ENV():
                 
         return has_vehicle_in_left, smallest_distance
 
-    # Method of Vehicle Class
+    # Method of Vehicle Class (already implemented in the CARLA API), marked as redundant on 2/28/22
     def get_traffic_light_state(self, uniquename):
         '''
         
