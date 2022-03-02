@@ -13,7 +13,11 @@ Referenced By:
 """
 
 import carla
+from datetime import datetime
 from enum import Enum
+import logging
+import os
+import sys
 
 
 class ExperimentType(Enum):
@@ -43,3 +47,22 @@ def config_world(world: carla.World, synchrony: bool = True, delta_seconds: floa
     settings.synchronous_mode = synchrony
     settings.fixed_delta_seconds = delta_seconds
     world.apply_settings(settings)
+
+
+def logging_setup(directory_name: str = "logs") -> None:
+    """
+    Configured the logging package to write out logs to the correct place under the correct filename.
+
+    :param directory_name: the directory to which the logs will be written
+    :return: None
+    """
+
+    current_directory = os.path.realpath(os.getcwd())
+    logging_directory = current_directory + "/" + directory_name
+    if not os.path.exists(logging_directory):
+        os.makedirs(logging_directory)
+
+    current_time = datetime.now().strftime("%m-%m-%Y.%H.%M.%S")
+    log_file_name = sys.argv[0] + "." + current_time + ".log"
+
+    logging.basicConfig(filename=logging_directory + "/" + log_file_name, level=logging.DEBUG)

@@ -6,8 +6,8 @@ Summary: The Threading classes provide a high level interface for running functi
          separate thread of execution. The SIMThread class takes in a specific Worker type and function
          and executes that function according to the rules of the given worker. A ThreadWorker will
          execute the function once, and exposes a signal that can call a secondary function when the
-         initial function finishes. A RepeatedWorker will execute the function continuously in a while
-         loop, and exposes a single that can call a secondary function after every iteration.
+         initial function finishes. A SignaledWorker will execute the function whenever it is signaled.
+         This signal can be sent multiple times.
 
 References:
 
@@ -16,6 +16,8 @@ Referenced By:
 """
 
 # Library Imports
+import logging
+
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
 from typing import Callable
@@ -73,71 +75,19 @@ class ThreadWorker(QObject):
         except Exception as e:
             # Signal to any connected slots that the function did not run successfully
             self.finished.emit(False)
-            print(e.what())
-
-
-class RepeatedWorker(ThreadWorker):
-
-    def __init__(self, function: Callable, *args) -> None:
-
-        # Run the constructor for the base SingleWorker class
-        super(RepeatedWorker, self).__init__(function, args)
-
-        # Bool to track when the loop has been stopped by the user
-        self.stopped: bool = False
-
-        # Signal to indicate that the provided function has finished a single execution
-        self.updated: pyqtSignal = pyqtSignal(bool)
-
-    def call_every_time(self, function: Callable) -> None:
-        """
-        Allows the user to specify a function that will run after every single execution of the main function.
-
-        :param function: the function object to be run after every iteration
-        :return: None
-        """
-        self.updated.connect(function)
-
-    def stop_worker(self) -> None:
-        """
-        Stops the execution of a RepeatedWorker.
-
-        Worker may finish up the current function execution, but will not start a new one
-
-        :return: None
-        """
-        self.stopped = True
-
-    def run(self) -> None:
-        """
-        The main function that will execute on another thread.
-
-        Provides an error-handling wrapper around the main function, and signals the finishing
-        state of the function after each iteration and when it exits.
-
-        :return: None
-        """
-        try:
-            while self.stopped == False:
-                # Run the provided function
-                self.function(self.args)
-                # Signal to any connected slots that the function ran successfully
-                self.updated.emit(True)
-
-            if self.stopped:
-                self.finished.emit(True)
-
-        except Exception as e:
-            # Signal to any connected slots that the function did not run successfully
-            self.finished.emit(False)
-            print(e.what())
+            logging.error(e)
 
 
 class SIMThread:
 
-    def __init__(self, thread_worker: ThreadWorker) -> None:
+    def __init__(self, thread_worker: ThreadWorker, mode: str = "single") -> None:
         # Initialize a QThread to run the function on
         self.thread: QThread = QThread()
+
+        # Mode that the ThreadWorker will be set up to run in
+        if mode not in ["single", "signaled"]:
+            raise Exception("Unsupported mode passed into SIMThread constructor.")
+        self.mode = mode
 
         # Store the provided worker
         self.worker: ThreadWorker = thread_worker
@@ -145,12 +95,44 @@ class SIMThread:
         # Start executing the worker on the second thread
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.worker.finished.connect(self.thread.deleteLater)
+        if mode == "single":
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.worker.finished.connect(self.thread.deleteLater)
         self.thread.start()
 
-        print("SIMThread Constructor Exiting")
+    def signal_worker(self) -> None:
+        """
+        Signals the thread worker to run the function again.
+
+        If the SimThread is configured to run in "signaled" mode, then it's function will run
+        every time that this function is called. If the SimThread is configured to run in "single"
+        mode, then calling this function will have no effect
+
+        :return:
+        """
+
+        if self.mode == "single":
+            return
+        self.thread.started.emit()
+
+    def destory_thread(self) -> None:
+        """
+        Function to clean up after a SIMThread is done being used.
+
+        If called on a SIMThread that is configured for "single" mode, nothing will happen as the
+        thread will take care of everything once it finishes execution. If called on a SIMThread that
+        is configured for "signaled" mode, the thread will be killed and its worker and object will
+        be finalized
+
+        :return: None
+        """
+
+        if self.mode == "single":
+            return
+        self.thread.quit()
+        self.worker.deleteLater()
+        self.thread.deleteLater()
 
 
 class HeadlessWindow(QMainWindow):
@@ -158,7 +140,7 @@ class HeadlessWindow(QMainWindow):
     QMainWindow that can be used when the Application is run in headless mode.
 
     A QApplication must be running for the QThreads to operate as expected. Therefore, when an Experiment
-    script needs to be run without the main GUI (likely for testing purposes) this class need to be instantiated
+    script needs to be run without the main GUI (likely for testing purposes) this class needs to be instantiated
     so everything can run like it normally would with the GUI.
     """
     def __init__(self, function: Callable, parent=None) -> None:

@@ -14,6 +14,8 @@ Referenced By:
 """
 
 # Local Imports
+import logging
+
 import Section
 from Threading import SIMThread, ThreadWorker
 import Vehicle
@@ -21,20 +23,26 @@ import Vehicle
 
 # Library Imports
 import carla
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from typing import List, Dict
+import sys
 
 
 class Experiment:
 
     # Static variable denoting which map this experiment takes place on
     # Must be overridden by derived classes
-    MAP = "Town10"
+    MAP = "Town05"
 
     def __init__(self, headless: bool):
 
         # Indicates whether the experiment is being run with a GUI or standalone
         self.headless = headless
+
+        # A Carla.Client object that stores the current connection to the server
+        self.client: carla.Client = None
+
+        # A Carla.World object that stores the current world the simulation is running in
+        self.world: carla.World = None
 
         # A single SIMThread to handle all threaded execution
         self.sim_thread: SIMThread = None
@@ -51,8 +59,6 @@ class Experiment:
         # List of all sensors in the Simulation
         self.sensor_list: List[carla.Sensor] = []
 
-
-
     def initialize_carla_server(self, blocking: bool = True, port: int = 2000) -> None:
         """
         Connects to the Carla server.
@@ -65,9 +71,7 @@ class Experiment:
 
         worker = ThreadWorker(self._initialize_server_private, port)
         worker.call_when_finished(self._finish_server_connection)
-        print("Starting connection thread")
-        self.sim_thread = SIMThread(worker)
-
+        self.sim_thread = SIMThread(worker, "single")
 
     def _initialize_server_private(self, port: int = 2000) -> None:
         """
@@ -80,7 +84,21 @@ class Experiment:
         :return: None
         """
 
-        print(f"Connecting to the Server on port {port}")
+        logging.info(f"Connecting to the Server on port {port}")
+        self.client = carla.Client("localhost", port)
+        self.client.set_timeout(10.0)
+        self.world = self.client.load_world(self.MAP)
+
+        # Update this stuff later
+        weather = carla.WeatherParameters(
+            cloudiness=10.0,
+            precipitation=0.0,
+            sun_altitude_angle=90.0)
+        self.world.set_weather(weather)
+
+        spectator = self.world.get_spectator()
+        spectator.set_transform(
+            carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw=56.9, roll=0.0)))
 
     def _finish_server_connection(self, status: bool) -> None:
         """
@@ -95,7 +113,12 @@ class Experiment:
         :return: None
         """
 
-        print(f"Connected to the Server: {status}")
+        if status:
+            logging.info(f"Successfully connected to the Carla Server")
+            return
+
+        logging.error("Unable to connect to Carla Server")
+        sys.exit(-1)
 
     def initialize_experiment(self, configuration: Dict[str, str]) -> bool:
         """

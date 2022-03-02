@@ -17,18 +17,11 @@ Referenced By:
 # Local Imports
 from Experiment import Experiment
 from Threading import HeadlessWindow
+from ApiHelpers import logging_setup
 
 # Library Imports
 import sys
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QApplication,
-    QLabel,
-    QMainWindow,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5.QtWidgets import QApplication
 
 
 class TestExperiment(Experiment):
@@ -48,6 +41,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    logging_setup()
     app = QApplication(sys.argv)
     win = HeadlessWindow(main)
     win.show()
