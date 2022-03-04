@@ -74,9 +74,8 @@ class ThreadWorker(QObject):
 
         except Exception as e:
             # Signal to any connected slots that the function did not run successfully
-            self.finished.emit(False)
             logging.error(e)
-
+            self.finished.emit(False)
 
 class SIMThread:
 

@@ -12,6 +12,7 @@ Referenced By:
 
 """
 
+# Library Imports
 import carla
 from datetime import datetime
 from enum import Enum
@@ -20,11 +21,13 @@ import os
 import sys
 
 
+# Enumerated class specifying the different experiment types
 class ExperimentType(Enum):
     INTERSECTION = 1
     FREEWAY = 2
 
 
+# Enumerated class specifying the different directions in the World
 class WorldDirection(Enum):
     FORWARD = 1
     BACKWARD = 2

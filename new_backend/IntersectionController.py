@@ -13,7 +13,7 @@ Referenced By:
 
 """
 
-import Controller
+from Controller import Controller
 
 class IntersectionController(Controller):
 

@@ -14,15 +14,17 @@ Referenced By:
 """
 
 # Local Imports
-import logging
-
-import Section
+from ApiHelpers import ExperimentType
+from Section import Section
 from Threading import SIMThread, ThreadWorker
-import Vehicle
+from Vehicle import Vehicle
 
 
 # Library Imports
 import carla
+import logging
+from pygame.time import Clock
+from PyQt5.QtCore import QWaitCondition, QMutex
 from typing import List, Dict
 import sys
 
@@ -32,6 +34,16 @@ class Experiment:
     # Static variable denoting which map this experiment takes place on
     # Must be overridden by derived classes
     MAP = "Town05"
+
+    # Pygame clock to control FrateRate dependant physics
+    clock: Clock = Clock()
+
+    # The Type of Experiment that is currently running
+    experiment_type: ExperimentType = None
+
+    # Single static wait condition to synchronize between threads if needed
+    wait_condition: QWaitCondition = QWaitCondition()
+
 
     def __init__(self, headless: bool):
 
@@ -44,8 +56,17 @@ class Experiment:
         # A Carla.World object that stores the current world the simulation is running in
         self.world: carla.World = None
 
+        # A Carla.Action that represents the spectator in the Simulation
+        self.spectator: carla.Actor = None
+
         # A single SIMThread to handle all threaded execution
         self.sim_thread: SIMThread = None
+
+        # Track whether the connection to the server has been initialized
+        self.server_initialized = False
+
+        # Store the specific vehicle that is the Ego vehicle
+        self.ego_vehicle: Vehicle = None
 
         # List of all vehicles in the Simulation
         self.vehicle_list: List[Vehicle] = []
@@ -59,15 +80,24 @@ class Experiment:
         # List of all sensors in the Simulation
         self.sensor_list: List[carla.Sensor] = []
 
-    def initialize_carla_server(self, blocking: bool = True, port: int = 2000) -> None:
+    def initialize_carla_server(self, blocking: bool = False, port: int = 2000) -> None:
         """
         Connects to the Carla server.
 
-        :param blocking: a Bool indicated whether the connection should be made concurrently on a
-                         separate thread or if the application should block until completed (defaults to True)
+        :param blocking: a bool representing whether connecting to the server should block the GUI
+                         or allow it to continue
         :param port: an int specifying the network port to connect to (defaults to 2000)
         :return: a bool indicating if the server connection was made successfully
         """
+
+        if blocking:
+            try:
+                self._initialize_server_private(port)
+                self._finish_server_connection(True)
+            except Exception as e:
+                logging.error(e)
+                self._finish_server_connection(False)
+            return
 
         worker = ThreadWorker(self._initialize_server_private, port)
         worker.call_when_finished(self._finish_server_connection)
@@ -85,6 +115,7 @@ class Experiment:
         """
 
         logging.info(f"Connecting to the Server on port {port}")
+
         self.client = carla.Client("localhost", port)
         self.client.set_timeout(10.0)
         self.world = self.client.load_world(self.MAP)
@@ -96,8 +127,8 @@ class Experiment:
             sun_altitude_angle=90.0)
         self.world.set_weather(weather)
 
-        spectator = self.world.get_spectator()
-        spectator.set_transform(
+        self.spectator = self.world.get_spectator()
+        self.spectator.set_transform(
             carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw=56.9, roll=0.0)))
 
     def _finish_server_connection(self, status: bool) -> None:
@@ -113,7 +144,11 @@ class Experiment:
         :return: None
         """
 
+        # Allow any threads waiting on a connection to continue
+        self.wait_condition.wakeAll()
+
         if status:
+            self.server_initialized = True
             logging.info(f"Successfully connected to the Carla Server")
             return
 
@@ -145,7 +180,9 @@ class Experiment:
 
         :return: None
         """
-        pass
+
+        # Updates the global clock
+        self.clock.tick()
 
     def clean_up_experiment(self) -> None:
         """
@@ -159,3 +196,28 @@ class Experiment:
             pedestrian.destroy()
         for sensor in self.sensor_list:
             sensor.destroy()
+
+    def add_vehicle(self, new_vehicle: Vehicle, ego: bool = False) -> None:
+        """
+        Adds a new Vehicle to the experiment.
+
+        This function may be relocated later, but it currently exists here for testing purposes. Please
+        delete this function if it gets relocated.
+
+        :param new_vehicle: the Vehicle object to be added to the experiment
+        :param ego: a bool representing whether the new Vehicle is the Ego Vehicle or not
+        :return: None
+        """
+
+        if ego:
+            if self.ego_vehicle is not None:
+                raise Exception("Unable to add multiple ego vehicles.")
+            self.ego_vehicle = new_vehicle
+
+            # Set the camera to be located at the Ego vehicle
+            self.world.tick()
+            print(new_vehicle.get_transform())
+            self.spectator.set_transform(new_vehicle.get_transform())
+
+        else:
+            self.vehicle_list.append(new_vehicle)

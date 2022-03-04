@@ -13,18 +13,34 @@ Referenced By:
 
 """
 
-import carla
-from typing import List
+# Local Imports
 from ApiHelpers import WorldDirection, ExperimentType
+
+# Library Imports
+import carla
+from enum import Enum
+from typing import List
+
+
+# Enumerated class specifying the different types of Vehicles
+class VehicleType(Enum):
+    MANUAL_EGO = 1
+    AUTOMATIC_EGO = 2
+    LEAD = 3
+    FOLLOWER = 4
+    GENERIC = 5
 
 
 class Vehicle(carla.Vehicle):
 
-    def __init__(self, id_number: int, name: str, safety_distance: float):
+    def __init__(self, id_number: int, name: str, type: VehicleType, safety_distance: float):
         super().__init__()
 
         # The unique internal ID for each vehicle
         self.id: int = id_number
+
+        # The type of this Vehicle
+        self.type = type
 
         # The user specified name for each vehicle
         self.name: str = name
@@ -85,16 +101,16 @@ class Vehicle(carla.Vehicle):
         transform = self.get_transform()
         return transform.rotation.yaw
 
-    # def update_other_vehicle_transforms(self, other_vehicles: List[Vehicle]) -> None:
-    #     """
-    #     Updates the internal list with the transforms of all other Vehicles in the simulation
-    #
-    #     :param other_vehicles: a List of all other Vehicles in the Simulation
-    #     :return: None
-    #     """
-    #
-    #     # See carla_env.py -> update_vehicle_distance
-    #     pass
+    def update_other_vehicle_transforms(self, other_vehicles: List) -> None:
+        """
+        Updates the internal list with the transforms of all other Vehicles in the simulation
+
+        :param other_vehicles: a List of all other Vehicles in the Simulation
+        :return: None
+        """
+
+        # See carla_env.py -> update_vehicle_distance
+        pass
 
     def _check_vehicle_in_direction(self, direction: WorldDirection, experiment_type: ExperimentType) -> (bool, float):
         """
@@ -175,4 +191,3 @@ class Vehicle(carla.Vehicle):
             begin = carla.Location(x=self.points[i-1][0], y=self.points[i-1][1], z=5.0)
             end = carla.Location(x=self.points[i][0], y=self.points[i][1], z=5.0)
             self.world.debug.draw_line(begin, end, thickness=0.8, color="orange", life_time=0.0, persistent_lines=True)
-
