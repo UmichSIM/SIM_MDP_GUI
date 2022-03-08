@@ -44,6 +44,7 @@ START2 = -15.5#-15.5#-16.0
 # right shift from the center of the lane when spawning
 RIGHT_SHIFT = 0.0#1.6 # 0.0 if requirements changed to spawn in the middle of the lane#
 
+# API Helper?
 def get_traffic_lights(actor_list):
     # get all the available traffic lights
     traffic_light_list = []
@@ -52,6 +53,7 @@ def get_traffic_lights(actor_list):
             traffic_light_list.append(actor)
     return traffic_light_list
 
+# Vehicle/Controller Class
 def smooth_trajectory(trajectory):
     '''
     
@@ -80,6 +82,7 @@ def smooth_trajectory(trajectory):
     smoothed_trajectory.append(trajectory[-1])
     return np.array(smoothed_trajectory)
 
+# Vehicle/Controller class
 def get_trajectory(way_points):
     '''
     
@@ -109,17 +112,7 @@ def get_trajectory(way_points):
     # linear length along the line (reference: https://stackoverflow.com/questions/52014197/how-to-interpolate-a-2d-curve-in-python)
     distance = np.cumsum( np.sqrt(np.sum( np.diff(points,axis=0)**2, axis = 1)))
     distance = np.insert(distance, 0, 0)/distance[-1]
-    
-    '''
-    # define interpolation method
-    interpolation_method = 'slinear' #'quadratic'
-    
-    alpha = np.linspace(0,1, 2 * len(distance))
-    
-    interpolator = interp1d(distance, points, kind = interpolation_method, axis = 0)
-    trajectory = interpolator(alpha)
-    '''
-    
+
     # Build a list of the spline function, one for each dimension:
     splines = [UnivariateSpline(distance, coords, k=3, s=.2) for coords in points.T]
     
@@ -143,12 +136,10 @@ def get_trajectory(way_points):
     ref_speed_list = np.zeros(len(trajectory))
     for ii in range(1,len(nearest_index)):
         ref_speed_list[nearest_index[ii - 1]:nearest_index[ii]] = speed[ii - 1]
-    
-    #plt.plot(trajectory[:,0],trajectory[:,1],'.')
-    #print(ref_speed_list)
-    
+
     return trajectory, ref_speed_list
 
+# Keep intersection class
 class Intersection():
     def __init__(self, env, world_pos, traffic_light_list, distance = 75.0, yaw = 0.0, start_sim_distance = 40, navigation_speed = 10.0):
         '''
@@ -195,7 +186,8 @@ class Intersection():
         self.DEBUG_TRAJECTORY = True
         
         self.navigation_speed = navigation_speed
-        
+
+    # What is the point of this function?
     def start_simulation(self, full_path_vehicle_name):
         '''
         check whether the first full path vehicle is within this intersection
@@ -222,7 +214,7 @@ class Intersection():
             self.start_sim = True
         
         
-        
+    # Intersection Class
     def _get_local_traffic_lights(self, world_pos,traffic_light_list):
         '''
         
@@ -263,30 +255,13 @@ class Intersection():
                 print(light.get_location())
                 self.env.world.debug.draw_point(light.get_location(),size = 0.1, color = blue, life_time=0.0, persistent_lines=True)
                 
-
+    # Not sure what's going on here either
     def _get_lane_points(self):
         # get the into/out lane points of this intersection
         self.carla_map = self.env.world.get_map()
         self.out_lane_points = []
         self.into_lane_points = []
-        
-        '''
-        for light in self.local_traffic_lights:
-            light_location = light.get_location()
-            vector = light.get_transform().get_forward_vector()
-            end_1 = carla.Location(x = light_location.x + vector.x * END1,y = light_location.y + vector.y * END1, z = light_location.z + vector.z * END1) 
-            end_2 = carla.Location(x = light_location.x + vector.x * END2,y = light_location.y + vector.y * END2, z = light_location.z + vector.z * END2)
-            start_1 = carla.Location(x = light_location.x + vector.x * START1,y = light_location.y + vector.y * START1, z = light_location.z + vector.z * START1)
-            start_2 = carla.Location(x = light_location.x + vector.x * START2,y = light_location.y + vector.y * START2, z = light_location.z + vector.z * START2)
-            into_1 = self.carla_map.get_waypoint(end_1)
-            into_2 = self.carla_map.get_waypoint(end_2)
-            out_1 = self.carla_map.get_waypoint(start_1)
-            out_2 = self.carla_map.get_waypoint(start_2)
-            self.out_lane_points.append(out_1)
-            self.out_lane_points.append(out_2)
-            self.into_lane_points.append(into_1)
-            self.into_lane_points.append(into_2)
-        '''
+
         for ii in range(len(self.local_traffic_lights)):
             light_location = self.local_traffic_lights[ii].get_location()
             vector = self.local_traffic_lights[ii].get_transform().get_forward_vector()
@@ -342,7 +317,8 @@ class Intersection():
             self.out_lane_points.append(out_2)
             self.into_lane_points.append(into_1)
             self.into_lane_points.append(into_2)
-        
+
+    # General helper function
     def _yaw2vector(self):
         # get the direction vector of this intersection
         yaw_rad = math.radians(self.yaw)
@@ -845,6 +821,7 @@ class Intersection():
     def get_subject_traffic_light(self):
         return self.subject_light
 
+    # Intersection class (clean up this garbage
     def remove_vehicle(self,uniquename):
         '''
         remove a specific vehicle from the intersection
@@ -889,7 +866,8 @@ class Intersection():
                 return True
 
         return False
-    
+
+    # Maybe move to GUI if all info is communicated at once
     def edit_vehicle_settings(self, uniquename, choice, gap = 10.0,model_name = "vehicle.tesla.model3", command = "straight", stop_choice = "normal", penetrate_distance = None,obey_traffic_lights = True, run = True, safety_distance = 15.0, vehicle_color = None ):
         '''
         allow user to edit the vehicle settings
@@ -1004,7 +982,7 @@ class Intersection():
         
         return new_uniquename
     
-
+    # Intersection Class
     def edit_traffic_light(self,light, red_start = 0.0,red_end = 10.0,yellow_start = 10.0,yellow_end = 15.0,green_start = 15.0,green_end = 25.0):
         '''
         edit the start and end time for traffic colors
@@ -1054,7 +1032,8 @@ class Intersection():
         self.light_config[light + '_time']['red'] = red_end - red_start
         self.light_config[light + '_time']['yellow'] = yellow_end - yellow_start
         self.light_config[light + '_time']['green'] = green_end - green_start
-        
+
+    # Intersection class (clean up this garbage code)
     def set_intersection_traffic_lights(self):
         # if any traffic light has been set, use the traffic light setting
         # otherwise, do nothing and exit
@@ -1147,7 +1126,8 @@ class Intersection():
         
         # update the time count
         self.local_time_count += 1
-        
+
+    # Intersection Class
     def export_settings(self):
         '''
         export all settings for a specific intersection
@@ -1203,7 +1183,8 @@ class Intersection():
         intersection_settings["ahead_light_time"] = copy.copy(self.light_config["ahead_time"])
         
         return intersection_settings
-    
+
+    # Intersection Class
     def import_settings(self,intersection_settings):
         '''
         
@@ -1325,7 +1306,7 @@ class Intersection():
         new_intersection_setting = self.export_settings()
         return new_intersection_setting
     
-
+    # Vehicle Class
     def get_vehicle_bounding_box(self, uniquename):
         '''
         get the bounding box of the vehicle by uniquename
@@ -1343,7 +1324,7 @@ class Intersection():
         '''
         new_bb = self.env.get_vehicle_bounding_box(uniquename)
         return new_bb
-
+    # Vehicle class
     def get_vehicle_settings(self, uniquename):
         '''
         Get the settings entered for a specific vehicle in this intersection based on uniquename
@@ -1387,7 +1368,7 @@ class Intersection():
         
         return out_vehicle
         
-
+    # Vehicle Class (if necessary at all)
     def _copy_vehicle_settings(self,vehicle_config):
         new_vehicle = copy.copy(vehicle_config)
             
@@ -1423,43 +1404,20 @@ def main():
         env = CARLA_ENV(world) 
         time.sleep(2) # sleep for 2 seconds, wait the initialization to finish
         
-        world_pos = (-133.0,0.0)#(25.4,0.0)
+        world_pos = (-133.0,0.0)
         traffic_light_list = get_traffic_lights(world.get_actors())
         intersection1 = Intersection(env, world_pos, traffic_light_list)
-        
-        
-        #name1 = intersection1.add_vehicle()
-        
-        #name2 = intersection1.add_vehicle(command = "left", vehicle_color='255,255,255')
-        #name3 = intersection1.add_vehicle(command = "right", vehicle_color='255,255,255')
-        
+
         name4 = intersection1.add_vehicle(gap = 5,choice = "left", vehicle_color='0,0,0')
         name5 = intersection1.add_vehicle(gap = 5, choice = "left",command = "left", vehicle_color='128,128,128')
         name6 = intersection1.add_vehicle(gap = 5,choice = "left",command = "right", vehicle_color='255,255,255')
-        
-        '''
-        intersection1.add_vehicle(choice = "right", vehicle_color='255,255,255')
-        intersection1.add_vehicle(choice = "right",command = "left", vehicle_color='255,255,255')
-        intersection1.add_vehicle(choice = "right",command = "right", vehicle_color='255,255,255')
-        intersection1.add_vehicle(choice = "ahead", vehicle_color='255,255,255')
-        intersection1.add_vehicle(choice = "ahead",command = "left", vehicle_color='255,255,255')
-        intersection1.add_vehicle(choice = "ahead",command = "right", vehicle_color='255,255,255')
-        '''
-        #intersection1._shift_vehicles(-5,choice = "left",index = 0)
-        #intersection1._shift_vehicles(-5,choice = "left",index = 1)
-        #intersection1._shift_vehicles(-5,choice = "left",index = 2)
-        
+
         intersection1.edit_vehicle_settings(name4,choice = "left", vehicle_color = '0,0,0')
         intersection1.edit_vehicle_settings(name5,choice = "left", vehicle_color = '0,0,0')
         intersection1.edit_vehicle_settings(name6,choice = "left", vehicle_color = '0,0,0')
         
         time.sleep(2)
-        
-        # check the remove method
-        #intersection1.remove_vehicle(name1)
-        #intersection1.remove_vehicle(name3)
-        #intersection1.remove_vehicle(name2)
-        
+
         # traffic light
         intersection1.edit_traffic_light("subject",red_start = 20.0,red_end = 40.0,yellow_start=0.0,yellow_end=20.0,green_start=40.0,green_end = 60.0)
         intersection1.edit_traffic_light("left",red_start = 20.0,red_end = 40.0,yellow_start=0.0,yellow_end=20.0,green_start=40.0,green_end = 60.0)

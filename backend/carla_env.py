@@ -8,7 +8,6 @@ Created on Sun May 24 13:45:54 2020
 import glob
 import os
 import sys
-import time
 import random
 
 try:
@@ -19,16 +18,10 @@ try:
 except IndexError:
     pass
 
-
-
 import carla
-import matplotlib.pyplot as plt
 import numpy as np
-from collections import deque
 from configobj import ConfigObj
 import math
-
-from sys import platform
 
 # color for debug use
 red = carla.Color(255, 0, 0)
@@ -39,6 +32,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
+# API Helper - relocated on 2/16/2022 to ApiHelpers.py
 def config_world(world, synchrony = True, delta_seconds = 0.02):
         '''
         Effects
@@ -66,28 +60,19 @@ def config_world(world, synchrony = True, delta_seconds = 0.02):
         return synchrony, delta_seconds
         
 class CARLA_ENV():
+    # Move this information into the Experiment class
     def __init__(self, world):
         
-        #self.client = carla.Client('localhost', 2000)
-        #self.client.set_timeout(10.0)
-        #self.client = client
-        #self.world = self.client.get_world()
         self.world = world
         self.blueprint_library = self.world.get_blueprint_library()
-        #self.blueprint_library = blueprint_library
-        
+
         self.vehicle_dict = {}
         self.walker_dict = {}
         self.sensor_dict = {}
         self.config_env(synchrony = False)
-        #self.synchrony = synchrony
-        #self.delta_seconds = delta_seconds
-        
         self.distance_between_vehicles = ConfigObj() # store the distance between vehicles
         
         # get the length of all vehicles
-
-
         vehicle_length_config_directory = os.path.join('backend', 'vehicle_length_config.txt')
         
         currentDirectory = os.path.join(os.path.dirname(os.getcwd()),  vehicle_length_config_directory)
@@ -95,7 +80,7 @@ class CARLA_ENV():
         self.vehicle_model_length_config = ConfigObj(currentDirectory)
         print(self.vehicle_model_length_config)
         
-
+    # Remove, redundant code
     def config_env(self, synchrony = False, delta_seconds = 0.02):
         
         self.synchrony = synchrony
@@ -104,7 +89,8 @@ class CARLA_ENV():
         settings.synchronous_mode = synchrony
         settings.fixed_delta_seconds = delta_seconds
         self.world.apply_settings(settings)
-        
+
+    # Static Method in Vehicle Class
     def spawn_vehicle(self, model_name = None, spawn_point = None, color = None):
         '''
         Parameters
@@ -136,7 +122,8 @@ class CARLA_ENV():
         vehicle = self.world.spawn_actor(bp,spawn_point)
         self.vehicle_dict[vehicle.type_id + '_' + str(vehicle.id)] = vehicle
         return vehicle.type_id + '_' + str(vehicle.id)
-    
+
+    # Method in Vehicle Class - relocated on 2/16/22 to Vehicle.py
     def move_vehicle_location(self, uniquename, spawn_point):
         '''
         
@@ -157,12 +144,14 @@ class CARLA_ENV():
         
         vehicle = self.vehicle_dict[uniquename]
         vehicle.set_transform(spawn_point)
-    
+
+    # Method in Experiment Class - marked as redundant on 2/16/22
     def destroy_vehicle(self, uniquename):
         if uniquename in self.vehicle_dict:
             self.vehicle_dict[uniquename].destroy() # destroy the vehicle in carla
             self.vehicle_dict.pop(uniquename) # remove the vehicle from dictionary
-    
+
+    # Method in Vehicle Class - relocated on 2/16/22 to Vehicle.py
     def get_vehicle_model_length(self, model_name):
         '''
         
@@ -185,7 +174,8 @@ class CARLA_ENV():
             print("Error: invalid model_name entered to get vehicle model length")
         
         return length
-    
+
+    # Method in Vehicle Class - marked as redundant on 2/26/2022
     def get_vehicle_bounding_box(self, uniquename):
         '''
         
@@ -205,11 +195,10 @@ class CARLA_ENV():
         ret_vehicle_bb = None
         if uniquename in self.vehicle_dict:
             ret_vehicle_bb = self.vehicle_dict[uniquename].bounding_box.extent
-            
-            
+
         return ret_vehicle_bb
         
-        
+    # Method in Experiment Class - relocated on 2/16/22 to Experiment.py
     def destroy_actors(self):
         '''
         Effects
@@ -232,7 +221,8 @@ class CARLA_ENV():
         self.walker_dict.clear()
         self.sensor_dict.clear()
         print("destroyed all actors")
-        
+
+    # Method of Controller class - marked as redundant on 2/16/22 (exists in the base carla.Vehicle class)
     def apply_vehicle_control(self, uniquename, vehicle_control):
         '''
         Effects: apply control to a specific vehicle
@@ -251,7 +241,8 @@ class CARLA_ENV():
         '''
         vehicle = self.vehicle_dict[uniquename]
         vehicle.apply_control(vehicle_control)
-        
+
+    # Private method of the vehicle class - marked as redundant on 2/16/22 (exists in base carla.Vehicle class "set_target_velocity")
     def set_vehicle_velocity(self, uniquename, vehicle_velocity):
         '''
         
@@ -271,7 +262,7 @@ class CARLA_ENV():
         vehicle = self.vehicle_dict[uniquename]
         vehicle.set_target_velocity(vehicle_velocity)
         
-        
+    # Method of the Vehicle class - relocated on 2/16/22 to Vehicle.py
     def get_forward_speed(self, uniquename):
         '''
         Get the forward speed of the vehicle
@@ -289,7 +280,8 @@ class CARLA_ENV():
         vehicle = self.vehicle_dict[uniquename]
         velocity = vehicle.get_velocity()
         return (velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2)**0.5
-    
+
+    # Probably not necessary - marked as redundant on 2/16/22
     def vehicle_available(self, uniquename):
         '''
         check whether the vehicle exists
@@ -309,7 +301,8 @@ class CARLA_ENV():
             return True
         else:
             return False
-    
+
+    # Method of Vehicle Class - relocation on 2/16/22 to Vehicle.py
     def get_transform_2d(self, uniquename):
         '''
         
@@ -330,7 +323,8 @@ class CARLA_ENV():
         yaw = transform.rotation.yaw
         
         return (location_2d,yaw)
-    
+
+    # Method of Vehicle class - marked as unneeded on 2/16/22
     def get_transform_3d(self, uniquename):
         '''
         
@@ -350,7 +344,8 @@ class CARLA_ENV():
         
         
         return transform
-    
+
+    # Method of Vehicle Class (takes in list of all other vehicles) - relocated on 2/16/22 to Vehicle.py
     def update_vehicle_distance(self):
         '''
         Update the distance between each 2 vehicles
@@ -383,7 +378,8 @@ class CARLA_ENV():
                     distance = math.sqrt((location_1.x - location_2.x)**2 + (location_1.y - location_2.y)**2)
                     self.distance_between_vehicles[name_1][name_2] = distance
                     self.distance_between_vehicles[name_2][name_1] = distance
-                    
+
+    # Method of Vehicle Class (Make a single check Vehicle in direction function) (maybe Controller class)
     def check_vehicle_in_front(self, uniquename, safety_distance):
         '''
         
@@ -428,16 +424,15 @@ class CARLA_ENV():
                 norm_forward_vector_2d = forward_vector_2d / np.linalg.norm(forward_vector_2d)
                 dot_product = np.dot(norm_vec1_2,norm_forward_vector_2d)
                 angle = np.arccos(dot_product)
-                
-                
-                
+
                 if angle < np.arctan(vehicle_bb.y /  vehicle_bb.x):#np.arcsin((vehicle_bb.y  + 1) / distance_with_other_vehicle[name]):#np.arctan(vehicle_bb.y / vehicle_bb.x): 
                     has_vehicle_in_front = True
                     distance = np.dot(vec1_2,forward_vector_2d)
                     break
             
         return has_vehicle_in_front, distance
-    
+
+    # Likely redundant but double check - marked as redundant on 2/28/22
     def check_vehicle_in_front_freeway(self, uniquename, safety_distance):
         '''
         greatly narrow the front view for freeway
@@ -492,7 +487,8 @@ class CARLA_ENV():
                     break
             
         return has_vehicle_in_front, distance
-    
+
+    # Make a single check Vehicle in direction function - marked as redundant on 2/28/22
     def check_vehicle_in_back_freeway(self, uniquename, safety_distance):
         '''
         
@@ -549,7 +545,8 @@ class CARLA_ENV():
                         smallest_distance = distance
             
         return has_vehicle_in_back, smallest_distance
-        
+
+    # Make single check vehicle in direction function - relocated to Vehicle.py on 2/28/22
     def check_vehicle_in_right(self, uniquename, safety_distance = 6):
         '''
         function checking whether a right vehicle is too close to the current vehicle
@@ -606,6 +603,7 @@ class CARLA_ENV():
                 
         return has_vehicle_in_right, smallest_distance
 
+    # Make single check vehicle in direction function - relocated to Vehicle.py on 2/28/22
     def check_vehicle_in_left(self, uniquename, safety_distance = 6):
         '''
         function checking whether a left vehicle is too close to the current vehicle
@@ -660,7 +658,7 @@ class CARLA_ENV():
                 
         return has_vehicle_in_left, smallest_distance
 
-    
+    # Method of Vehicle Class (already implemented in the CARLA API), marked as redundant on 2/28/22
     def get_traffic_light_state(self, uniquename):
         '''
         
@@ -672,7 +670,8 @@ class CARLA_ENV():
 
         Returns
         -------
-        The traffic light state corresponding to this vehicle.
+        The traffic light state corresponding to this vehicle. Each vehicle
+        tracks the traffic light that is directly in front of it.
         If no traffic light available, return None
 
         '''
@@ -683,7 +682,8 @@ class CARLA_ENV():
             state = light.get_state()
             
         return state
-        
+
+    # Method of Vehicle Class
     def draw_waypoints(self, trajectory, points):
         '''
         Draw the way points and trajectory for the vehicle to follow
@@ -711,7 +711,8 @@ class CARLA_ENV():
             begin = carla.Location(x = trajectory[ii - 1][0], y = trajectory[ii - 1][1], z = 5.0)
             end = carla.Location(x = trajectory[ii][0], y = trajectory[ii][1], z = 5.0)
             self.world.debug.draw_line(begin, end, thickness=0.8, color=orange, life_time=0.0, persistent_lines=True)
-    
+
+    # Doesn't appear to be used (maybe keep for debug purposes)
     def draw_real_trajectory(self, real_trajectory):
         '''
         Draw the real trajectory
@@ -729,36 +730,3 @@ class CARLA_ENV():
         begin = carla.Location(x = real_trajectory[0][0], y = real_trajectory[0][1], z = 5.0)
         end = carla.Location(x = real_trajectory[1][0], y = real_trajectory[1][1], z = 5.0)
         #self.world.debug.draw_arrow(begin, end, thickness=1.0, arrow_size=1.0, color = green, life_time=0.0, persistent_lines=True)
-        
-'''
-client = carla.Client("localhost",2000)
-client.set_timeout(2.0)
-world = client.load_world('Town03')#'Town06' for plain ground
-weather = carla.WeatherParameters(
-    cloudiness=10.0,
-    precipitation=0.0,
-    sun_altitude_angle=90.0)
-world.set_weather(weather)
-'''
-'''
-settings = world.get_settings()
-#settings.synchronous_mode = True
-settings.fixed_delta_seconds = 0.02
-world.apply_settings(settings)
-
-settings = world.get_settings()
-settings.synchronous_mode = True
-world.apply_settings(settings)
-
-#synchrony, delta_seconds = config_world(world)
-blueprint_library = world.get_blueprint_library()
-'''
-'''
-env = CARLA_ENV(world)
-
-try:
-    name = env.spawn_vehicle()
-    print(name)
-finally:
-    env.destroy_actors()
-'''

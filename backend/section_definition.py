@@ -31,6 +31,7 @@ orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
 # the definition of the normal section
+# Likely make a Section Class
 class Section(object):
     def __init__(self, env, world_waypoint):
         '''
@@ -78,7 +79,8 @@ class Section(object):
     
         # variable to count the time elapsed after simulation starts in this section
         self.time_count = 0
-    
+
+    # Put this in a Controller class
     def _get_next_waypoint(self,curr_waypoint,distance = 4):
         '''
         
@@ -102,7 +104,8 @@ class Section(object):
         
         next_waypoint = self.carla_map.get_waypoint(raw_spawn_point)
         return next_waypoint
-    
+
+    # Section Class
     def _get_section_trajectory_points(self):
         '''
         get the reference points for trajectory
@@ -136,7 +139,8 @@ class Section(object):
             curr_waypoint = next_waypoint
             
         self.reference_way_points = reference_way_points
-        
+
+    # Put some of this in the GUI and the rest in the Section class
     def _add_full_path_vehicle_normal(self, uniquename, vehicle_type, choice, command = "speed", command_start_time = 0.0):
         '''
         Create a setting place holder of the vehicle that has been added to the initial section
@@ -180,7 +184,8 @@ class Section(object):
         vehicle_local_config["command_start_time"] = command_start_time
         
         vehicle_set.append(vehicle_local_config)
-    
+
+    # Same as above
     def _remove_full_path_vehicle_normal(self, vehicle_type, choice, index):
         '''
         remove a full path vehicle that does not exists anymore
@@ -217,7 +222,7 @@ class Section(object):
         
         vehicle_set.pop(index) # remove the setting from the list
         
-    
+    # Likely can get rid of this
     def _update_vehicle_uniquename(self, vehicle_type, choice, index, uniquename):
         '''
         Private function for updating the uniquename of the vehicle in case uniquename is changed
@@ -256,7 +261,8 @@ class Section(object):
         
         vehicle_local_config = vehicle_set[index]
         vehicle_local_config["uniquename"] = uniquename
-    
+
+    # Add this to the vehicle class
     def edit_full_path_vehicle_local_setting(self, vehicle_type, choice, index , command = "speed", command_start_time = 0.0):
         '''
         API for the users to edit settings of a given vehicle 
@@ -298,7 +304,8 @@ class Section(object):
         vehicle_local_config = vehicle_set[index]
         vehicle_local_config["command"] = command
         vehicle_local_config["command_start_time"] = command_start_time
-    
+
+    # Vehicle class also
     def get_full_path_vehicle_local_setting(self, vehicle_type, choice, index):
         # get the settings of the vehicle based on lane and index
         # return the command and corresponding start time
@@ -322,11 +329,13 @@ class Section(object):
         command = vehicle_local_config["command"]
         command_start_time = vehicle_local_config["command_start_time"]
         return command, command_start_time
-    
+
+    # Section class
     def get_section_trajectory_points(self):
         # get the reference points of this section for use outside
         return self.reference_way_points
-        
+
+    # Move this into a main simulation loop (likely in the Experiment class)
     def tick(self):
         # increment the time_count by one step
         # return the elapsed time in terms of seconds

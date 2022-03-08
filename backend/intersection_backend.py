@@ -9,25 +9,15 @@ import sys
 sys.path.append("..")
 
 import carla
-import matplotlib.pyplot as plt
-import numpy as np
-from collections import deque
 import time
 from openpyxl import load_workbook
 from openpyxl import Workbook
-import math
 
-import control # the python-control package, install first
-
-from backend.generate_path_omit_regulation import generate_path
-from backend.intersection_definition import Intersection, get_traffic_lights, get_trajectory, smooth_trajectory
+from backend.intersection_definition import get_traffic_lights
 from backend.carla_env import CARLA_ENV # self-written class that provides help functions, should be in the same folder
-from configobj import ConfigObj
 from backend.multiple_vehicle_control import VehicleControl
 
-import copy
-
-from backend.initial_intersection import Init_Intersection, create_intersections, get_ego_spectator, get_ego_left_spectator, get_ego_driving_spectator
+from backend.initial_intersection import create_intersections, get_ego_spectator, get_ego_left_spectator, get_ego_driving_spectator
 from backend.full_path_vehicle import LeadVehicleControl, FollowVehicleControl
 
 from backend.intersection_settings_helper import write_intersection_settings, read_intersection_settings
@@ -35,7 +25,7 @@ from backend.intersection_settings_helper import write_intersection_settings, re
 from backend.human_ego_control import HumanEgoControlServer
     
 
-
+# Simulate loop in Base Experiment class (please break this up into sub-functions for the love of god)
 def IntersectionBackend(env,intersection_list, allow_collision = True, spectator_mode = None, enable_human_control = False):
     
     '''

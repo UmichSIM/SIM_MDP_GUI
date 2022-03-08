@@ -29,7 +29,6 @@ except IndexError:
 
 import carla
 import math
-import random
 import time
 
 from backend.carla_env import CARLA_ENV # self-written class that provides help functions, should be in the same folder
@@ -47,12 +46,14 @@ white = carla.Color(255, 255, 255)
 DEBUG = True
 display_trajectory = False
 
+# Not sure yet
 def waypoint_exists(new_point, waypoint_list):
     for pt in waypoint_list:
         if pt.id == new_point.id:
             return True
     return False
 
+# Not sure yet
 def get_junction_points(junction):
     junction_w = junction.get_waypoints(carla.LaneType.Any)
     junction_points = []
@@ -64,6 +65,7 @@ def get_junction_points(junction):
     
     return junction_points
 
+# Not sure yet
 def get_next_w(current_w, waypoint_separation):
     '''
     code adapted from "lane_explorer.py" available in carla-simulator/PythonAPI/util
@@ -98,7 +100,8 @@ def get_next_w(current_w, waypoint_separation):
                 potential_w.append(pt)
     
     return potential_w
-    
+
+# Not sure yet
 def end_of_search(current_w, destination, waypoint_separation):
     '''
     
@@ -128,7 +131,7 @@ def end_of_search(current_w, destination, waypoint_separation):
     else:
         return False
     
-    
+# This is the only function used in other places in the backend (Controller class)
 def generate_path(env, start, destination, waypoint_separation = 4):
     '''
     Apply Dijkstra's algorithm to find the path connecting the start point and destination point with smallest

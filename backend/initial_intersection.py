@@ -9,13 +9,7 @@ import sys
 sys.path.append("..")
 
 import carla
-import matplotlib.pyplot as plt
-import numpy as np
-from collections import deque
 import time
-import math
-
-import control # the python-control package, install first
 
 from backend.generate_path_omit_regulation import generate_path
 from backend.intersection_definition import Intersection, get_traffic_lights, get_trajectory, smooth_trajectory
@@ -35,7 +29,7 @@ orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
 
-
+# Really not sure if this needs to be a separate intersection class
 class Init_Intersection(Intersection):
     def __init__(self, env, world_pos, traffic_light_list, waypoint_list, subject_traffic_light_list, navigation_speed = 10.0):
         super().__init__(env, world_pos, traffic_light_list,navigation_speed = navigation_speed)
@@ -51,7 +45,8 @@ class Init_Intersection(Intersection):
         
         # generate the full path that's going to be shared between the ego, lead and follow vehicles
         self._generate_intersection_path()
-    
+
+    # Intersection Class
     def add_ego_vehicle(self, gap = 10.0,model_name = "vehicle.tesla.model3", stop_choice = "abrupt", penetrate_distance = None, obey_traffic_lights = True, run = True, safety_distance = 0.0, vehicle_color = None):
         
         self._add_full_path_vehicle("ego",gap = gap, model_name = model_name, obey_traffic_lights = obey_traffic_lights, run = run, safety_distance = safety_distance, vehicle_color = vehicle_color)
@@ -64,7 +59,8 @@ class Init_Intersection(Intersection):
         self.ego_vehicle["stop_ref_point"] = self._generate_full_path_stop_ref(stop_choice,penetrate_distance)
         
         return self.ego_vehicle['uniquename']
-        
+
+    # Intersection class
     def add_lead_vehicle(self, lead_distance ,gap = 10.0,model_name = "vehicle.tesla.model3", stop_choice = "abrupt", penetrate_distance = None, obey_traffic_lights = True, run = True, safety_distance = 15.0, vehicle_color = None):
         # get all the vehicles that's going to be after the lead vehicle
         ego_index = self.ego_vehicle["index"]
@@ -98,7 +94,8 @@ class Init_Intersection(Intersection):
         self.lead_vehicle["penetrate_distance"] = penetrate_distance
         self.lead_vehicle["stop_ref_point"] = self._generate_full_path_stop_ref(stop_choice,penetrate_distance)
         return self.lead_vehicle['uniquename']
-        
+
+    # Intersection Class
     def add_follow_vehicle(self, follow_distance ,gap = 10.0,model_name = "vehicle.tesla.model3", stop_choice = "abrupt", penetrate_distance = None, obey_traffic_lights = True, run = True, safety_distance = 15.0, vehicle_color = None):
         # get all the vehicles that's going to be after the lead vehicle
         ego_index = self.ego_vehicle["index"]
@@ -126,7 +123,9 @@ class Init_Intersection(Intersection):
         self.follow_vehicle["penetrate_distance"] = penetrate_distance
         self.follow_vehicle["stop_ref_point"] = self._generate_full_path_stop_ref(stop_choice,penetrate_distance)
         return self.follow_vehicle['uniquename']
-        
+
+
+    # Intersection Class (figure out if full_path vehicles need to be separated out)
     def _add_full_path_vehicle(self, vehicle_type, gap = 10.0,model_name = "vehicle.tesla.model3", obey_traffic_lights = True, run = True, safety_distance = 0.0, vehicle_color = None):
         '''
         
@@ -188,13 +187,7 @@ class Init_Intersection(Intersection):
             
             gap += bb.x / 2 + curr_length / 2
         
-        '''
-        else:
-            if gap < 10.0:
-                gap = 10.0 # add a constraint to the gap between the first vehicle and the lane 
-                           # reference point. Add a vehicle too close to reference point
-                           # will lead to vehicle not detecting the traffic light
-        '''                
+
         # use the original reference point to get the new reference point
         # reference point is in the middle of the lane
         # function same as self._get_next_waypoint
@@ -238,7 +231,8 @@ class Init_Intersection(Intersection):
         vehicle["bounding_box"] = new_bb
         
         vehicle_set.append(vehicle)
-    
+
+    # Controller class
     def _generate_full_path_stop_ref(self, stop_choice, penetrate_distance):
         '''
         generate the reference point for stoping the vehicle
@@ -272,7 +266,8 @@ class Init_Intersection(Intersection):
                 stop_ref_list.append(ref_waypoint.transform)
         
         return stop_ref_list
-    
+
+    # Controller class
     def _generate_intersection_path(self):
         '''
         generate the path from the initial intersection to the end intersection
@@ -297,7 +292,7 @@ class Init_Intersection(Intersection):
             
         self.intersection_trajectory = full_trajectory
         
-        
+    # Controller class
     def _generate_full_path(self,start_waypoint):
         '''
         
@@ -330,7 +325,7 @@ class Init_Intersection(Intersection):
                 
         return smoothed_full_trajectory, ref_speed_list
     
-    
+    # Intersection class
     def export_settings(self):
         '''
         export all settings for a specific intersection
@@ -392,7 +387,8 @@ class Init_Intersection(Intersection):
         intersection_settings["ahead_light_time"] = copy.copy(self.light_config["ahead_time"])
         
         return intersection_settings
-    
+
+    # Intersection class
     def import_settings(self,intersection_settings):
         '''
         note: this method overrides the import_settings in Intersection
@@ -516,7 +512,7 @@ class Init_Intersection(Intersection):
         new_intersection_setting = self.export_settings()
         return new_intersection_setting
     
-    
+    # Experiment class
 def create_intersections(env, number_of_intersections, traffic_light_list, navigation_speed):
     '''
     
@@ -537,7 +533,7 @@ def create_intersections(env, number_of_intersections, traffic_light_list, navig
     '''
     
     # note: due to the limit of map, number_of_intersections can be at most 4 at present
-    world_pos_list = [(-190.0,0.0),(-133.0,0.0),(-55.0,0.0),(25.4,0.0)]
+    world_pos_list = [(-190.0,0.0),(-133.0,0.0),(-55.0,0.0),(25.4,0.0)] # Hardcoded intersection list
     number_of_intersections = min(4,number_of_intersections)
     waypoint_list = [] # way points that form the full path
     subject_traffic_light_list = [] # all subject traffic lights along the full path 
@@ -555,7 +551,7 @@ def create_intersections(env, number_of_intersections, traffic_light_list, navig
     intersection_list.insert(0,init_intersection)
     return intersection_list
 
-
+    # Vehicle class
 def get_ego_spectator(ego_transform,distance = -10):
         '''
         
@@ -580,7 +576,7 @@ def get_ego_spectator(ego_transform,distance = -10):
         
         return spectator_transform
     
-
+    # Vehicle Class
 def get_ego_left_spectator(ego_transform,distance = -20):
     forward_vector = ego_transform.get_forward_vector()
 
@@ -591,6 +587,7 @@ def get_ego_left_spectator(ego_transform,distance = -20):
     spectator_transform = carla.Transform(spectator_location,spectator_rotation)
     return spectator_transform
 
+    # Vehicle Class
 def get_ego_driving_spectator(ego_transform, bounding_box):
     
     distance = bounding_box.x
@@ -604,6 +601,7 @@ def get_ego_driving_spectator(ego_transform, bounding_box):
         
     return spectator_transform
 
+    # Redundant, please delete
 def IntersectionBackend(env,intersection_list):
     vehicle_list = []
     started_intersection_list = []
