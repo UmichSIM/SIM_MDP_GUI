@@ -13,9 +13,28 @@ Referenced By:
 
 """
 
+# Local Imports
+from ApiHelpers import VehicleType
 from Controller import Controller
+from Vehicle import Vehicle
+
+# Library Imports
+from carla import VehicleControl
 
 class IntersectionController(Controller):
 
-    def __init__(self):
-        pass
+    @staticmethod
+    def update_control(current_vehicle: Vehicle) -> None:
+        """
+        Updates the control for a vehicle that is operating in an Intersection experiment.
+
+        Update this documentation once the function is better written.
+
+        :param current_vehicle:
+        :return:
+        """
+
+        # Just constantly accelerate forward for now
+        control = VehicleControl()
+        control.throttle = 1
+        # current_vehicle.carla_vehicle.apply_control(control)

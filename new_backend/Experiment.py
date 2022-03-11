@@ -14,7 +14,14 @@ Referenced By:
 """
 
 # Local Imports
-from ApiHelpers import ExperimentType
+from ApiHelpers import ExperimentType, VehicleType
+from CarlaModules.HUD import HUD
+from CarlaModules.World import World
+from CarlaModules.KeyboardController import KeyboardControl
+from CarlaModules.GlobalFunctions import DefaultSettings
+from EgoController import EgoController
+from FreewayController import FreewayController
+from IntersectionController import IntersectionController
 from Section import Section
 from Threading import SIMThread, ThreadWorker
 from Vehicle import Vehicle
@@ -23,8 +30,8 @@ from Vehicle import Vehicle
 # Library Imports
 import carla
 import logging
-from pygame.time import Clock
-from PyQt5.QtCore import QWaitCondition, QMutex
+import pygame
+from PyQt5.QtCore import QWaitCondition
 from typing import List, Dict
 import sys
 
@@ -34,9 +41,6 @@ class Experiment:
     # Static variable denoting which map this experiment takes place on
     # Must be overridden by derived classes
     MAP = "Town05"
-
-    # Pygame clock to control FrateRate dependant physics
-    clock: Clock = Clock()
 
     # The Type of Experiment that is currently running
     experiment_type: ExperimentType = None
@@ -87,7 +91,7 @@ class Experiment:
         :param blocking: a bool representing whether connecting to the server should block the GUI
                          or allow it to continue
         :param port: an int specifying the network port to connect to (defaults to 2000)
-        :return: a bool indicating if the server connection was made successfully
+        :returns: None
         """
 
         if blocking:
@@ -117,7 +121,7 @@ class Experiment:
         logging.info(f"Connecting to the Server on port {port}")
 
         self.client = carla.Client("localhost", port)
-        self.client.set_timeout(10.0)
+        self.client.set_timeout(20.0)
         self.world = self.client.load_world(self.MAP)
 
         # Update this stuff later
@@ -143,9 +147,6 @@ class Experiment:
         :param status: a bool indicating if connection to the Carla server was successful
         :return: None
         """
-
-        # Allow any threads waiting on a connection to continue
-        self.wait_condition.wakeAll()
 
         if status:
             self.server_initialized = True
@@ -181,8 +182,55 @@ class Experiment:
         :return: None
         """
 
-        # Updates the global clock
-        self.clock.tick()
+        # Initialize Pygame to handle user input
+        pygame.init()
+
+        # Initialize the Pygame display
+        display = pygame.display.set_mode(
+            (1280, 720),
+            pygame.HWSURFACE | pygame.DOUBLEBUF)
+        display.fill((0, 0, 0))
+        pygame.display.flip()
+
+        # Initialize the objects that will be rendered by Pygame
+        hud = HUD(display.get_size()[0], display.get_size()[1])
+        world = World(self.ego_vehicle.carla_vehicle, self.world, hud, DefaultSettings())
+
+        # Initialize the controller to handle user input
+        controller = KeyboardControl(world, False)
+
+        try:
+            # Loop continuously
+            clock = pygame.time.Clock()
+            while True:
+
+                # Tick the Carla Simulation
+                self.world.tick()
+                clock.tick_busy_loop(60)
+
+                # Update the relative locations of each vehicle
+                for vehicle in self.vehicle_list + [self.ego_vehicle]:
+                    vehicle.update_other_vehicle_locations(self.vehicle_list)
+
+                # Apply control to the Ego Vehicle
+                if self.ego_vehicle is not None:
+                    # Lambda used to avoid passing all the arguments into the update_control function
+                    EgoController.update_control(self.ego_vehicle, lambda: controller.parse_events(self.client, world, clock, True), self.experiment_type)
+
+                # Apply control to every other Vehicle
+                for vehicle in self.vehicle_list:
+                    if self.experiment_type == ExperimentType.INTERSECTION:
+                        IntersectionController.update_control(vehicle)
+                    elif self.experiment_type == ExperimentType.FREEWAY:
+                        FreewayController.update_control(vehicle)
+
+                # Update the UI elements
+                world.tick(clock, self.ego_vehicle)
+                world.render(display)
+                pygame.display.flip()
+
+        finally:
+            world.destroy()
 
     def clean_up_experiment(self) -> None:
         """
@@ -191,13 +239,14 @@ class Experiment:
         :return: None
         """
         for vehicle in self.vehicle_list:
-            vehicle.destroy()
+            vehicle.carla_vehicle.destroy()
         for pedestrian in self.pedestrian_list:
             pedestrian.destroy()
         for sensor in self.sensor_list:
             sensor.destroy()
 
-    def add_vehicle(self, new_vehicle: Vehicle, ego: bool = False) -> None:
+    # TODO: add new parameters to this function as needed
+    def add_vehicle(self, new_vehicle: carla.Vehicle,  type_id: VehicleType, ego: bool = False,) -> None:
         """
         Adds a new Vehicle to the experiment.
 
@@ -205,6 +254,7 @@ class Experiment:
         delete this function if it gets relocated.
 
         :param new_vehicle: the Vehicle object to be added to the experiment
+        :param type_id: the VehicleType of the carla.Vehicle that is being added to the Experiment
         :param ego: a bool representing whether the new Vehicle is the Ego Vehicle or not
         :return: None
         """
@@ -212,7 +262,7 @@ class Experiment:
         if ego:
             if self.ego_vehicle is not None:
                 raise Exception("Unable to add multiple ego vehicles.")
-            self.ego_vehicle = new_vehicle
+            self.ego_vehicle = Vehicle(new_vehicle, "Ego", type_id)
 
             # Set the camera to be located at the Ego vehicle
             self.world.tick()
@@ -220,4 +270,5 @@ class Experiment:
             self.spectator.set_transform(new_vehicle.get_transform())
 
         else:
-            self.vehicle_list.append(new_vehicle)
+            # TODO: change these hardcoded values
+            self.vehicle_list.append(Vehicle(new_vehicle, "temp_id", VehicleType.GENERIC))

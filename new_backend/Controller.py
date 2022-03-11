@@ -14,36 +14,39 @@ Referenced By:
 """
 
 # Local Imports
+from ApiHelpers import ExperimentType
 from Vehicle import Vehicle
 
 # Library Imports
 import carla
-from typing import List
+from typing import List, Tuple
+
+# Global variable to define how far apart waypoints on the road network should be
+WAYPOINT_SEPARATION = 10
 
 
 class Controller:
 
+
+
     @staticmethod
-    def update_control(current_vehicle: Vehicle, mode: str, avoid_collisions: bool = False) -> carla.VehicleControl:
+    def update_control(current_vehicle: Vehicle) -> None:
         """
         Abstract function that dictates how a derived Controller class should update the Vehicles control.
 
         All derived controller classes must implement this method. The update_control method takes in a
         vehicle and determines what control parameters should be passed to it to update its acceleration
-        and steering in the Carla simulation. This function will return a carla.VehicleControl object
-        that will be passed into the Vehicle's apply_control method.
+        and steering in the Carla simulation. This function will call apply_control on the current
+        vehicle to steer the vehicle in the correct direction.
 
         :param current_vehicle: the Vehicle object to which updated control needs to be applied
         :param mode: a string representing whether the Vehicle should target a certain "speed" or a
-                     certain "distance" behind the vehicle it is following
-        :param avoid_collisions: whether the Vehicle should actively avoid collisions with nearby vehicles
-        :return: a carla.VehicleControl object representing the acceleration and steering that should
-                 be applied to the current_vehicle
+        :return: None
         """
         pass
 
     @staticmethod
-    def generate_path(current_vehicle: Vehicle, starting_point: carla.Waypoint, ending_point: carla.Waypoint) -> List[carla.Transform]:
+    def generate_path(current_vehicle: Vehicle, starting_point: carla.Waypoint, ending_point: carla.Waypoint) -> None:
         """
         Calculates the shortest trajectory between the starting endpoint and ending waypoint of the Vehicle's route.
 
@@ -55,9 +58,48 @@ class Controller:
         :param current_vehicle: the Vehicle object that the path needs to be generated for
         :param starting_point: the carla.Waypoint object that the vehicle will be starting at
         :param ending_point: the carla.Waypoint object that the vehicle will be ending at
-        :return: a List containing the carla.Transforms that define the entire path
+        :return: None
         """
-        pass
+
+        # List of transforms that comprise the path
+        waypoints: List[carla.Transform] = []
+
+        # List of tuples containing each explored waypoint and the index of their previous waypoint along the path
+        explored_list: List[Tuple[carla.Waypoint, int]] = []
+
+        # List of tuples containing each waypoint that still needs to be explored along with the index of
+        # the waypoint that added them to this list
+        potential_list: List[Tuple[carla.Waypoint, int]] = []
+
+        # Add the initial point to the potential_list
+        potential_list.append((starting_point, -1))
+
+        # Main Djikstra's loop
+        while True:
+
+            # Grab the current waypoint and previous index
+            current_waypoint, current_previous_index = potential_list.pop(0)
+
+            # Add them to the explored list
+            explored_list.append((current_waypoint, current_previous_index))
+
+            # If the search is over, backtrack to build the path
+            if Controller.end_of_search(current_waypoint, ending_point):
+                waypoints = Controller.backtrack_path(explored_list)
+                current_vehicle.waypoints = waypoints
+                return
+
+            # Check all the potential next waypoints and add them to the potential list
+            # if they haven't already been explored
+            potential_new_waypoints = Controller.get_next_waypoints(current_waypoint)
+            already_explored_waypoint_ids = [x[0].id for x in explored_list]
+            for potential_new_waypoint in potential_new_waypoints:
+                if potential_new_waypoint.id not in already_explored_waypoint_ids:
+                    potential_list.append((potential_new_waypoint, len(explored_list) - 1))
+
+            if len(potential_list) == 0:
+                raise Exception(f"Unable to find path between waypoints {starting_point.id} and {ending_point.id}")
+
 
     @staticmethod
     def obey_traffic_light(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
@@ -106,3 +148,65 @@ class Controller:
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
         pass
+
+    @staticmethod
+    def end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
+        """
+        Determines if the Djikstra search has successfully arrived at it's destination point.
+
+        To finish the search, the current waypoint must be less than half of WAYPOINT_SEPARATION
+        away from the ending waypoint
+
+        :param current_waypoint: a carla.Waypoint representing the current waypoint in the search
+        :param ending_waypoint: a carla.Waypoint representing the ending waypoint in the search
+        :return: a bool representing if the search is finished
+        """
+
+        current_location = current_waypoint.transform.location
+        ending_location = ending_waypoint.transform.location
+        separation = current_location.distance(ending_location)
+        if separation < WAYPOINT_SEPARATION / 2:
+            return True
+        return False
+
+    @staticmethod
+    def backtrack_path(explored_list: List[Tuple[carla.Waypoint, int]]) -> List[carla.Transform]:
+        """
+        Backtracks the explored path to build the shortest path from the initial point to the final destination.
+
+        :param explored_list: a List of Tuples where the first element is a carla.Waypoint object
+                              and the second element is the list index of the ancestor waypoint
+        :return: a list of carla.Transforms representing the completed path
+        """
+
+        # Initialize the path and the ending locations
+        path: List[carla.Waypoint] = []
+        current_waypoint, current_index = explored_list[-1]
+
+        # Continue backtracking until the first waypoint is reached
+        while current_index != -1:
+            path.append(current_waypoint.transform)
+            current_waypoint, current_index = explored_list[current_index]
+
+        return path[::-1]
+
+    @staticmethod
+    def get_next_waypoints(current_waypoint: carla.Waypoint) -> List[carla.Waypoint]:
+        """
+        Gets a list of all the possible next waypoints from the current waypoint
+
+        :param current_waypoint: a carla.Waypoint representing the current waypoint
+        :return: a List of carla.Waypoints
+        """
+
+        # Get all the possible next waypoints
+        new_potential_waypoints: List[carla.Waypoint] = current_waypoint.next(WAYPOINT_SEPARATION)
+
+        # Also add additional waypoints if the current waypoint is an intersection
+        if current_waypoint.is_junction:
+            junction_points = current_waypoint.get_junction().get_waypoints(carla.LaneType.Any)
+            for pair in junction_points:
+                for point in pair:
+                    new_potential_waypoints.append(point)
+
+        return new_potential_waypoints
