@@ -14,33 +14,28 @@ Referenced By:
 """
 
 # Local Imports
-from ApiHelpers import WorldDirection, ExperimentType
+from ApiHelpers import WorldDirection, ExperimentType, VehicleType, to_numpy_vector, rotate_vector
 
 # Library Imports
 import carla
-from enum import Enum
-from typing import List
+import math
+import numpy as np
+from typing import List, Tuple
+
+ORANGE = carla.Color(252, 177, 3)
+RED = carla.Color(255, 0, 0)
 
 
-# Enumerated class specifying the different types of Vehicles
-class VehicleType(Enum):
-    MANUAL_EGO = 1
-    AUTOMATIC_EGO = 2
-    LEAD = 3
-    FOLLOWER = 4
-    GENERIC = 5
+class Vehicle():
 
-
-class Vehicle(carla.Vehicle):
-
-    def __init__(self, id_number: int, name: str, type: VehicleType, safety_distance: float):
+    def __init__(self, carla_vehicle: carla.Vehicle, name: str, type_id: VehicleType, safety_distance: float = 10.0):
         super().__init__()
 
-        # The unique internal ID for each vehicle
-        self.id: int = id_number
+        # Stores the Carla Vehicle object associated with this particular vehicle
+        self.carla_vehicle: carla.Vehicle = carla_vehicle
 
         # The type of this Vehicle
-        self.type = type
+        self.type_id: VehicleType = type_id
 
         # The user specified name for each vehicle
         self.name: str = name
@@ -48,10 +43,9 @@ class Vehicle(carla.Vehicle):
         # The "safe" distance that the vehicle attempts to maintain between itself and the vehicle in front
         self.safety_distance = safety_distance
 
-        # List of the carla.Transforms for every other vehicle in the Simulation.
-        # Tracking both the position and forward facing vector is necessary to calculate
-        # distance between vehicles and relative positioning between vehicles
-        self.other_vehicle_transforms: List[carla.Transform] = []
+        # List of the carla.Vector3Ds that represent the locations of every other Vehicle in the
+        # experiment
+        self.other_vehicle_locations: List[np.array] = []
 
         # List that stores the waypoints that the vehicle will travel through
         self.waypoints: List[carla.Transform] = []
@@ -63,7 +57,7 @@ class Vehicle(carla.Vehicle):
         :param new_position: a carla.Transform representing the new location of the vehicle
         :return: None
         """
-        self.set_transform(new_position)
+        self.carla_vehicle.set_transform(new_position)
 
     def get_vehicle_size(self) -> (float, float):
         """
@@ -72,7 +66,7 @@ class Vehicle(carla.Vehicle):
         If this function doesn't work as intended, blame Austin
         :return: the width and length of the vehicle as a tuple
         """
-        return self.bounding_box.extent[0], self.bounding_box.extent[1]
+        return self.carla_vehicle.bounding_box.extent[0], self.carla_vehicle.bounding_box.extent[1]
 
     def get_current_speed(self) -> float:
         """
@@ -80,7 +74,7 @@ class Vehicle(carla.Vehicle):
 
         :return: the current forward speed of the Vehicle as a float
         """
-        velocity = self.get_velocity()
+        velocity = self.carla_vehicle.get_velocity()
         return (velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2) ** 0.5
 
     def get_current_position(self) -> (float, float):
@@ -89,7 +83,7 @@ class Vehicle(carla.Vehicle):
 
         :return: the current position of the Vehicle as an (x,y) tuple
         """
-        transform = self.get_transform()
+        transform = self.carla_vehicle.get_transform()
         return transform.location.x, transform.location.y
 
     def get_current_rotation(self) -> float:
@@ -98,10 +92,10 @@ class Vehicle(carla.Vehicle):
 
         :return: the current rotation of the vehicle as a float
         """
-        transform = self.get_transform()
+        transform = self.carla_vehicle.get_transform()
         return transform.rotation.yaw
 
-    def update_other_vehicle_transforms(self, other_vehicles: List) -> None:
+    def update_other_vehicle_locations(self, other_vehicles: List) -> None:
         """
         Updates the internal list with the transforms of all other Vehicles in the simulation
 
@@ -109,8 +103,10 @@ class Vehicle(carla.Vehicle):
         :return: None
         """
 
-        # See carla_env.py -> update_vehicle_distance
-        pass
+        current_location = self.get_location_vector()
+        self.other_vehicle_locations = [x.get_location_vector()
+                                        for x in other_vehicles if x.carla_vehicle.id != self.carla_vehicle.id]
+        self.other_vehicle_locations.sort(key=lambda x: np.linalg.norm(current_location - x))
 
     def _check_vehicle_in_direction(self, direction: WorldDirection, experiment_type: ExperimentType) -> (bool, float):
         """
@@ -126,6 +122,41 @@ class Vehicle(carla.Vehicle):
         :return: a tuple containing whether there is a vehicle in the given direction and the
                  distance if said vehicle exists
         """
+
+        # Required distance between two vehicles to be "safe"
+        if direction in [WorldDirection.FORWARD, WorldDirection.BACKWARD]:
+            required_distance = self.safety_distance + self.carla_vehicle.bounding_box.extent.x / 2
+        else:
+            required_distance = self.safety_distance + self.carla_vehicle.bounding_box.extent.y / 2
+
+        current_location: np.array = self.get_location_vector()
+
+        # Determine what vector we need to evaluate based on the given direction
+        current_vector: np.array = to_numpy_vector(self.carla_vehicle.get_transform().get_forward_vector())
+        if direction == WorldDirection.BACKWARD:
+            current_vector = rotate_vector(current_vector, 180)
+        elif direction == WorldDirection.LEFT:
+            current_vector = rotate_vector(current_vector, 270)
+        elif direction == WorldDirection.RIGHT:
+            current_vector = rotate_vector(current_vector, 90)
+
+        current_unit_vector: np.array = current_vector / np.linalg.norm(current_vector)
+
+        for other_location in self.other_vehicle_locations:
+            # Calculate the displacement vector between the current car and the other car
+            displacement_vector: np.array = other_location - current_location
+            unit_displacement_vector: np.array = displacement_vector / np.linalg.norm(displacement_vector)
+
+            # Now determine the angle between the displacement vector and the forward vector of the current car
+            angle = math.acos(np.dot(current_unit_vector, unit_displacement_vector))
+
+            # If the angle is small enough, then the vehicle is in front of the current vehicle
+            if angle < math.atan(self.carla_vehicle.bounding_box.extent.y / self.carla_vehicle.bounding_box.extent.x):
+                distance = np.linalg.norm(displacement_vector)
+                if distance < required_distance:
+                    return True, distance
+
+        return False, 0.0
 
 
     def check_vehicle_in_front(self, experiment_type: ExperimentType) -> (bool, float):
@@ -173,21 +204,29 @@ class Vehicle(carla.Vehicle):
         return self._check_vehicle_in_direction(WorldDirection.RIGHT, experiment_type)
 
     # Maybe relocate this function, decide later
-    def draw_waypoints(self) -> None:
+    def draw_waypoints(self, world: carla.World) -> None:
         """
         Draws the waypoints and trajectory that the vehicle is following.
 
+        :param world: a carla.World object representing the current simulator world.
         :return: None
         """
 
-        for i in range(len(self.points) - 1):
-            location = carla.Location(x=self.points[i][0], y=self.points[i][1], z=5.0)
-            self.world.debug.draw_point(location, size=0.1, color="orange", life_time=0.0, persistent_lines=True)
+        for i in range(len(self.waypoints) - 1):
+            world.debug.draw_point(self.waypoints[i].location, size=0.15, color=ORANGE, life_time=0.0)
 
-        location = carla.Location(x=self.points[-1][0], y=self.points[-1][1], z=5.0)
-        self.world.debug.draw_point(location, size=0.1, color="red", life_time=0.0, persistent_lines=True)
+        world.debug.draw_point(self.waypoints[-1].location, size=0.15, color=RED, life_time=0.0)
 
-        for i in range(1, len(self.points)):
-            begin = carla.Location(x=self.points[i-1][0], y=self.points[i-1][1], z=5.0)
-            end = carla.Location(x=self.points[i][0], y=self.points[i][1], z=5.0)
-            self.world.debug.draw_line(begin, end, thickness=0.8, color="orange", life_time=0.0, persistent_lines=True)
+        for i in range(1, len(self.waypoints)):
+            begin = self.waypoints[i-1].location
+            end = self.waypoints[i].location
+            world.debug.draw_line(begin, end, thickness=0.05, color=ORANGE, life_time=0.0)
+
+    def get_location_vector(self) -> np.array:
+        """
+        Getter for the current location of the Vehicle as a numpy.array with length three
+
+        :return: the current location of the vector as a numpy.array
+        """
+        location = self.carla_vehicle.get_location()
+        return np.array([location.x, location.y, location.z])

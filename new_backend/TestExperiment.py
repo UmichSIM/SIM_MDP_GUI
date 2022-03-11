@@ -15,16 +15,19 @@ Referenced By:
 """
 
 # Local Imports
-from ApiHelpers import logging_setup
-from Experiment import Experiment, ExperimentType
+import random
+
+from ApiHelpers import ExperimentType, VehicleType
+from Controller import Controller, WAYPOINT_SEPARATION
+from Experiment import Experiment
 from Threading import HeadlessWindow
 
 # Library Imports
+import carla
 from PyQt5.QtWidgets import QApplication
 from random import choice
 import sys
 from typing import Dict
-
 
 
 class TestExperiment(Experiment):
@@ -33,7 +36,7 @@ class TestExperiment(Experiment):
         super(TestExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.INTERSECTION
 
-    def initialize_experiment(self, configuration: Dict[str, str]) -> bool:
+    def initialize_experiment(self, configuration: Dict[str, str] = None) -> bool:
         """
         Uses an existing connection to the Carla server and configures the world according to the experiment design.
 
@@ -44,11 +47,31 @@ class TestExperiment(Experiment):
         :return: a bool indicating if the experiment was configured correctly
         """
 
-        # Add a new test vehicle to the map (probably dump this code into an Experiment class function)
-        spawn_location = choice(self.world.get_map().get_spawn_points())
+        # Initialize the waypoints
+        sim_map: carla.Map = self.world.get_map()
+        waypoints = sim_map.generate_waypoints(WAYPOINT_SEPARATION)
+
+        # Add a new test vehicle to the map
+        spawn_location = self.world.get_map().get_spawn_points()[2]
         blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
         new_vehicle = self.world.spawn_actor(blueprint, spawn_location)
-        self.add_vehicle(new_vehicle, ego=True)
+
+        self.add_vehicle(new_vehicle, ego=True, type_id=VehicleType.MANUAL_EGO)
+
+        # Get the starting waypoint corresponding with the Vehicles starting location
+        starting_waypoint = sim_map.get_waypoint(spawn_location.location)
+        ending_waypoint = starting_waypoint.next(50)[0]
+
+        # Add a second new test vehicle to the map
+        blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
+        new_vehicle = self.world.spawn_actor(blueprint, ending_waypoint.transform)
+
+        self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
+
+        # Generate and draw the ego vehicles path
+        Controller.generate_path(self.ego_vehicle, starting_waypoint, ending_waypoint)
+        self.ego_vehicle.draw_waypoints(self.world)
+
 
 
 def main() -> None:
@@ -66,11 +89,13 @@ def main() -> None:
     experiment.initialize_experiment()
 
     # Start the main simulation loop
-    # experiment.run_experiment()
+    try:
+        experiment.run_experiment()
+    finally:
+        experiment.clean_up_experiment()
 
 
 if __name__ == "__main__":
-    # logging_setup()
     app = QApplication(sys.argv)
     win = HeadlessWindow(main)
     win.show()

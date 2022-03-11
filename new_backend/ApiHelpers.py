@@ -15,20 +15,31 @@ Referenced By:
 # Library Imports
 import carla
 from datetime import datetime
-from enum import Enum
+from enum import IntEnum
 import logging
+import math
+import numpy as np
 import os
 import sys
 
 
+# Enumerated class specifying the different types of Vehicles
+class VehicleType(IntEnum):
+    MANUAL_EGO = 1
+    AUTOMATIC_EGO = 2
+    LEAD = 3
+    FOLLOWER = 4
+    GENERIC = 5
+
+
 # Enumerated class specifying the different experiment types
-class ExperimentType(Enum):
+class ExperimentType(IntEnum):
     INTERSECTION = 1
     FREEWAY = 2
 
 
 # Enumerated class specifying the different directions in the World
-class WorldDirection(Enum):
+class WorldDirection(IntEnum):
     FORWARD = 1
     BACKWARD = 2
     LEFT = 3
@@ -69,3 +80,31 @@ def logging_setup(directory_name: str = "logs") -> None:
     log_file_name = sys.argv[0] + "." + current_time + ".log"
 
     logging.basicConfig(filename=logging_directory + "/" + log_file_name, level=logging.DEBUG)
+
+
+def to_numpy_vector(carla_vector: carla.Vector3D):
+    """
+    Converts a carla.Vector3d into a numpy.array with length three
+
+    :param carla_vector: the carla.Vector3d to convert
+    :return: a numpy.array of length 3 representing the Carla vector
+    """
+    return np.array([carla_vector.x, carla_vector.y, carla_vector.z])
+
+def rotate_vector(vector: np.array, degrees: float) -> np.array:
+    """
+    Rotates the provided vector around the z-axis by the specified number of degrees
+
+    :param vector: a np.array representing the vector to rotate
+    :param degrees: a float representing the number of degrees to rotate by
+    :return: a np.array containing the rotated vector
+    """
+
+    radians = degrees * math.pi / 180
+    rotation_matrix = np.array([
+        [math.cos(radians), -1 * math.sin(radians), 0],
+        [math.sin(radians), math.cos(radians),      0],
+        [0,                 0,                      1]
+    ])
+
+    return np.matmul(rotation_matrix, vector)
