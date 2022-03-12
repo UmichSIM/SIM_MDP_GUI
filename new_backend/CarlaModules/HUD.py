@@ -128,6 +128,12 @@ class HUD(object):
             'GNSS:% 24s' % ('(% 2.6f, % 3.6f)' % (world.gnss_sensor.lat, world.gnss_sensor.lon)),
             'Height:  % 18.0f m' % t.location.z,
             '']
+        self._info_text += ["Position:"]
+        self._info_text += ["   X - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
+        self._info_text += ["   Y - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
+        self._info_text += ["   Z - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
+        self._info_text += [""]
+
         if isinstance(c, carla.VehicleControl):
             self._info_text += [
                 ('Throttle:', c.throttle, 0.0, 1.0),
@@ -158,6 +164,7 @@ class HUD(object):
                 self._info_text.append('% 4dm %s' % (d, vehicle_type))
 
             # HUD Text for vehicle direction detection
+            self._info_text += ['']
             self._info_text += ['Vehicles in Direction:']
             for direction in (WorldDirection.FORWARD, WorldDirection.BACKWARD, WorldDirection.LEFT, WorldDirection.RIGHT):
                 vehicle_present, distance = ego_vehicle._check_vehicle_in_direction(direction, "")

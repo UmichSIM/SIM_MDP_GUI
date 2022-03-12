@@ -34,7 +34,20 @@ class IntersectionController(Controller):
         :return:
         """
 
-        # Just constantly accelerate forward for now
+        # Initialize the VehicleControl object
         control = VehicleControl()
-        control.throttle = 1
-        # current_vehicle.carla_vehicle.apply_control(control)
+
+        # Determine the steering angle needed
+        steering_angle, end_of_path = Controller.follow_path(current_vehicle)
+
+        # Stop the car if we've reached the end of the path
+        if end_of_path:
+            control.steer = 0
+            control.throttle = 0
+            control.brake = 1.0
+            current_vehicle.carla_vehicle.apply_control(control)
+
+        # Otherwise, apply the steering and constant acceleration
+        control.steer = steering_angle
+        control.throttle = 0.5
+        current_vehicle.carla_vehicle.apply_control(control)

@@ -21,6 +21,7 @@ import math
 import numpy as np
 import os
 import sys
+from typing import List
 
 
 # Enumerated class specifying the different types of Vehicles
@@ -82,14 +83,18 @@ def logging_setup(directory_name: str = "logs") -> None:
     logging.basicConfig(filename=logging_directory + "/" + log_file_name, level=logging.DEBUG)
 
 
-def to_numpy_vector(carla_vector: carla.Vector3D):
+def to_numpy_vector(carla_vector: carla.Vector3D, dims=3):
     """
     Converts a carla.Vector3d into a numpy.array with length three
 
     :param carla_vector: the carla.Vector3d to convert
+    :param dims: number of dimensions in the returned vector (defaults to 3)
     :return: a numpy.array of length 3 representing the Carla vector
     """
-    return np.array([carla_vector.x, carla_vector.y, carla_vector.z])
+    if dims == 3:
+        return np.array([carla_vector.x, carla_vector.y, carla_vector.z])
+    return np.array([carla_vector.x, carla_vector.y])
+
 
 def rotate_vector(vector: np.array, degrees: float) -> np.array:
     """
@@ -108,3 +113,33 @@ def rotate_vector(vector: np.array, degrees: float) -> np.array:
     ])
 
     return np.matmul(rotation_matrix, vector)
+
+
+def smooth_path(current_path: List[carla.Transform], num_passes=1) -> List[carla.Transform]:
+    """
+    Function that smooths the provided path by adding intermediate points between all neighboring points.
+
+    :param current_path: a List of carla.Transforms representing the path to be smoothed
+    :param num_passes: an int representing the number of smoothing passes to make
+    :return: a List of carla.Transforms representing the newly smoothed path
+    """
+
+    starting_path: List[carla.Transform] = current_path
+    for _ in range(num_passes):
+        smoothed_path: List[carla.Transform] = []
+        smoothed_path.append(starting_path[0])
+        for i in range(1, len(starting_path), 1):
+
+            # Calculate the intermediate point by averaging together the neighbor points
+            intermediate_point = carla.Transform()
+            intermediate_point.location.x = (starting_path[i].location.x + smoothed_path[-1].location.x) / 2
+            intermediate_point.location.y = (starting_path[i].location.y + smoothed_path[-1].location.y) / 2
+            intermediate_point.location.z = (starting_path[i].location.z + smoothed_path[-1].location.z) / 2
+
+            # Add both the intermediate point and the current point to the smoothed path
+            smoothed_path.append(intermediate_point)
+            smoothed_path.append(starting_path[i])
+
+        starting_path = smoothed_path
+
+    return smoothed_path

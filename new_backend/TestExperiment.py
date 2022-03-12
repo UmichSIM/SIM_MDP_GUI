@@ -49,24 +49,24 @@ class TestExperiment(Experiment):
 
         # Initialize the waypoints
         sim_map: carla.Map = self.world.get_map()
-        waypoints = sim_map.generate_waypoints(WAYPOINT_SEPARATION)
+        waypoints = filter(lambda x: x.lane_type == carla.LaneType.Driving, sim_map.generate_waypoints(WAYPOINT_SEPARATION))
 
         # Add a new test vehicle to the map
         spawn_location = self.world.get_map().get_spawn_points()[2]
         blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
         new_vehicle = self.world.spawn_actor(blueprint, spawn_location)
 
-        self.add_vehicle(new_vehicle, ego=True, type_id=VehicleType.MANUAL_EGO)
+        self.add_vehicle(new_vehicle, ego=True, type_id=VehicleType.AUTOMATIC_EGO)
 
         # Get the starting waypoint corresponding with the Vehicles starting location
         starting_waypoint = sim_map.get_waypoint(spawn_location.location)
-        ending_waypoint = starting_waypoint.next(50)[0]
+        ending_waypoint = random.choice(starting_waypoint.next(250))
 
         # Add a second new test vehicle to the map
-        blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
-        new_vehicle = self.world.spawn_actor(blueprint, ending_waypoint.transform)
-
-        self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
+        # blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
+        # new_vehicle = self.world.spawn_actor(blueprint, ending_waypoint.transform)
+        #
+        # self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
 
         # Generate and draw the ego vehicles path
         Controller.generate_path(self.ego_vehicle, starting_waypoint, ending_waypoint)
