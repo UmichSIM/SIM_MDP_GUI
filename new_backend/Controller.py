@@ -14,20 +14,25 @@ Referenced By:
 """
 
 # Local Imports
+import random
+
 from ApiHelpers import ExperimentType
 from Vehicle import Vehicle
 
 # Library Imports
+from ApiHelpers import to_numpy_vector, smooth_path
 import carla
+import heapq
+import numpy as np
 from typing import List, Tuple
 
 # Global variable to define how far apart waypoints on the road network should be
-WAYPOINT_SEPARATION = 10
+WAYPOINT_SEPARATION = 15
 
+# Global constant that dictates how strongly speed affects the Pure Pursuit lookahead distance
+SPEED_CONSTANT = 0.1
 
 class Controller:
-
-
 
     @staticmethod
     def update_control(current_vehicle: Vehicle) -> None:
@@ -61,24 +66,26 @@ class Controller:
         :return: None
         """
 
-        # List of transforms that comprise the path
-        waypoints: List[carla.Transform] = []
+        # Location of the destination waypoint
+        destination: np.array = to_numpy_vector(ending_point.transform.location)
 
-        # List of tuples containing each explored waypoint and the index of their previous waypoint along the path
+        # List of tuples containing each explored waypoint, the current distance to that waypoint,
+        # and the index of their previous waypoint along the path
         explored_list: List[Tuple[carla.Waypoint, int]] = []
 
-        # List of tuples containing each waypoint that still needs to be explored along with the index of
-        # the waypoint that added them to this list
-        potential_list: List[Tuple[carla.Waypoint, int]] = []
+        # List of Tuples used as a Priority Queue. The first int is the straight line distance
+        # between the waypoint and the destination. The second Tuple contains the waypoint
+        # and the index of the previous waypoint in the path
+        potential_list: List[Tuple[int, Tuple[carla.Waypoint, int]]] = []
 
         # Add the initial point to the potential_list
-        potential_list.append((starting_point, -1))
+        heapq.heappush(potential_list, (0, (starting_point, -1)))
 
         # Main Djikstra's loop
         while True:
 
             # Grab the current waypoint and previous index
-            current_waypoint, current_previous_index = potential_list.pop(0)
+            _, (current_waypoint, current_previous_index) = heapq.heappop(potential_list)
 
             # Add them to the explored list
             explored_list.append((current_waypoint, current_previous_index))
@@ -87,6 +94,7 @@ class Controller:
             if Controller.end_of_search(current_waypoint, ending_point):
                 waypoints = Controller.backtrack_path(explored_list)
                 current_vehicle.waypoints = waypoints
+                current_vehicle.trajectory = smooth_path(waypoints)
                 return
 
             # Check all the potential next waypoints and add them to the potential list
@@ -95,11 +103,73 @@ class Controller:
             already_explored_waypoint_ids = [x[0].id for x in explored_list]
             for potential_new_waypoint in potential_new_waypoints:
                 if potential_new_waypoint.id not in already_explored_waypoint_ids:
-                    potential_list.append((potential_new_waypoint, len(explored_list) - 1))
+                    distance_to_destination = np.linalg.norm(to_numpy_vector(potential_new_waypoint.transform.location) - destination)
+                    heapq.heappush(potential_list, (distance_to_destination  + random.random(), (potential_new_waypoint, len(explored_list) - 1)))
 
             if len(potential_list) == 0:
                 raise Exception(f"Unable to find path between waypoints {starting_point.id} and {ending_point.id}")
 
+    @staticmethod
+    def follow_path(current_vehicle: Vehicle) -> (float, bool):
+        """
+        Implements path following using the Pure Pursuit Path Tracking algorithm.
+
+        Link to a paper on the subject can be found here: https://www.ri.cmu.edu/publications/implementation-of-the-pure-pursuit-path-tracking-algorithm/
+        Determines what steering angle the vehicle needs to remain on the path outlined by its waypoints.
+        Chooses a lookahead distance based on the vehicle's current speed and identifies the waypoint
+        that is closest to that lookahead distance. Then, calculates the curve that connects the Vehicle's
+        current location to that destination waypoint. The inverse tangent of the curve can then be
+        taken to determine the steering angle needed.
+
+        :param current_vehicle: a Vehicle object representing the vehicle to be controlled
+        :return: a Tuple where the first element is a float representing the steering angle in radians
+                 (bounded between -1 and 1) and the second element is if the Vehicle has reached
+                 the end of the path
+        """
+
+        # Get the current location and forward facing vector of the vehicle
+        current_location: np.array = current_vehicle.get_location_vector(dims=2)
+        forward_facing_vector: np.array = to_numpy_vector(
+            current_vehicle.carla_vehicle.get_transform().get_forward_vector(), dims=2)
+        unit_forward_facing_vector: np.array = forward_facing_vector / np.linalg.norm(forward_facing_vector)
+
+        # Find the closest waypoint to the vehicles current location
+        trajectory: List[carla.Transform] = current_vehicle.trajectory
+        trajectory_point_distances: List[np.array] = [np.linalg.norm(to_numpy_vector(x.location, dims=2) - current_location) for
+                                              x in trajectory]
+        nearest_trajectory_point_index: int = np.argmin(trajectory_point_distances)
+
+        # Determine what our lookahead distance should be
+        current_forward_speed = np.linalg.norm(to_numpy_vector(current_vehicle.carla_vehicle.get_velocity()))
+        lookahead_distance = 4 + current_forward_speed * SPEED_CONSTANT
+
+        # Find the next waypoint that is at least lookahead distance away, or at the end of the path
+        current_distance = 0
+        index = nearest_trajectory_point_index + 1
+        while current_distance < lookahead_distance and index < len(trajectory):
+            current_distance += np.linalg.norm(
+                to_numpy_vector(trajectory[index].location) - to_numpy_vector(trajectory[index - 1].location))
+            index += 1
+
+        # Stop the car if we've reached the end of the path
+        if index >= len(trajectory):
+            return 0.0, True
+
+        # Identify our new goal waypoint
+        goal_trajectory_point = trajectory[index]
+        distance_from_current_location_to_goal = trajectory_point_distances[index]
+
+        # Calculate the angle between the vehicles forward facing vector and the distance vector between the
+        # car and goal waypoint
+        distance_vector = to_numpy_vector(goal_trajectory_point.location, dims=2) - current_location
+        unit_distance_vector = distance_vector / np.linalg.norm(distance_vector)
+        theta = np.arctan2(unit_distance_vector[1], unit_distance_vector[0]) - np.arctan2(unit_forward_facing_vector[1], unit_forward_facing_vector[0])
+
+        # Lastly, get the length of the vehicle and calculate the steering angle
+        vehicle_length = current_vehicle.carla_vehicle.bounding_box.extent.y * 2
+        steering_angle = np.arctan2(2 * vehicle_length * np.sin(theta), distance_from_current_location_to_goal)
+
+        return steering_angle, False
 
     @staticmethod
     def obey_traffic_light(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
