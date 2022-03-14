@@ -206,7 +206,8 @@ class Experiment:
 
                 # Tick the Carla Simulation
                 self.world.tick()
-                clock.tick_busy_loop(60)
+                clock.tick(60)
+                pygame.event.pump()
 
                 # Update the relative locations of each vehicle
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
