@@ -22,6 +22,7 @@ import math
 import numpy as np
 from typing import List, Tuple
 
+GREEN = carla.Color(0, 255, 0)
 ORANGE = carla.Color(252, 177, 3)
 RED = carla.Color(255, 0, 0)
 
@@ -55,6 +56,13 @@ class Vehicle():
         # the waypoints together
         self.trajectory: List[carla.Transform] = []
 
+    def has_path(self):
+        """
+        Getter for whether the Vehicle has an initialized path to follow.
+
+        :return: True if the vehicles path was initialized, and false otherwise
+        """
+        return not len(self.waypoints) == 0
 
     def move_vehicle_location(self, new_position: carla.Transform) -> None:
         """

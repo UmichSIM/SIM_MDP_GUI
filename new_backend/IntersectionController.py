@@ -34,6 +34,9 @@ class IntersectionController(Controller):
         :return:
         """
 
+        if not current_vehicle.has_path():
+            return
+
         # Initialize the VehicleControl object
         control = VehicleControl()
 
@@ -51,3 +54,4 @@ class IntersectionController(Controller):
         control.steer = steering_angle
         control.throttle = 0.5
         current_vehicle.carla_vehicle.apply_control(control)
+
