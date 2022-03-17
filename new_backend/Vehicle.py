@@ -65,7 +65,7 @@ class Vehicle():
         """
         self.carla_vehicle.set_transform(new_position)
 
-    def get_vehicle_size(self) -> (float, float):
+    def get_vehicle_size(self) -> Tuple[float, float]:
         """
         Gets the size of the vehicle's bounding box as a width, length tuple.
 
@@ -83,7 +83,7 @@ class Vehicle():
         velocity = self.carla_vehicle.get_velocity()
         return (velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2) ** 0.5
 
-    def get_current_position(self) -> (float, float):
+    def get_current_position(self) -> Tuple[float, float]:
         """
         Gets the current position of the vehicle.
 
@@ -114,7 +114,7 @@ class Vehicle():
                                         for x in other_vehicles if x.carla_vehicle.id != self.carla_vehicle.id]
         self.other_vehicle_locations.sort(key=lambda x: np.linalg.norm(current_location - x))
 
-    def _check_vehicle_in_direction(self, direction: WorldDirection, experiment_type: ExperimentType) -> (bool, float):
+    def _check_vehicle_in_direction(self, direction: WorldDirection, experiment_type: ExperimentType) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle next to the current vehicle in any given direction.
 
@@ -165,7 +165,7 @@ class Vehicle():
         return False, 0.0
 
 
-    def check_vehicle_in_front(self, experiment_type: ExperimentType) -> (bool, float):
+    def check_vehicle_in_front(self, experiment_type: ExperimentType) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle in front of this vehicle.
 
@@ -176,7 +176,7 @@ class Vehicle():
 
         return self._check_vehicle_in_direction(WorldDirection.FORWARD, experiment_type)
 
-    def check_vehicle_in_back(self, experiment_type: ExperimentType) -> (bool, float):
+    def check_vehicle_in_back(self, experiment_type: ExperimentType) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle behind this vehicle.
 
@@ -187,7 +187,7 @@ class Vehicle():
 
         return self._check_vehicle_in_direction(WorldDirection.BACKWARD, experiment_type)
 
-    def check_vehicle_to_left(self, experiment_type: ExperimentType) -> (bool, float):
+    def check_vehicle_to_left(self, experiment_type: ExperimentType) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle to the left of this vehicle.
 
@@ -198,7 +198,7 @@ class Vehicle():
 
         return self._check_vehicle_in_direction(WorldDirection.LEFT, experiment_type)
 
-    def check_vehicle_to_right(self, experiment_type: ExperimentType) -> (bool, float):
+    def check_vehicle_to_right(self, experiment_type: ExperimentType) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle to the right of this vehicle.
 

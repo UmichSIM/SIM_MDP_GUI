@@ -110,7 +110,7 @@ class Controller:
                 raise Exception(f"Unable to find path between waypoints {starting_point.id} and {ending_point.id}")
 
     @staticmethod
-    def follow_path(current_vehicle: Vehicle) -> (float, bool):
+    def follow_path(current_vehicle: Vehicle) -> Tuple[float, bool]:
         """
         Implements path following using the Pure Pursuit Path Tracking algorithm.
 
@@ -172,7 +172,7 @@ class Controller:
         return steering_angle, False
 
     @staticmethod
-    def obey_traffic_light(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
+    def obey_traffic_light(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to obey a traffic light.
 
@@ -188,7 +188,7 @@ class Controller:
         pass
 
     @staticmethod
-    def avoid_collisions(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
+    def avoid_collisions(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to avoid a collision.
 
@@ -204,7 +204,7 @@ class Controller:
         pass
 
     @staticmethod
-    def obey_safety_distance(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
+    def obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to obey its safety distance.
 
