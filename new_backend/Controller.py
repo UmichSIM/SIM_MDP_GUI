@@ -14,6 +14,7 @@ Referenced By:
 """
 
 # Local Imports
+from operator import is_
 import random
 
 from ApiHelpers import ExperimentType
@@ -185,7 +186,42 @@ class Controller:
                  is being affected by a traffic light. If True, the second element will contain a
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
-        pass
+
+        """
+        Check Traffic Light Colors:
+        If red: 
+            - moving: need change state
+            - not-moving : no need
+        If yellow: 
+            - moving: slow down and stop (this is an assumption that we can stop safely)
+            - non-moving: no need ??? (seems impossible... why did u stop already)
+        If green:
+            - moving: no need
+            - not moving: change state
+
+        If it needs to change our state, create  a new vehicle control
+            - return true and return a new vehicle control 
+        
+        Else
+            - return (false, current Vehicle Control)
+        """
+
+        is_changed = True
+        control = self.VehicleControl
+        curr_car_speed = get_vehicle_speed(current_vehicle)
+
+        traffic_light_state = carla.get_traffic_light_state(current_vehicle)
+        
+        # if the traffic light is red and the vehicle is moving, stop
+        if (traffic_light_state == 'Red' or traffic_light_state == 'Yellow') and curr_car_speed > 0.0:
+            control = carla.VehicleControl(throttle = 0.0,steer=steer,brake = 1.0) # stop car
+        # if the traffic light is green or yellow and the vehicle is not moving, start moving
+        elif traffic_light_state == 'Green' and curr_car_speed == 0.0:
+            control = carla.VehicleControl(throttle = 1.0,steer=steer,brake = 0.0) # start car
+        else:
+            is_changed = False
+
+        return Tuple[is_changed, control]
 
     @staticmethod
     def avoid_collisions(current_vehicle: Vehicle) -> (bool, carla.VehicleControl):
