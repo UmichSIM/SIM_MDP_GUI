@@ -187,25 +187,6 @@ class Controller:
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
 
-        """
-        Check Traffic Light Colors:
-        If red: 
-            - moving: need change state
-            - not-moving : no need
-        If yellow: 
-            - moving: slow down and stop (this is an assumption that we can stop safely)
-            - non-moving: no need ??? (seems impossible... why did u stop already)
-        If green:
-            - moving: no need
-            - not moving: change state
-
-        If it needs to change our state, create  a new vehicle control
-            - return true and return a new vehicle control 
-        
-        Else
-            - return (false, current Vehicle Control)
-        """
-
         is_changed = True
         control = self.VehicleControl
         curr_car_speed = get_vehicle_speed(current_vehicle)
