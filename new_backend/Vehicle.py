@@ -27,7 +27,7 @@ ORANGE = carla.Color(252, 177, 3)
 RED = carla.Color(255, 0, 0)
 
 
-class Vehicle():
+class Vehicle:
 
     def __init__(self, carla_vehicle: carla.Vehicle, name: str, type_id: VehicleType, safety_distance: float = 10.0):
         super().__init__()
@@ -172,8 +172,7 @@ class Vehicle():
 
         return False, 0.0
 
-
-    def check_vehicle_in_front(self, experiment_type: ExperimentType) -> Tuple[bool, float]:
+    def check_vehicle_in_front(self, experiment_type: ExperimentType) -> (bool, float):
         """
         Determines if there is a vehicle in front of this vehicle.
 

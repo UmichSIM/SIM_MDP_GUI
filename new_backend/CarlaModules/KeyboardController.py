@@ -170,10 +170,11 @@ class KeyboardControl(object):
                     if event.key == K_q:
                         self._control.gear = 1 if self._control.reverse else -1
                     elif event.key == K_m:
-                        self._control.manual_gear_shift = not self._control.manual_gear_shift
-                        self._control.gear = world.player.get_control().gear
-                        world.hud.notification('%s Transmission' %
-                                               ('Manual' if self._control.manual_gear_shift else 'Automatic'))
+                        world.player.set_target_velocity(carla.Vector3D(0,0,0))
+                        # self._control.manual_gear_shift = not self._control.manual_gear_shift
+                        # self._control.gear = world.player.get_control().gear
+                        # world.hud.notification('%s Transmission' %
+                        #                        ('Manual' if self._control.manual_gear_shift else 'Automatic'))
                     elif self._control.manual_gear_shift and event.key == K_COMMA:
                         self._control.gear = max(-1, self._control.gear - 1)
                     elif self._control.manual_gear_shift and event.key == K_PERIOD:

@@ -82,7 +82,6 @@ class TestExperiment(Experiment):
             self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
 
 
-
 def main() -> None:
     """
     Main Function to be run when the file is run as a standalone Python Script

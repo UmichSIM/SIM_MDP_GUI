@@ -11,9 +11,9 @@ Carla API.
 # Local Imports
 from CarlaModules.GlobalFunctions import get_actor_display_name
 from CarlaModules.World import World
-from new_backend.ApiHelpers import WorldDirection, to_numpy_vector
-from new_backend.Controller import WAYPOINT_SEPARATION
-from new_backend.Vehicle import Vehicle
+from ApiHelpers import WorldDirection, to_numpy_vector
+from Controller import WAYPOINT_SEPARATION
+from Vehicle import Vehicle
 
 # Library Imports
 import numpy as np
