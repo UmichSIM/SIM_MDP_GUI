@@ -10,15 +10,23 @@ Carla API.
 
 # Local Imports
 from CarlaModules.GlobalFunctions import get_actor_display_name
-from new_backend.ApiHelpers import WorldDirection
+from CarlaModules.World import World
+from new_backend.ApiHelpers import WorldDirection, to_numpy_vector
+from new_backend.Controller import WAYPOINT_SEPARATION
 from new_backend.Vehicle import Vehicle
 
 # Library Imports
+import numpy as np
 import carla
 import datetime
 import math
 import pygame
 import os
+from typing import List, Dict, Tuple
+
+# Initialize global variables to help with experiment visualization
+spawn_points: List[carla.Transform] = None
+intersections: List[carla.Junction] = None
 
 
 class FadingText(object):
@@ -95,7 +103,7 @@ class HUD(object):
         self.frame = timestamp.frame
         self.simulation_time = timestamp.elapsed_seconds
 
-    def tick(self, world, clock, ego_vehicle):
+    def tick(self, world: World, clock, ego_vehicle: Vehicle):
         self._notifications.tick(world, clock)
         if not self._show_info:
             return
@@ -132,6 +140,16 @@ class HUD(object):
         self._info_text += ["   X - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
         self._info_text += ["   Y - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
         self._info_text += ["   Z - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
+        self._info_text += [""]
+
+        # Initialize global variables variables
+        if spawn_points is None or intersections is None or intersection_waypoints is None:
+            self.initialize_spawn_points_and_junctions(world)
+
+        nearest_spawn_point_index, nearest_intersection_index = self.calculate_nearest_spawn_point_and_intersection(ego_vehicle)
+
+        self._info_text += [f"Nearest Spawnpoint: {nearest_spawn_point_index}"]
+        self._info_text += [f"Nearest Intersection: {nearest_intersection_index}"]
         self._info_text += [""]
 
         if isinstance(c, carla.VehicleControl):
@@ -219,3 +237,36 @@ class HUD(object):
                 v_offset += 18
         self._notifications.render(display)
         self.help.render(display)
+
+    @staticmethod
+    def initialize_spawn_points_and_junctions(world):
+        global spawn_points, intersections, intersection_waypoints
+        waypoints = world.world.get_map().generate_waypoints(WAYPOINT_SEPARATION)
+        spawn_points = world.world.get_map().get_spawn_points()
+
+        intersection_waypoints = dict()
+        intersections = []
+
+        # Filter the waypoints down to only junction waypoints
+        intersection_id_set = set()
+        waypoints = filter(lambda x: x.is_junction, waypoints)
+        for waypoint in waypoints:
+            intersection = waypoint.get_junction()
+            if intersection.id not in intersection_id_set:
+                intersection_id_set.add(intersection.id)
+                intersections.append(intersection)
+
+    @staticmethod
+    def calculate_nearest_spawn_point_and_intersection(ego_vehicle: Vehicle) -> Tuple[int, int]:
+        ego_position: np.array = ego_vehicle.get_location_vector()
+
+        # Find the nearest spawnpoint
+        spawn_point_locations = [to_numpy_vector(x.location) for x in spawn_points]
+        nearest_spawn_point_index = np.argmin([np.linalg.norm(ego_position - x) for x in spawn_point_locations])
+
+        # Find the nearest intersection
+        junction_locations = [to_numpy_vector(x.bounding_box.location) for x in intersections]
+        nearest_intersection_index = np.argmin([np.linalg.norm(ego_position - x) for x in junction_locations])
+
+        return nearest_spawn_point_index, intersections[nearest_intersection_index].id
+

@@ -187,8 +187,8 @@ class Experiment:
 
         # Initialize the Pygame display
         display = pygame.display.set_mode(
-            (1280, 720),
-            pygame.HWSURFACE | pygame.DOUBLEBUF)
+            (0, 0),
+            pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
         display.fill((0, 0, 0))
         pygame.display.flip()
 
