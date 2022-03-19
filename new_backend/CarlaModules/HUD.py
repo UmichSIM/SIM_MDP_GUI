@@ -137,9 +137,9 @@ class HUD(object):
             'Height:  % 18.0f m' % t.location.z,
             '']
         self._info_text += ["Position:"]
-        self._info_text += ["   X - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
-        self._info_text += ["   Y - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
-        self._info_text += ["   Z - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
+        self._info_text += ["   X: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
+        self._info_text += ["   Y: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
+        self._info_text += ["   Z: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
         self._info_text += [""]
 
         # Initialize global variables variables
@@ -185,7 +185,7 @@ class HUD(object):
             self._info_text += ['']
             self._info_text += ['Vehicles in Direction:']
             for direction in (WorldDirection.FORWARD, WorldDirection.BACKWARD, WorldDirection.LEFT, WorldDirection.RIGHT):
-                vehicle_present, distance = ego_vehicle._check_vehicle_in_direction(direction, "")
+                vehicle_present, distance = ego_vehicle._check_vehicle_in_direction(direction)
                 if vehicle_present:
                     self._info_text.append(f'{direction.name}: {distance}')
                 else:

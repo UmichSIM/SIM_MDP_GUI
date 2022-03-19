@@ -14,7 +14,7 @@ Referenced By:
 """
 
 # Local Imports
-from ApiHelpers import VehicleType
+from ApiHelpers import VehicleType, ThrottleControlType
 from Controller import Controller
 from Vehicle import Vehicle
 
@@ -41,7 +41,13 @@ class IntersectionController(Controller):
         control = VehicleControl()
 
         # Determine the steering angle needed
-        steering_angle, end_of_path = Controller.follow_path(current_vehicle)
+        steering_angle, end_of_path = Controller.steering_control(current_vehicle)
+
+        # Determine the throttle needed
+        if current_vehicle.type_id == VehicleType.LEAD:
+            throttle = Controller.throttle_control(current_vehicle, ThrottleControlType.TARGET_SPEED)
+        else:
+            throttle = Controller.throttle_control(current_vehicle, ThrottleControlType.TARGET_LOCATION)
 
         # Stop the car if we've reached the end of the path
         if end_of_path:
@@ -49,9 +55,11 @@ class IntersectionController(Controller):
             control.throttle = 0
             control.brake = 1.0
             current_vehicle.carla_vehicle.apply_control(control)
+            return
 
         # Otherwise, apply the steering and constant acceleration
         control.steer = steering_angle
-        control.throttle = 0.5
-        current_vehicle.carla_vehicle.apply_control(control)
+        control.throttle = throttle if throttle > 0 else 0
+        control.brake = abs(throttle) if throttle < 0 else 0
+        current_vehicle.apply_control(control)
 

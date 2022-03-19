@@ -26,11 +26,13 @@ from typing import List
 
 # Enumerated class specifying the different types of Vehicles
 class VehicleType(IntEnum):
-    MANUAL_EGO = 1
-    AUTOMATIC_EGO = 2
-    LEAD = 3
-    FOLLOWER = 4
-    GENERIC = 5
+    EGO_FULL_MANUAL = 1
+    EGO_FULL_AUTOMATIC = 2
+    EGO_MANUAL_STEER_AUTOMATIC_THROTTLE = 3
+    EGO_AUTOMATIC_STEER_MANUAL_THROTTLE = 4
+    LEAD = 5
+    FOLLOWER = 6
+    GENERIC = 7
 
 
 # Enumerated class specifying the different experiment types
@@ -45,6 +47,13 @@ class WorldDirection(IntEnum):
     BACKWARD = 2
     LEFT = 3
     RIGHT = 4
+
+
+# Enumerated class specifying the different throttle control types
+class ThrottleControlType(IntEnum):
+    TARGET_LOCATION = 1
+    TARGET_SPEED = 2
+    TARGET_DISTANCE = 3
 
 
 def config_world(world: carla.World, synchrony: bool = True, delta_seconds: float = 0.02) -> None:

@@ -267,9 +267,10 @@ class Experiment:
 
             # Set the camera to be located at the Ego vehicle
             self.world.tick()
-            print(new_vehicle.get_transform())
             self.spectator.set_transform(new_vehicle.get_transform())
 
         else:
             # TODO: change these hardcoded values
             self.vehicle_list.append(Vehicle(new_vehicle, "temp_id", VehicleType.GENERIC))
+
+

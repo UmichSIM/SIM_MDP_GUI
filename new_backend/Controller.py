@@ -14,17 +14,14 @@ Referenced By:
 """
 
 # Local Imports
-from operator import is_
-import random
-
-from ApiHelpers import ExperimentType
+from ApiHelpers import to_numpy_vector, smooth_path, ThrottleControlType
 from Vehicle import Vehicle
 
 # Library Imports
-from ApiHelpers import to_numpy_vector, smooth_path
 import carla
 import heapq
 import numpy as np
+import random
 from typing import List, Tuple
 
 # Global variable to define how far apart waypoints on the road network should be
@@ -32,6 +29,10 @@ WAYPOINT_SEPARATION = 15
 
 # Global constant that dictates how strongly speed affects the Pure Pursuit lookahead distance
 SPEED_CONSTANT = 0.1
+
+# Global constant that dictates how much additional stopping distance the vehicle gains per kilometer per hour
+STOP_DISTANCE_FACTOR = 0.25
+
 
 class Controller:
 
@@ -46,7 +47,6 @@ class Controller:
         vehicle to steer the vehicle in the correct direction.
 
         :param current_vehicle: the Vehicle object to which updated control needs to be applied
-        :param mode: a string representing whether the Vehicle should target a certain "speed" or a
         :return: None
         """
         pass
@@ -82,7 +82,7 @@ class Controller:
         # Add the initial point to the potential_list
         heapq.heappush(potential_list, (0, (starting_point, -1)))
 
-        # Main Djikstra's loop
+        # Main A* loop
         while True:
 
             # Grab the current waypoint and previous index
@@ -92,26 +92,26 @@ class Controller:
             explored_list.append((current_waypoint, current_previous_index))
 
             # If the search is over, backtrack to build the path
-            if Controller.end_of_search(current_waypoint, ending_point):
-                waypoints = Controller.backtrack_path(explored_list)
+            if Controller._end_of_search(current_waypoint, ending_point):
+                waypoints = Controller._backtrack_path(explored_list)
                 current_vehicle.waypoints = waypoints
                 current_vehicle.trajectory = smooth_path(waypoints)
                 return
 
             # Check all the potential next waypoints and add them to the potential list
             # if they haven't already been explored
-            potential_new_waypoints = Controller.get_next_waypoints(current_waypoint)
+            potential_new_waypoints = Controller._get_next_waypoints(current_waypoint)
             already_explored_waypoint_ids = [x[0].id for x in explored_list]
             for potential_new_waypoint in potential_new_waypoints:
                 if potential_new_waypoint.id not in already_explored_waypoint_ids:
                     distance_to_destination = np.linalg.norm(to_numpy_vector(potential_new_waypoint.transform.location) - destination)
-                    heapq.heappush(potential_list, (distance_to_destination  + random.random(), (potential_new_waypoint, len(explored_list) - 1)))
+                    heapq.heappush(potential_list, (distance_to_destination + random.random(), (potential_new_waypoint, len(explored_list) - 1)))
 
             if len(potential_list) == 0:
                 raise Exception(f"Unable to find path between waypoints {starting_point.id} and {ending_point.id}")
 
     @staticmethod
-    def follow_path(current_vehicle: Vehicle) -> Tuple[float, bool]:
+    def steering_control(current_vehicle: Vehicle) -> Tuple[float, bool]:
         """
         Implements path following using the Pure Pursuit Path Tracking algorithm.
 
@@ -173,7 +173,43 @@ class Controller:
         return steering_angle, False
 
     @staticmethod
-    def obey_traffic_light(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
+    def throttle_control(current_vehicle: Vehicle, control_type: ThrottleControlType) -> float:
+        """
+        Applies throttle control to the vehicle based on its current setting.
+
+        The different modes that a vehicle can operated in are a "target_location", "target_speed", or
+        "target_distance". In target_location mode, the vehicle will accelerate maintain its target speed
+        until it is within a certain distance of its target location. Then, it will brake to smoothly
+        stop at that location. In target_speed mode, the vehicle will accelerate up to its target speed
+        and then apply the acceleration necessary to maintain that speed. In target_distance mode,
+        the vehicle will accelerate or decelerate as necessary to maintain a target distance from
+        the vehicle in-front of it. If there is no vehicle in front of it, then the vehicle
+        will simply follow its target speed.
+
+        :param current_vehicle: the Vehicle object to calculate the throttle for
+        :param control_type: a ThrottleControLType representing the type of throttle control to apply to the vehicle
+        :return: a float representing the throttle to be applied to the vehicle (between -1 and 1)
+        """
+
+        # Apply the target location control if necessary
+        if control_type == ThrottleControlType.TARGET_LOCATION:
+            if current_vehicle.target_location is not None:
+                current_distance = np.sum(to_numpy_vector(current_vehicle.target_location) - current_vehicle.get_location_vector())
+                if current_distance <= current_vehicle.breaking_distance:
+                    return Controller._throttle_target_location(current_vehicle)
+
+        # Apply the target distance control if necessary
+        car_in_front, current_distance = current_vehicle.check_vehicle_in_front()
+        if car_in_front:
+            return Controller._throttle_target_distance(current_vehicle, current_distance)
+
+        # Lastly, apply target speed control
+        return Controller._throttle_target_speed(current_vehicle)
+
+
+
+    @staticmethod
+    def _obey_traffic_light(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to obey a traffic light.
 
@@ -205,7 +241,7 @@ class Controller:
         return Tuple[is_changed, control]
 
     @staticmethod
-    def avoid_collisions(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
+    def _avoid_collisions(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to avoid a collision.
 
@@ -221,7 +257,7 @@ class Controller:
         pass
 
     @staticmethod
-    def obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
+    def _obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to obey its safety distance.
 
@@ -237,7 +273,7 @@ class Controller:
         pass
 
     @staticmethod
-    def end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
+    def _end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
         """
         Determines if the Djikstra search has successfully arrived at it's destination point.
 
@@ -257,7 +293,7 @@ class Controller:
         return False
 
     @staticmethod
-    def backtrack_path(explored_list: List[Tuple[carla.Waypoint, int]]) -> List[carla.Transform]:
+    def _backtrack_path(explored_list: List[Tuple[carla.Waypoint, int]]) -> List[carla.Transform]:
         """
         Backtracks the explored path to build the shortest path from the initial point to the final destination.
 
@@ -278,7 +314,7 @@ class Controller:
         return path[::-1]
 
     @staticmethod
-    def get_next_waypoints(current_waypoint: carla.Waypoint) -> List[carla.Waypoint]:
+    def _get_next_waypoints(current_waypoint: carla.Waypoint) -> List[carla.Waypoint]:
         """
         Gets a list of all the possible next waypoints from the current waypoint
 
@@ -293,7 +329,63 @@ class Controller:
         if current_waypoint.is_junction:
             junction_points = current_waypoint.get_junction().get_waypoints(carla.LaneType.Any)
             for pair in junction_points:
-                for point in pair:
-                    new_potential_waypoints.append(point)
+                if pair[0].id == current_waypoint.id:
+                    new_potential_waypoints.append(pair[1])
+                elif pair[1].id == current_waypoint.id:
+                    new_potential_waypoints.append(pair[0])
 
         return new_potential_waypoints
+
+    @staticmethod
+    def _throttle_target_location(current_vehicle: Vehicle) -> float:
+        """
+        Determines what throttle the Vehicle needs to stop at its target location.
+
+        Uses the current speed of the vehicle and the distance to the target location to determine
+        how much breaking needs to be applied to stop the vehicle. If the car is moving too slowly
+        and breaking is not necessary, light throttle will be applied.
+
+        :param current_vehicle: the Vehicle to calculate the throttle for
+        :return: the throttle value to apply to the vehicle (between -1 and 1)
+        """
+
+        # Calculate the distance to the target location
+        distance_to_location = np.sum(to_numpy_vector(current_vehicle.target_location, dims=2) - current_vehicle.get_current_position())
+
+        # Calculate the vehicle's stopping distance
+        stopping_distance = current_vehicle.get_current_speed() * STOP_DISTANCE_FACTOR
+
+        # Pass the difference between the distance to the location and the current stopping distance to the PID controller
+        throttle = current_vehicle.location_pid_controller(distance_to_location - stopping_distance)
+        return max(min(throttle, 1), -1)
+
+    @staticmethod
+    def _throttle_target_distance(current_vehicle: Vehicle, current_distance: float) -> float:
+        """
+        Determines what throttle the Vehicle needs to remain a target_distance away from the Vehicle in front.
+
+        The Vehicle will accelerate until it is within the target distance of the Vehicle in front of it.
+        Then, the Vehicle will alternate accelerating and breaking to maintain a constant distance from
+        the vehicle in front.
+
+        :param current_vehicle: the Vehicle to calculate the throttle for
+        :param current_distance: the current distance between the Vehicle and the Vehicle in front
+        :return: the throttle value to apply to the vehicle (between -1 and 1)
+        """
+        # Subtract by the Vehicle size to account for the bumper to bumper distance
+        throttle = current_vehicle.distance_pid_controller(current_vehicle.target_distance - current_distance - current_vehicle.get_vehicle_size().y)
+        return max(min(throttle, 1), -1)
+
+    @staticmethod
+    def _throttle_target_speed(current_vehicle: Vehicle) -> float:
+        """
+        Determines what throttle the Vehicle needs to maintain a constant speed.
+
+        The Vehicle will accelerate or decelerate as needed to maintain the constant target_speed
+
+        :param current_vehicle: the Vehicle to calculate the throttle for
+        :return: the throttle value to apply to the Vehicle (between -1 and 1)
+        """
+
+        throttle = current_vehicle.speed_pid_controller(current_vehicle.target_speed - current_vehicle.get_current_speed())
+        return max(min(throttle, 1), -1)

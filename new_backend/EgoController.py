@@ -13,13 +13,14 @@ Referenced By:
 """
 
 # Local Imports
-from ApiHelpers import ExperimentType
+from ApiHelpers import ExperimentType, ThrottleControlType
 from Controller import Controller
 from FreewayController import FreewayController
 from IntersectionController import IntersectionController
 from Vehicle import Vehicle, VehicleType
 
 # Library Imports
+import carla
 from typing import Callable
 
 
@@ -39,14 +40,11 @@ class EgoController(Controller):
         :param manual_control_callback: a Callable object that should be called if manual control is needed
                by the Vehicle
         :param experiment_type: the current experiment type as a string, either "freeway" or "intersection"
-        :param mode: a string representing whether the Vehicle should target a certain "speed" or a
-                     certain "distance" behind the vehicle it is following
-        :param avoid_collisions: whether the Vehicle should actively avoid collisions with nearby vehicles
         :return: None
         """
 
         # If the Ego vehicle is not manually driven, apply automatic control
-        if current_vehicle.type_id != VehicleType.MANUAL_EGO:
+        if current_vehicle.type_id == VehicleType.EGO_FULL_AUTOMATIC:
             if experiment_type == ExperimentType.FREEWAY:
                 FreewayController.update_control(current_vehicle)
             elif experiment_type == ExperimentType.INTERSECTION:
@@ -55,5 +53,22 @@ class EgoController(Controller):
                 raise Exception("Invalid experiment type passed to update_control")
             return
 
-        # Otherwise apply manual control
-        manual_control_callback()
+        # Get the control that the manual input would predict
+        manual_control: carla.VehicleControl = manual_control_callback()
+
+        # Override the steering if necessary
+        if current_vehicle.type_id == VehicleType.EGO_AUTOMATIC_STEER_MANUAL_THROTTLE:
+            steering_angle = Controller.steering_control(Vehicle)
+            manual_control.steer = steering_angle
+
+        # Override the throttle if necessary
+        if current_vehicle.type_id == VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE:
+            throttle = Controller.throttle_control(current_vehicle, ThrottleControlType.TARGET_DISTANCE)
+
+            # Apply the throttle for a positive throttle, and the brake for a negative throttle
+            if throttle > 0:
+                manual_control.throttle = throttle
+            else:
+                manual_control.brake = abs(throttle)
+
+        current_vehicle.apply_control(manual_control)
