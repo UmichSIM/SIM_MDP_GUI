@@ -3,15 +3,15 @@ Carla Modules - HUD Class
 Created on March 9th, 2022
 
 Summary: Implements a dynamic heads up display that can be displayed over a PyGame window
-that is running the Carla simulator. Adapted from the HUD provided in manual_control.py in the
-Carla API.
+that is running the Carla simulator. This class originates from
+the manual_control.py example script in the CARLA Python API
 
 """
 
 # Local Imports
 from CarlaModules.GlobalFunctions import get_actor_display_name
 from CarlaModules.World import World
-from ApiHelpers import WorldDirection, to_numpy_vector
+from Helpers import WorldDirection, to_numpy_vector
 from Controller import WAYPOINT_SEPARATION
 from Vehicle import Vehicle
 

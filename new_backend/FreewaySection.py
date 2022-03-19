@@ -8,12 +8,17 @@ Summary: The FreewaySection class represents a single road section in the Freewa
     enter and exit the section.
 
 References:
+    Section
 
 Referenced By:
 
 """
 
+# Local Imports
 import Section
+
+# Library Imports
+
 
 class FreewaySection(Section):
 

@@ -7,28 +7,24 @@ Summary: The Vehicle class represents a single vehicle in the CARLA simulation e
     vehicle's motion through a Controller class.
 
 References:
-    Carla Python API
+    Helpers
 
 Referenced By:
+    Controller
+    EgoController
+    Experiment
 
 """
 
 # Local Imports
-import collections
-
-from ApiHelpers import WorldDirection, ExperimentType, VehicleType, to_numpy_vector, rotate_vector
+from Helpers import WorldDirection, VehicleType, to_numpy_vector, rotate_vector, ORANGE, RED
 
 # Library Imports
 import carla
-from collections import deque
 import math
 import numpy as np
 from simple_pid import PID
 from typing import List, Tuple
-
-GREEN = carla.Color(0, 255, 0)
-ORANGE = carla.Color(252, 177, 3)
-RED = carla.Color(255, 0, 0)
 
 
 class Vehicle:
@@ -187,9 +183,9 @@ class Vehicle:
 
         # Required distance between two vehicles to be "safe"
         if direction in [WorldDirection.FORWARD, WorldDirection.BACKWARD]:
-            required_distance = 3 * self.target_distance + self.carla_vehicle.bounding_box.extent.x / 2
+            required_distance = 1.2 * self.target_distance + self.carla_vehicle.bounding_box.extent.x / 2
         else:
-            required_distance = 3 * self.target_distance + self.carla_vehicle.bounding_box.extent.y / 2
+            required_distance = 1.2 * self.target_distance + self.carla_vehicle.bounding_box.extent.y / 2
 
         current_location: np.array = self.get_location_vector()
 
@@ -284,10 +280,12 @@ class Vehicle:
         """
         Getter for the current location of the Vehicle as a numpy.array with length three
 
-        :param dims: number of dimensions that the output vector will have
+        :param dims: number of dimensions that the output vector will have (either 2 or 3)
         :return: the current location of the vector as a numpy.array
         """
         location = self.carla_vehicle.get_location()
         if dims == 3:
             return np.array([location.x, location.y, location.z])
-        return np.array([location.x, location.y])
+        if dims == 2:
+            return np.array([location.x, location.y])
+        raise Exception("Invalid number of dimensions passed to get_location_vector")

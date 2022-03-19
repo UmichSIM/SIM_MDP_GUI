@@ -4,7 +4,8 @@ Created on March 9th, 2022
 
 Summary: Implements a Camera Manager that allows the Carla simulation to be controlled manually
 through a PyGame window. Enables the Camera to follow the Ego Vehicle by passing in the carla.Actor
-that corresponds to the Ego vehicle
+that corresponds to the Ego vehicle. This class originates from the manual_control.py example script in the
+CARLA Python API
 
 """
 

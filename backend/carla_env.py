@@ -32,7 +32,7 @@ yellow = carla.Color(255, 255, 0)
 orange = carla.Color(255, 162, 0)
 white = carla.Color(255, 255, 255)
 
-# API Helper - relocated on 2/16/2022 to ApiHelpers.py
+# API Helper - relocated on 2/16/2022 to Helpers.py
 def config_world(world, synchrony = True, delta_seconds = 0.02):
         '''
         Effects

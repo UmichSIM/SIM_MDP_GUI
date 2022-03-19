@@ -7,15 +7,21 @@ Summary: The EgoController class inherits from the base Controller class. It imp
     and manually.
 
 References:
+    Controller
+    FreewayController
+    Helpers
+    IntersectionController
+    Vehicle
 
 Referenced By:
+    Experiment
 
 """
 
 # Local Imports
-from ApiHelpers import ExperimentType, ThrottleControlType
 from Controller import Controller
 from FreewayController import FreewayController
+from Helpers import ExperimentType
 from IntersectionController import IntersectionController
 from Vehicle import Vehicle, VehicleType
 
@@ -24,10 +30,11 @@ import carla
 from typing import Callable
 
 
-class EgoController(Controller):
+class EgoController:
 
     @staticmethod
-    def update_control(current_vehicle: Vehicle, manual_control_callback: Callable, experiment_type: ExperimentType) -> None:
+    def update_control(current_vehicle: Vehicle, manual_control_callback: Callable,
+                       experiment_type: ExperimentType) -> None:
         """
         Implementation of the update_control class for the Ego Vehicle type
 
@@ -63,7 +70,7 @@ class EgoController(Controller):
 
         # Override the throttle if necessary
         if current_vehicle.type_id == VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE:
-            throttle = Controller.throttle_control(current_vehicle, ThrottleControlType.TARGET_DISTANCE)
+            throttle = Controller.throttle_control(current_vehicle)
 
             # Apply the throttle for a positive throttle, and the brake for a negative throttle
             if throttle > 0:

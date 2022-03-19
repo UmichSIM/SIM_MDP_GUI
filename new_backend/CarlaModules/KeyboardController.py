@@ -1,3 +1,12 @@
+"""
+Carla Modules - KeyboardController class
+Created on March 9th, 2022
+
+Summary: Implements a Keyboard Controller that allows the user to manually control the EgoVehicle in the
+Carla simulation. This class originates from the manual_control.py example script provided in the
+Carla Python API.
+
+"""
 
 import carla
 

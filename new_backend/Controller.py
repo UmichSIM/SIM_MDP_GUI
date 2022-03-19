@@ -2,19 +2,24 @@
 Backend - Controller Class
 Created on Tue February 15, 2022
 
-Summary: The Controller class is a base class that implements control over the vehicles in the
-    Simulation. Specific constants of the Controller can be specified in the constructor. This class
-    provides the basic interface that all Controller classes MUST follow. Ego, Intersection, and
-    Freeway controllers are derived from this base class
+Summary: The Controller class is a static base class that implements control over the vehicles in the
+    Simulation. This class provides the basic interface and functions that all Controller classes can use.
+    Ego, Intersection, and Freeway controllers are derived from this base class
 
 References:
+    Helpers
+    Vehicle
 
 Referenced By:
+    EgoController
+    FreewayController
+    IntersectionController
+    TestExperiment
 
 """
 
 # Local Imports
-from ApiHelpers import to_numpy_vector, smooth_path, ThrottleControlType
+from Helpers import to_numpy_vector, smooth_path, VehicleType
 from Vehicle import Vehicle
 
 # Library Imports
@@ -104,9 +109,13 @@ class Controller:
             already_explored_waypoint_ids = [x[0].id for x in explored_list]
             for potential_new_waypoint in potential_new_waypoints:
                 if potential_new_waypoint.id not in already_explored_waypoint_ids:
-                    distance_to_destination = np.linalg.norm(to_numpy_vector(potential_new_waypoint.transform.location) - destination)
-                    heapq.heappush(potential_list, (distance_to_destination + random.random(), (potential_new_waypoint, len(explored_list) - 1)))
+                    distance_to_destination = np.linalg.norm(to_numpy_vector(potential_new_waypoint.transform.location)
+                                                             - destination)
+                    heapq.heappush(potential_list,
+                                   (distance_to_destination + random.random(),
+                                    (potential_new_waypoint, len(explored_list) - 1)))
 
+            # Handle the case of no path between the starting and ending waypoint
             if len(potential_list) == 0:
                 raise Exception(f"Unable to find path between waypoints {starting_point.id} and {ending_point.id}")
 
@@ -115,7 +124,8 @@ class Controller:
         """
         Implements path following using the Pure Pursuit Path Tracking algorithm.
 
-        Link to a paper on the subject can be found here: https://www.ri.cmu.edu/publications/implementation-of-the-pure-pursuit-path-tracking-algorithm/
+        Link to a paper on the subject can be found here:
+        https://www.ri.cmu.edu/publications/implementation-of-the-pure-pursuit-path-tracking-algorithm/
         Determines what steering angle the vehicle needs to remain on the path outlined by its waypoints.
         Chooses a lookahead distance based on the vehicle's current speed and identifies the waypoint
         that is closest to that lookahead distance. Then, calculates the curve that connects the Vehicle's
@@ -136,9 +146,10 @@ class Controller:
 
         # Find the closest waypoint to the vehicles current location
         trajectory: List[carla.Transform] = current_vehicle.trajectory
-        trajectory_point_distances: List[np.array] = [np.linalg.norm(to_numpy_vector(x.location, dims=2) - current_location) for
-                                              x in trajectory]
-        nearest_trajectory_point_index: int = np.argmin(trajectory_point_distances)
+        trajectory_point_distances: List[np.array] = [
+            np.linalg.norm(to_numpy_vector(x.location, dims=2) - current_location)
+            for x in trajectory]
+        nearest_trajectory_point_index = np.argmin(trajectory_point_distances)
 
         # Determine what our lookahead distance should be
         current_forward_speed = np.linalg.norm(to_numpy_vector(current_vehicle.carla_vehicle.get_velocity()))
@@ -164,7 +175,8 @@ class Controller:
         # car and goal waypoint
         distance_vector = to_numpy_vector(goal_trajectory_point.location, dims=2) - current_location
         unit_distance_vector = distance_vector / np.linalg.norm(distance_vector)
-        theta = np.arctan2(unit_distance_vector[1], unit_distance_vector[0]) - np.arctan2(unit_forward_facing_vector[1], unit_forward_facing_vector[0])
+        theta = np.arctan2(unit_distance_vector[1], unit_distance_vector[0]) - \
+            np.arctan2(unit_forward_facing_vector[1], unit_forward_facing_vector[0])
 
         # Lastly, get the length of the vehicle and calculate the steering angle
         vehicle_length = current_vehicle.carla_vehicle.bounding_box.extent.y * 2
@@ -173,40 +185,45 @@ class Controller:
         return steering_angle, False
 
     @staticmethod
-    def throttle_control(current_vehicle: Vehicle, control_type: ThrottleControlType) -> float:
+    def throttle_control(current_vehicle: Vehicle) -> float:
         """
         Applies throttle control to the vehicle based on its current setting.
 
-        The different modes that a vehicle can operated in are a "target_location", "target_speed", or
-        "target_distance". In target_location mode, the vehicle will accelerate maintain its target speed
+        The different modes that a vehicle can operate in are a "target_location", "target_speed", or
+        "target_distance".
+
+        In target_location mode, the vehicle will accelerate maintain its target speed
         until it is within a certain distance of its target location. Then, it will brake to smoothly
-        stop at that location. In target_speed mode, the vehicle will accelerate up to its target speed
-        and then apply the acceleration necessary to maintain that speed. In target_distance mode,
-        the vehicle will accelerate or decelerate as necessary to maintain a target distance from
-        the vehicle in-front of it. If there is no vehicle in front of it, then the vehicle
-        will simply follow its target speed.
+        stop at that location. This mode is activated if the current_vehicle has a valid target location
+        and the vehicle is within its pre-defined breaking distance.
+
+        In target_distance mode, the vehicle will accelerate or decelerate as necessary to maintain a
+        target distance from the vehicle in-front of it. This mode is activated if there is a vehicle in front
+        of the current vehicle within 1.2 times the current vehicle's safety distance. This mode can never be
+        activated for a lead vehicle.
+
+        In target_speed mode, the vehicle will accelerate up to its target speed and then apply the acceleration
+        necessary to maintain that speed. This mode will be activated if neither of the other modes apply.
 
         :param current_vehicle: the Vehicle object to calculate the throttle for
-        :param control_type: a ThrottleControLType representing the type of throttle control to apply to the vehicle
         :return: a float representing the throttle to be applied to the vehicle (between -1 and 1)
         """
 
         # Apply the target location control if necessary
-        if control_type == ThrottleControlType.TARGET_LOCATION:
-            if current_vehicle.target_location is not None:
-                current_distance = np.sum(to_numpy_vector(current_vehicle.target_location) - current_vehicle.get_location_vector())
-                if current_distance <= current_vehicle.breaking_distance:
-                    return Controller._throttle_target_location(current_vehicle)
+        if current_vehicle.target_location is not None:
+            current_distance = np.sum(to_numpy_vector(current_vehicle.target_location) -
+                                      current_vehicle.get_location_vector())
+            if current_distance <= current_vehicle.breaking_distance:
+                return Controller._throttle_target_location(current_vehicle)
 
         # Apply the target distance control if necessary
-        car_in_front, current_distance = current_vehicle.check_vehicle_in_front()
-        if car_in_front:
-            return Controller._throttle_target_distance(current_vehicle, current_distance)
+        if current_vehicle.type_id != VehicleType.LEAD:
+            car_in_front, current_distance = current_vehicle.check_vehicle_in_front()
+            if car_in_front:
+                return Controller._throttle_target_distance(current_vehicle, current_distance)
 
         # Lastly, apply target speed control
         return Controller._throttle_target_speed(current_vehicle)
-
-
 
     @staticmethod
     def _obey_traffic_light(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
@@ -223,22 +240,22 @@ class Controller:
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
 
-        is_changed = True
-        control = self.VehicleControl
-        curr_car_speed = get_vehicle_speed(current_vehicle)
-
-        traffic_light_state = carla.get_traffic_light_state(current_vehicle)
-        
-        # if the traffic light is red and the vehicle is moving, stop
-        if (traffic_light_state == 'Red' or traffic_light_state == 'Yellow') and curr_car_speed > 0.0:
-            control = carla.VehicleControl(throttle = 0.0,steer=steer,brake = 1.0) # stop car
-        # if the traffic light is green or yellow and the vehicle is not moving, start moving
-        elif traffic_light_state == 'Green' and curr_car_speed == 0.0:
-            control = carla.VehicleControl(throttle = 1.0,steer=steer,brake = 0.0) # start car
-        else:
-            is_changed = False
-
-        return Tuple[is_changed, control]
+        # is_changed = True
+        # control = self.VehicleControl
+        # curr_car_speed = get_vehicle_speed(current_vehicle)
+        #
+        # traffic_light_state = carla.get_traffic_light_state(current_vehicle)
+        #
+        # # if the traffic light is red and the vehicle is moving, stop
+        # if (traffic_light_state == 'Red' or traffic_light_state == 'Yellow') and curr_car_speed > 0.0:
+        #     control = carla.VehicleControl(throttle = 0.0,steer=steer,brake = 1.0) # stop car
+        # # if the traffic light is green or yellow and the vehicle is not moving, start moving
+        # elif traffic_light_state == 'Green' and curr_car_speed == 0.0:
+        #     control = carla.VehicleControl(throttle = 1.0,steer=steer,brake = 0.0) # start car
+        # else:
+        #     is_changed = False
+        #
+        # return Tuple[is_changed, control]
 
     @staticmethod
     def _avoid_collisions(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
@@ -257,25 +274,9 @@ class Controller:
         pass
 
     @staticmethod
-    def _obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
-        """
-        Determines if the Vehicle needs to change its control to obey its safety distance.
-
-        Checks if the Vehicle is following too closely behind the Vehicle directly in front
-        of it, and provides a new carla.VehicleControl object that will allow the Vehicle to
-        move back to the safety distance. Designed to be called within update_control.
-
-        :param current_vehicle: the Vehicle object that will be checked for safety distance
-        :return: a tuple of (bool, carla.VehicleControl). The first element will be True if the Vehicle
-                 needs adjust to meet its safety distance. If True, the second element will contain a
-                 new carla.VehicleControl that should be applied to the Vehicle.
-        """
-        pass
-
-    @staticmethod
     def _end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
         """
-        Determines if the Djikstra search has successfully arrived at it's destination point.
+        Determines if the A* search has successfully arrived at its destination point.
 
         To finish the search, the current waypoint must be less than half of WAYPOINT_SEPARATION
         away from the ending waypoint
@@ -350,12 +351,14 @@ class Controller:
         """
 
         # Calculate the distance to the target location
-        distance_to_location = np.sum(to_numpy_vector(current_vehicle.target_location, dims=2) - current_vehicle.get_current_position())
+        distance_to_location = np.sum(to_numpy_vector(current_vehicle.target_location, dims=2) -
+                                      current_vehicle.get_current_position())
 
         # Calculate the vehicle's stopping distance
         stopping_distance = current_vehicle.get_current_speed() * STOP_DISTANCE_FACTOR
 
-        # Pass the difference between the distance to the location and the current stopping distance to the PID controller
+        # Pass the difference between the distance to the location
+        # and the current stopping distance to the PID controller
         throttle = current_vehicle.location_pid_controller(distance_to_location - stopping_distance)
         return max(min(throttle, 1), -1)
 
@@ -373,7 +376,8 @@ class Controller:
         :return: the throttle value to apply to the vehicle (between -1 and 1)
         """
         # Subtract by the Vehicle size to account for the bumper to bumper distance
-        throttle = current_vehicle.distance_pid_controller(current_vehicle.target_distance - current_distance - current_vehicle.get_vehicle_size().y)
+        throttle = current_vehicle.distance_pid_controller(current_vehicle.target_distance - current_distance -
+                                                           current_vehicle.get_vehicle_size().y)
         return max(min(throttle, 1), -1)
 
     @staticmethod
@@ -387,5 +391,6 @@ class Controller:
         :return: the throttle value to apply to the Vehicle (between -1 and 1)
         """
 
-        throttle = current_vehicle.speed_pid_controller(current_vehicle.target_speed - current_vehicle.get_current_speed())
+        throttle = current_vehicle.speed_pid_controller(current_vehicle.target_speed -
+                                                        current_vehicle.get_current_speed())
         return max(min(throttle, 1), -1)

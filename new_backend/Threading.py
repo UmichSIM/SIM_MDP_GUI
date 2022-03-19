@@ -10,14 +10,17 @@ Summary: The Threading classes provide a high level interface for running functi
          This signal can be sent multiple times.
 
 References:
+    None
 
 Referenced By:
+    Experiment
+    MapExplorationExperiment
+    TestExperiment
 
 """
 
 # Library Imports
 import logging
-
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
 from typing import Callable
@@ -37,7 +40,6 @@ class ThreadWorker(QObject):
 
         # Store the args that need to be passed to the called function
         self.args = args
-
 
     def call_when_finished(self, function: Callable) -> None:
         """
@@ -77,6 +79,7 @@ class ThreadWorker(QObject):
             logging.error(e)
             self.finished.emit(False)
 
+
 class SIMThread:
 
     def __init__(self, thread_worker: ThreadWorker, mode: str = "single") -> None:
@@ -115,7 +118,7 @@ class SIMThread:
             return
         self.thread.started.emit()
 
-    def destory_thread(self) -> None:
+    def destroy_thread(self) -> None:
         """
         Function to clean up after a SIMThread is done being used.
 

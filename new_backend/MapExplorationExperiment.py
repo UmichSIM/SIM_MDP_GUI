@@ -6,33 +6,31 @@ Summary: The MapExplorationExperiment class is a class that derives from the bas
          provides a sandbox for exploring new maps and getting oriented with the map's layout and positions.
 
 Usage: This file can be invoked as a regular python script to test out the experiment in the Carla
-       environment. It can be invoked using "python MapExlorationExperiment.py"
+       environment. It can be invoked using "python MapExplorationExperiment.py"
 
 References:
+    Controller
+    Experiment
+    Helpers
+    Threading
 
 Referenced By:
+    None
 
 """
 
 # Local Imports
-import random
-
-from ApiHelpers import ExperimentType, VehicleType
-from Controller import Controller, WAYPOINT_SEPARATION
+from Controller import WAYPOINT_SEPARATION
 from Experiment import Experiment
+from Helpers import ExperimentType, VehicleType, GREEN, YELLOW
 from Threading import HeadlessWindow
 
 # Library Imports
 import carla
 from PyQt5.QtWidgets import QApplication
-from random import choice
+import random
 import sys
 from typing import Dict, List
-
-
-# Global colors
-GREEN = carla.Color(0, 255, 0)
-YELLOW = carla.Color(255, 255, 0)
 
 
 class MapExplorationExperiment(Experiment):
@@ -41,20 +39,22 @@ class MapExplorationExperiment(Experiment):
         super(MapExplorationExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.INTERSECTION
 
-    def initialize_experiment(self, configuration: Dict[str, str] = None) -> bool:
+    def initialize_experiment(self, configuration: Dict[str, str] = None) -> None:
         """
         Uses an existing connection to the Carla server and configures the world according to the experiment design.
 
-        Adds a single vehicle to the map for testing purposes
+        Adds a Manual Ego vehicle to the map for map exploration. Adds four other stationary vehicles around the map
+        for testing purposes.
 
         :param configuration: a Dictionary containing the user defined settings for the experiment (exact properties
                               vary from experiment to experiment)
-        :return: a bool indicating if the experiment was configured correctly
+        :return: None
         """
 
         # Initialize the waypoints
         sim_map: carla.Map = self.world.get_map()
-        waypoints: List[carla.Waypoint] = filter(lambda x: x.lane_type == carla.LaneType.Driving, sim_map.generate_waypoints(WAYPOINT_SEPARATION))
+        waypoints: List[carla.Waypoint] = sim_map.generate_waypoints(WAYPOINT_SEPARATION)
+        waypoints = list(filter(lambda x: x.lane_type == carla.LaneType.Driving, waypoints))
 
         # Visualize each of the maps spawn points
         all_spawn_points: List[carla.Transform] = self.world.get_map().get_spawn_points()
@@ -68,18 +68,12 @@ class MapExplorationExperiment(Experiment):
 
         # Add a new test vehicle to the map
         spawn_location = self.world.get_map().get_spawn_points()[2]
-        blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
-        new_vehicle = self.world.spawn_actor(blueprint, spawn_location)
-
-        self.add_vehicle(new_vehicle, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
+        self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
 
         # Add four other vehicles around the map
         for _ in range(4):
             spawn_location = random.choice(self.world.get_map().get_spawn_points())
-            blueprint = random.choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
-            new_vehicle = self.world.try_spawn_actor(blueprint, spawn_location)
-
-            self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
+            self.add_vehicle(spawn_location, ego=False, type_id=VehicleType.GENERIC)
 
 
 def main() -> None:

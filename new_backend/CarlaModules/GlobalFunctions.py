@@ -1,8 +1,17 @@
+"""
+Carla Modules - GlobalFunctions file
+Created on March 9th, 2022
+
+Summary: Implements a set of functions that many of the CarlaModules use. These functions originate from
+the manual_control.py example script in the CARLA Python API
+
+"""
+
 import carla
 import re
 
 
-class DefaultSettings():
+class DefaultSettings:
 
     gamma = 2.2
     autopilot = False
