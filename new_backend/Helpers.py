@@ -18,8 +18,6 @@ Referenced By:
 
 """
 
-# Hello there
-
 # Library Imports
 import carla
 from datetime import datetime
