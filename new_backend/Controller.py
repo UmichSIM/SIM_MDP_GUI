@@ -217,7 +217,18 @@ class Controller:
                  needs adjust to meet its safety distance. If True, the second element will contain a
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
-        pass
+        """
+        1) detect the vehicles in front of current_vehicle, check the distance in current_vehicle.other_vehicle_locations[0]
+        2) if distance < current_vehicle.safety_distance
+            - control = carla.VehicleControl(brake = x) # should x be proportion to distance?
+        """
+        hasVehicle, vehicleDistance = current_vehicle.check_vehicle_in_front(ExperimentType.INTERSECTION) # don't really sure why we need experiment type
+        control = carla.VehicleControl()
+        if hasVehicle and vehicleDistance < current_vehicle.safety_distance:
+            control.brake = 0.1 # this should be proportion to current speed and sita
+            return True, control
+        return False, control
+
 
     @staticmethod
     def end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
