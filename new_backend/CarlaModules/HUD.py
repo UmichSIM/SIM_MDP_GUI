@@ -3,17 +3,17 @@ Carla Modules - HUD Class
 Created on March 9th, 2022
 
 Summary: Implements a dynamic heads up display that can be displayed over a PyGame window
-that is running the Carla simulator. Adapted from the HUD provided in manual_control.py in the
-Carla API.
+that is running the Carla simulator. This class originates from
+the manual_control.py example script in the CARLA Python API
 
 """
 
 # Local Imports
 from CarlaModules.GlobalFunctions import get_actor_display_name
 from CarlaModules.World import World
-from new_backend.ApiHelpers import WorldDirection, to_numpy_vector
-from new_backend.Controller import WAYPOINT_SEPARATION
-from new_backend.Vehicle import Vehicle
+from Helpers import WorldDirection, to_numpy_vector
+from Controller import WAYPOINT_SEPARATION
+from Vehicle import Vehicle
 
 # Library Imports
 import numpy as np
@@ -137,9 +137,9 @@ class HUD(object):
             'Height:  % 18.0f m' % t.location.z,
             '']
         self._info_text += ["Position:"]
-        self._info_text += ["   X - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
-        self._info_text += ["   Y - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
-        self._info_text += ["   Z - {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
+        self._info_text += ["   X: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.x)]
+        self._info_text += ["   Y: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
+        self._info_text += ["   Z: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
         self._info_text += [""]
 
         # Initialize global variables variables
@@ -185,7 +185,7 @@ class HUD(object):
             self._info_text += ['']
             self._info_text += ['Vehicles in Direction:']
             for direction in (WorldDirection.FORWARD, WorldDirection.BACKWARD, WorldDirection.LEFT, WorldDirection.RIGHT):
-                vehicle_present, distance = ego_vehicle._check_vehicle_in_direction(direction, "")
+                vehicle_present, distance = ego_vehicle._check_vehicle_in_direction(direction)
                 if vehicle_present:
                     self._info_text.append(f'{direction.name}: {distance}')
                 else:

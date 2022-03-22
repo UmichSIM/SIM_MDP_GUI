@@ -1,3 +1,11 @@
+"""
+Carla Modules - Sensors class
+Created on March 9th, 2022
+
+Summary: Implements a variety of sensor classes that are used by the other CarlaModule classes.
+These classes originate from the manual_control.py example script provided with the Carla Python API.
+
+"""
 
 # Local Imports
 from CarlaModules.GlobalFunctions import get_actor_display_name

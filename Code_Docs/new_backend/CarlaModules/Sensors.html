@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>new_backend.CarlaModules.Sensors API documentation</title>
+<meta name="description" content="Carla Modules - Sensors class
+Created on March 9th, 2022 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>new_backend.CarlaModules.Sensors</code></h1>
+</header>
+<section id="section-intro">
+<p>Carla Modules - Sensors class
+Created on March 9th, 2022</p>
+<p>Summary: Implements a variety of sensor classes that are used by the other CarlaModule classes.
+These classes originate from the manual_control.py example script provided with the Carla Python API.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+Carla Modules - Sensors class
+Created on March 9th, 2022
+
+Summary: Implements a variety of sensor classes that are used by the other CarlaModule classes.
+These classes originate from the manual_control.py example script provided with the Carla Python API.
+
+&#34;&#34;&#34;
+
+# Local Imports
+from CarlaModules.GlobalFunctions import get_actor_display_name
+
+# Library Imports
+import carla
+import collections
+import math
+import weakref
+
+# ==============================================================================
+# -- CollisionSensor -----------------------------------------------------------
+# ==============================================================================
+
+
+class CollisionSensor(object):
+    def __init__(self, parent_actor, hud):
+        self.sensor = None
+        self.history = []
+        self._parent = parent_actor
+        self.hud = hud
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.collision&#39;)
+        self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(lambda event: CollisionSensor._on_collision(weak_self, event))
+
+    def get_collision_history(self):
+        history = collections.defaultdict(int)
+        for frame, intensity in self.history:
+            history[frame] += intensity
+        return history
+
+    @staticmethod
+    def _on_collision(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        actor_type = get_actor_display_name(event.other_actor)
+        self.hud.notification(&#39;Collision with %r&#39; % actor_type)
+        impulse = event.normal_impulse
+        intensity = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
+        self.history.append((event.frame, intensity))
+        if len(self.history) &gt; 4000:
+            self.history.pop(0)
+
+
+# ==============================================================================
+# -- LaneInvasionSensor --------------------------------------------------------
+# ==============================================================================
+
+
+class LaneInvasionSensor(object):
+    def __init__(self, parent_actor, hud):
+        self.sensor = None
+
+        # If the spawn object is not a vehicle, we cannot use the Lane Invasion Sensor
+        if parent_actor.type_id.startswith(&#34;vehicle.&#34;):
+            self._parent = parent_actor
+            self.hud = hud
+            world = self._parent.get_world()
+            bp = world.get_blueprint_library().find(&#39;sensor.other.lane_invasion&#39;)
+            self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
+            # We need to pass the lambda a weak reference to self to avoid circular
+            # reference.
+            weak_self = weakref.ref(self)
+            self.sensor.listen(lambda event: LaneInvasionSensor._on_invasion(weak_self, event))
+
+    @staticmethod
+    def _on_invasion(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        lane_types = set(x.type for x in event.crossed_lane_markings)
+        text = [&#39;%r&#39; % str(x).split()[-1] for x in lane_types]
+        self.hud.notification(&#39;Crossed line %s&#39; % &#39; and &#39;.join(text))
+
+
+# ==============================================================================
+# -- GnssSensor ----------------------------------------------------------------
+# ==============================================================================
+
+
+class GnssSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        self.lat = 0.0
+        self.lon = 0.0
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.gnss&#39;)
+        self.sensor = world.spawn_actor(bp, carla.Transform(carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(lambda event: GnssSensor._on_gnss_event(weak_self, event))
+
+    @staticmethod
+    def _on_gnss_event(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        self.lat = event.latitude
+        self.lon = event.longitude
+
+
+# ==============================================================================
+# -- IMUSensor -----------------------------------------------------------------
+# ==============================================================================
+
+
+class IMUSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        self.accelerometer = (0.0, 0.0, 0.0)
+        self.gyroscope = (0.0, 0.0, 0.0)
+        self.compass = 0.0
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.imu&#39;)
+        self.sensor = world.spawn_actor(
+            bp, carla.Transform(), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(
+            lambda sensor_data: IMUSensor._IMU_callback(weak_self, sensor_data))
+
+    @staticmethod
+    def _IMU_callback(weak_self, sensor_data):
+        self = weak_self()
+        if not self:
+            return
+        limits = (-99.9, 99.9)
+        self.accelerometer = (
+            max(limits[0], min(limits[1], sensor_data.accelerometer.x)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.y)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.z)))
+        self.gyroscope = (
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.x))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.y))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.z))))
+        self.compass = math.degrees(sensor_data.compass)
+
+
+# ==============================================================================
+# -- RadarSensor ---------------------------------------------------------------
+# ==============================================================================
+
+
+class RadarSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        bound_x = 0.5 + self._parent.bounding_box.extent.x
+        bound_y = 0.5 + self._parent.bounding_box.extent.y
+        bound_z = 0.5 + self._parent.bounding_box.extent.z
+
+        self.velocity_range = 7.5 # m/s
+        world = self._parent.get_world()
+        self.debug = world.debug
+        bp = world.get_blueprint_library().find(&#39;sensor.other.radar&#39;)
+        bp.set_attribute(&#39;horizontal_fov&#39;, str(35))
+        bp.set_attribute(&#39;vertical_fov&#39;, str(20))
+        self.sensor = world.spawn_actor(
+            bp,
+            carla.Transform(
+                carla.Location(x=bound_x + 0.05, z=bound_z+0.05),
+                carla.Rotation(pitch=5)),
+            attach_to=self._parent)
+        # We need a weak reference to self to avoid circular reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(
+            lambda radar_data: RadarSensor._Radar_callback(weak_self, radar_data))
+
+    @staticmethod
+    def _Radar_callback(weak_self, radar_data):
+        self = weak_self()
+        if not self:
+            return
+        # To get a numpy [[vel, altitude, azimuth, depth],...[,,,]]:
+        # points = np.frombuffer(radar_data.raw_data, dtype=np.dtype(&#39;f4&#39;))
+        # points = np.reshape(points, (len(radar_data), 4))
+
+        current_rot = radar_data.transform.rotation
+        for detect in radar_data:
+            azi = math.degrees(detect.azimuth)
+            alt = math.degrees(detect.altitude)
+            # The 0.25 adjusts a bit the distance so the dots can
+            # be properly seen
+            fw_vec = carla.Vector3D(x=detect.depth - 0.25)
+            carla.Transform(
+                carla.Location(),
+                carla.Rotation(
+                    pitch=current_rot.pitch + alt,
+                    yaw=current_rot.yaw + azi,
+                    roll=current_rot.roll)).transform(fw_vec)
+
+            def clamp(min_v, max_v, value):
+                return max(min_v, min(value, max_v))
+
+            norm_velocity = detect.velocity / self.velocity_range # range [-1, 1]
+            r = int(clamp(0.0, 1.0, 1.0 - norm_velocity) * 255.0)
+            g = int(clamp(0.0, 1.0, 1.0 - abs(norm_velocity)) * 255.0)
+            b = int(abs(clamp(- 1.0, 0.0, - 1.0 - norm_velocity)) * 255.0)
+            self.debug.draw_point(
+                radar_data.transform.location + fw_vec,
+                size=0.075,
+                life_time=0.06,
+                persistent_lines=False,
+                color=carla.Color(r, g, b))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="new_backend.CarlaModules.Sensors.CollisionSensor"><code class="flex name class">
+<span>class <span class="ident">CollisionSensor</span></span>
+<span>(</span><span>parent_actor, hud)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CollisionSensor(object):
+    def __init__(self, parent_actor, hud):
+        self.sensor = None
+        self.history = []
+        self._parent = parent_actor
+        self.hud = hud
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.collision&#39;)
+        self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(lambda event: CollisionSensor._on_collision(weak_self, event))
+
+    def get_collision_history(self):
+        history = collections.defaultdict(int)
+        for frame, intensity in self.history:
+            history[frame] += intensity
+        return history
+
+    @staticmethod
+    def _on_collision(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        actor_type = get_actor_display_name(event.other_actor)
+        self.hud.notification(&#39;Collision with %r&#39; % actor_type)
+        impulse = event.normal_impulse
+        intensity = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
+        self.history.append((event.frame, intensity))
+        if len(self.history) &gt; 4000:
+            self.history.pop(0)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="new_backend.CarlaModules.Sensors.CollisionSensor.get_collision_history"><code class="name flex">
+<span>def <span class="ident">get_collision_history</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_collision_history(self):
+    history = collections.defaultdict(int)
+    for frame, intensity in self.history:
+        history[frame] += intensity
+    return history</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="new_backend.CarlaModules.Sensors.GnssSensor"><code class="flex name class">
+<span>class <span class="ident">GnssSensor</span></span>
+<span>(</span><span>parent_actor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GnssSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        self.lat = 0.0
+        self.lon = 0.0
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.gnss&#39;)
+        self.sensor = world.spawn_actor(bp, carla.Transform(carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(lambda event: GnssSensor._on_gnss_event(weak_self, event))
+
+    @staticmethod
+    def _on_gnss_event(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        self.lat = event.latitude
+        self.lon = event.longitude</code></pre>
+</details>
+</dd>
+<dt id="new_backend.CarlaModules.Sensors.IMUSensor"><code class="flex name class">
+<span>class <span class="ident">IMUSensor</span></span>
+<span>(</span><span>parent_actor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IMUSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        self.accelerometer = (0.0, 0.0, 0.0)
+        self.gyroscope = (0.0, 0.0, 0.0)
+        self.compass = 0.0
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find(&#39;sensor.other.imu&#39;)
+        self.sensor = world.spawn_actor(
+            bp, carla.Transform(), attach_to=self._parent)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(
+            lambda sensor_data: IMUSensor._IMU_callback(weak_self, sensor_data))
+
+    @staticmethod
+    def _IMU_callback(weak_self, sensor_data):
+        self = weak_self()
+        if not self:
+            return
+        limits = (-99.9, 99.9)
+        self.accelerometer = (
+            max(limits[0], min(limits[1], sensor_data.accelerometer.x)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.y)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.z)))
+        self.gyroscope = (
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.x))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.y))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.z))))
+        self.compass = math.degrees(sensor_data.compass)</code></pre>
+</details>
+</dd>
+<dt id="new_backend.CarlaModules.Sensors.LaneInvasionSensor"><code class="flex name class">
+<span>class <span class="ident">LaneInvasionSensor</span></span>
+<span>(</span><span>parent_actor, hud)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LaneInvasionSensor(object):
+    def __init__(self, parent_actor, hud):
+        self.sensor = None
+
+        # If the spawn object is not a vehicle, we cannot use the Lane Invasion Sensor
+        if parent_actor.type_id.startswith(&#34;vehicle.&#34;):
+            self._parent = parent_actor
+            self.hud = hud
+            world = self._parent.get_world()
+            bp = world.get_blueprint_library().find(&#39;sensor.other.lane_invasion&#39;)
+            self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
+            # We need to pass the lambda a weak reference to self to avoid circular
+            # reference.
+            weak_self = weakref.ref(self)
+            self.sensor.listen(lambda event: LaneInvasionSensor._on_invasion(weak_self, event))
+
+    @staticmethod
+    def _on_invasion(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        lane_types = set(x.type for x in event.crossed_lane_markings)
+        text = [&#39;%r&#39; % str(x).split()[-1] for x in lane_types]
+        self.hud.notification(&#39;Crossed line %s&#39; % &#39; and &#39;.join(text))</code></pre>
+</details>
+</dd>
+<dt id="new_backend.CarlaModules.Sensors.RadarSensor"><code class="flex name class">
+<span>class <span class="ident">RadarSensor</span></span>
+<span>(</span><span>parent_actor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RadarSensor(object):
+    def __init__(self, parent_actor):
+        self.sensor = None
+        self._parent = parent_actor
+        bound_x = 0.5 + self._parent.bounding_box.extent.x
+        bound_y = 0.5 + self._parent.bounding_box.extent.y
+        bound_z = 0.5 + self._parent.bounding_box.extent.z
+
+        self.velocity_range = 7.5 # m/s
+        world = self._parent.get_world()
+        self.debug = world.debug
+        bp = world.get_blueprint_library().find(&#39;sensor.other.radar&#39;)
+        bp.set_attribute(&#39;horizontal_fov&#39;, str(35))
+        bp.set_attribute(&#39;vertical_fov&#39;, str(20))
+        self.sensor = world.spawn_actor(
+            bp,
+            carla.Transform(
+                carla.Location(x=bound_x + 0.05, z=bound_z+0.05),
+                carla.Rotation(pitch=5)),
+            attach_to=self._parent)
+        # We need a weak reference to self to avoid circular reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(
+            lambda radar_data: RadarSensor._Radar_callback(weak_self, radar_data))
+
+    @staticmethod
+    def _Radar_callback(weak_self, radar_data):
+        self = weak_self()
+        if not self:
+            return
+        # To get a numpy [[vel, altitude, azimuth, depth],...[,,,]]:
+        # points = np.frombuffer(radar_data.raw_data, dtype=np.dtype(&#39;f4&#39;))
+        # points = np.reshape(points, (len(radar_data), 4))
+
+        current_rot = radar_data.transform.rotation
+        for detect in radar_data:
+            azi = math.degrees(detect.azimuth)
+            alt = math.degrees(detect.altitude)
+            # The 0.25 adjusts a bit the distance so the dots can
+            # be properly seen
+            fw_vec = carla.Vector3D(x=detect.depth - 0.25)
+            carla.Transform(
+                carla.Location(),
+                carla.Rotation(
+                    pitch=current_rot.pitch + alt,
+                    yaw=current_rot.yaw + azi,
+                    roll=current_rot.roll)).transform(fw_vec)
+
+            def clamp(min_v, max_v, value):
+                return max(min_v, min(value, max_v))
+
+            norm_velocity = detect.velocity / self.velocity_range # range [-1, 1]
+            r = int(clamp(0.0, 1.0, 1.0 - norm_velocity) * 255.0)
+            g = int(clamp(0.0, 1.0, 1.0 - abs(norm_velocity)) * 255.0)
+            b = int(abs(clamp(- 1.0, 0.0, - 1.0 - norm_velocity)) * 255.0)
+            self.debug.draw_point(
+                radar_data.transform.location + fw_vec,
+                size=0.075,
+                life_time=0.06,
+                persistent_lines=False,
+                color=carla.Color(r, g, b))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="new_backend.CarlaModules" href="index.html">new_backend.CarlaModules</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="new_backend.CarlaModules.Sensors.CollisionSensor" href="#new_backend.CarlaModules.Sensors.CollisionSensor">CollisionSensor</a></code></h4>
+<ul class="">
+<li><code><a title="new_backend.CarlaModules.Sensors.CollisionSensor.get_collision_history" href="#new_backend.CarlaModules.Sensors.CollisionSensor.get_collision_history">get_collision_history</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="new_backend.CarlaModules.Sensors.GnssSensor" href="#new_backend.CarlaModules.Sensors.GnssSensor">GnssSensor</a></code></h4>
+</li>
+<li>
+<h4><code><a title="new_backend.CarlaModules.Sensors.IMUSensor" href="#new_backend.CarlaModules.Sensors.IMUSensor">IMUSensor</a></code></h4>
+</li>
+<li>
+<h4><code><a title="new_backend.CarlaModules.Sensors.LaneInvasionSensor" href="#new_backend.CarlaModules.Sensors.LaneInvasionSensor">LaneInvasionSensor</a></code></h4>
+</li>
+<li>
+<h4><code><a title="new_backend.CarlaModules.Sensors.RadarSensor" href="#new_backend.CarlaModules.Sensors.RadarSensor">RadarSensor</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

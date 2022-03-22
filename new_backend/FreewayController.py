@@ -13,9 +13,21 @@ Referenced By:
 
 """
 
-from Controller import Controller
+# Local Imports
+from Vehicle import Vehicle
 
-class FreewayController(Controller):
+# Library Imports
 
-    def __init__(self):
-        pass
+
+class FreewayController:
+
+    @staticmethod
+    def update_control(current_vehicle: Vehicle) -> None:
+        """
+        Updates the control for a vehicle that is operating in an Freeway experiment.
+
+        TODO: Update this documentation once the function is better written.
+
+        :param current_vehicle:
+        :return:
+        """
