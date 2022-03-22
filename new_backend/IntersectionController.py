@@ -44,7 +44,7 @@ class IntersectionController:
 
         # If the path for the vehicle was never generated, raise an error
         if not current_vehicle.has_path():
-            raise Exception("Unable to provide automatic control for a vehicle without a generated path")
+            return
 
         # Initialize the VehicleControl object
         control: carla.VehicleControl = VehicleControl()
