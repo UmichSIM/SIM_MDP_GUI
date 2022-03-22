@@ -274,6 +274,32 @@ class Controller:
         pass
 
     @staticmethod
+    def obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
+        """
+        Determines if the Vehicle needs to change its control to obey its safety distance.
+
+        Checks if the Vehicle is following too closely behind the Vehicle directly in front
+        of it, and provides a new carla.VehicleControl object that will allow the Vehicle to
+        move back to the safety distance. Designed to be called within update_control.
+
+        :param current_vehicle: the Vehicle object that will be checked for safety distance
+        :return: a tuple of (bool, carla.VehicleControl). The first element will be True if the Vehicle
+                 needs adjust to meet its safety distance. If True, the second element will contain a
+                 new carla.VehicleControl that should be applied to the Vehicle.
+        """
+        """
+        1) detect the vehicles in front of current_vehicle, check the distance in current_vehicle.other_vehicle_locations[0]
+        2) if distance < current_vehicle.safety_distance
+            - control = carla.VehicleControl(brake = x) # should x be proportion to distance?
+        """
+        hasVehicle, vehicleDistance = current_vehicle.check_vehicle_in_front(ExperimentType.INTERSECTION) # don't really sure why we need experiment type
+        control = carla.VehicleControl()
+        if hasVehicle and vehicleDistance < current_vehicle.safety_distance:
+            control.brake = 0.1 # this should be proportion to current speed and sita
+            return True, control
+        return False, control
+
+    @staticmethod
     def _end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:
         """
         Determines if the A* search has successfully arrived at its destination point.
