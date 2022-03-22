@@ -13,7 +13,8 @@ Referenced By:
 
 """
 
-class Section():
+
+class Section:
 
     def __init__(self):
         pass

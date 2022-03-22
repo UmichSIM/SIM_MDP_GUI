@@ -8,12 +8,16 @@ Summary: The Intersection class represents a single intersection in the Intersec
     enter and exit the intersection.
 
 References:
+    Section
 
 Referenced By:
 
 """
 
+# Local Imports
 import Section
+
+# Library Imports
 
 
 class Intersection(Section):

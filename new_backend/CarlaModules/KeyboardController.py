@@ -1,3 +1,12 @@
+"""
+Carla Modules - KeyboardController class
+Created on March 9th, 2022
+
+Summary: Implements a Keyboard Controller that allows the user to manually control the EgoVehicle in the
+Carla simulation. This class originates from the manual_control.py example script provided in the
+Carla Python API.
+
+"""
 
 import carla
 
@@ -63,7 +72,16 @@ class KeyboardControl(object):
         self._steer_cache = 0.0
         world.hud.notification("Press 'H' or '?' for help.", seconds=4.0)
 
-    def parse_events(self, client, world, clock, sync_mode):
+    def parse_events(self, client, world, clock, sync_mode) -> carla.VehicleControl:
+        """
+        Parses the keyboard events provided by the user and returns the Control object corresponding to that input.
+
+        :param client: the carla.Client that is connected to the Server
+        :param world: the CarlaModule.World object that represents the world (this is different than the carla.World)
+        :param clock: the PyGame clock that tracks the inter-frame times
+        :param sync_mode: a bool
+        :return:
+        """
         if isinstance(self._control, carla.VehicleControl):
             current_lights = self._lights
         for event in pygame.event.get():
@@ -170,10 +188,11 @@ class KeyboardControl(object):
                     if event.key == K_q:
                         self._control.gear = 1 if self._control.reverse else -1
                     elif event.key == K_m:
-                        self._control.manual_gear_shift = not self._control.manual_gear_shift
-                        self._control.gear = world.player.get_control().gear
-                        world.hud.notification('%s Transmission' %
-                                               ('Manual' if self._control.manual_gear_shift else 'Automatic'))
+                        world.player.set_target_velocity(carla.Vector3D(0,0,0))
+                        # self._control.manual_gear_shift = not self._control.manual_gear_shift
+                        # self._control.gear = world.player.get_control().gear
+                        # world.hud.notification('%s Transmission' %
+                        #                        ('Manual' if self._control.manual_gear_shift else 'Automatic'))
                     elif self._control.manual_gear_shift and event.key == K_COMMA:
                         self._control.gear = max(-1, self._control.gear - 1)
                     elif self._control.manual_gear_shift and event.key == K_PERIOD:
@@ -232,7 +251,9 @@ class KeyboardControl(object):
                     world.player.set_light_state(carla.VehicleLightState(self._lights))
             elif isinstance(self._control, carla.WalkerControl):
                 self._parse_walker_keys(pygame.key.get_pressed(), clock.get_time(), world)
-            world.player.apply_control(self._control)
+
+        # Return the control back to the caller
+        return self._control
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         if keys[K_UP] or keys[K_w]:

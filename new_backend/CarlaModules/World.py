@@ -1,4 +1,13 @@
+"""
+Carla Modules - World class
+Created on March 9th, 2022
 
+Summary: Implements a World class that allows the other CarlaModules to maintain information
+about the current state of the Carla world. THIS DIFFERS FROM THE CARLA.WORLD CLASS THAT IS
+FOUND THROUGH THE CARLA API. This class originates from the manual_control.py example script
+provided with the Carla Python API
+
+"""
 
 # Local Imports
 from CarlaModules.CameraManager import CameraManager

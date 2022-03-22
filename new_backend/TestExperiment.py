@@ -9,30 +9,26 @@ Usage: This file can be invoked as a regular python script to test out the exper
        environment. It can be invoked using "python TestExperiment.py"
 
 References:
+    Controller
+    Experiment
+    Helpers
+    Threading
 
 Referenced By:
 
 """
 
 # Local Imports
-import random
-
-from ApiHelpers import ExperimentType, VehicleType
-from Controller import Controller, WAYPOINT_SEPARATION
+from Controller import Controller
 from Experiment import Experiment
+from Helpers import ExperimentType, VehicleType
 from Threading import HeadlessWindow
 
 # Library Imports
 import carla
 from PyQt5.QtWidgets import QApplication
-from random import choice
 import sys
-from typing import Dict, List
-
-
-# Global colors
-GREEN = carla.Color(0, 255, 0)
-YELLOW = carla.Color(255, 255, 0)
+from typing import Dict
 
 
 class TestExperiment(Experiment):
@@ -41,46 +37,42 @@ class TestExperiment(Experiment):
         super(TestExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.INTERSECTION
 
-    def initialize_experiment(self, configuration: Dict[str, str] = None) -> bool:
+    def initialize_experiment(self, configuration: Dict[str, str] = None) -> None:
         """
         Uses an existing connection to the Carla server and configures the world according to the experiment design.
 
-        Adds a single vehicle to the map for testing purposes
+        Adds vehicles to the map in the needed configuration for testing. Please modify this class to meet
+        your testing needs
 
         :param configuration: a Dictionary containing the user defined settings for the experiment (exact properties
                               vary from experiment to experiment)
-        :return: a bool indicating if the experiment was configured correctly
+        :return: None
         """
 
         # Initialize the waypoints
         sim_map: carla.Map = self.world.get_map()
-        waypoints: List[carla.Waypoint] = filter(lambda x: x.lane_type == carla.LaneType.Driving, sim_map.generate_waypoints(WAYPOINT_SEPARATION))
-
-        # Visualize each of the maps spawn points
-        all_spawn_points: List[carla.Transform] = self.world.get_map().get_spawn_points()
-        for spawn_point in all_spawn_points:
-            self.world.debug.draw_point(spawn_point.location, size=0.05, color=GREEN, life_time=0.0)
-
-        # Visualize each of the intersections of their waypoints
-        all_intersection_waypoints = filter(lambda x: x.is_junction, waypoints)
-        for intersect_waypoint in all_intersection_waypoints:
-            self.world.debug.draw_point(intersect_waypoint.transform.location, size=0.05, color=YELLOW, life_time=0.0)
 
         # Add a new test vehicle to the map
         spawn_location = self.world.get_map().get_spawn_points()[2]
-        blueprint = choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
-        new_vehicle = self.world.spawn_actor(blueprint, spawn_location)
+        ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
 
-        self.add_vehicle(new_vehicle, ego=True, type_id=VehicleType.MANUAL_EGO)
+        # Generate a straight forward path for the ego vehicle
+        Controller.generate_path(ego_vehicle, sim_map.get_waypoint(spawn_location.location),
+                                 sim_map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
 
-        # Add four other vehicles around the map
-        for _ in range(4):
-            spawn_location = random.choice(self.world.get_map().get_spawn_points())
-            blueprint = random.choice(self.world.get_blueprint_library().filter('vehicle.*.*'))
-            new_vehicle = self.world.try_spawn_actor(blueprint, spawn_location)
+        # Add a target location to the Ego Vehicle
+        self.ego_vehicle.target_location = carla.Location(x=-54, y=72, z=0)
 
-            self.add_vehicle(new_vehicle, ego=False, type_id=VehicleType.GENERIC)
+        # Add a new vehicle directly in front of the initial vehicle
+        spawn_location = self.world.get_map().get_spawn_points()[276]
+        lead_vehicle = self.add_vehicle(spawn_location, ego=False, type_id=VehicleType.LEAD)
 
+        # Generate a straight forward path for the vehicle in front
+        Controller.generate_path(lead_vehicle, sim_map.get_waypoint(spawn_location.location),
+                                 sim_map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
+
+        # Visualize the waypoints of the lead vehicle
+        self.vehicle_list[0].draw_waypoints(self.world)
 
 
 def main() -> None:
