@@ -19,14 +19,12 @@ Referenced By:
 """
 
 # Local Imports
-import carla
-
 from Controller import Controller
 from Helpers import VehicleType
 from Vehicle import Vehicle
 
 # Library Imports
-from carla import VehicleControl
+import carla
 
 
 class IntersectionController:

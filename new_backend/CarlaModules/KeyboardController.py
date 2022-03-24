@@ -53,6 +53,7 @@ try:
 except ImportError:
     raise RuntimeError('cannot import pygame, make sure pygame package is installed')
 
+GRAVITY_ENABLED = True
 
 class KeyboardControl(object):
     """Class that handles keyboard input."""
@@ -116,7 +117,9 @@ class KeyboardControl(object):
                 elif event.key == K_c:
                     world.next_weather()
                 elif event.key == K_g:
-                    world.toggle_radar()
+                    global GRAVITY_ENABLED
+                    world.player.set_enable_gravity(not GRAVITY_ENABLED)
+                    GRAVITY_ENABLED = not GRAVITY_ENABLED
                 elif event.key == K_BACKQUOTE:
                     world.camera_manager.next_sensor()
                 elif event.key == K_n:

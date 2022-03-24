@@ -15,12 +15,11 @@ Referenced By:
 """
 
 # Local Imports
-import Section
 
 # Library Imports
 
 
-class FreewaySection(Section):
+class FreewaySection:
 
     def __init__(self):
         pass

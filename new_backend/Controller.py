@@ -274,7 +274,7 @@ class Controller:
         pass
 
     @staticmethod
-    def obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
+    def _obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
         """
         Determines if the Vehicle needs to change its control to obey its safety distance.
 

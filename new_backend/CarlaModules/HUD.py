@@ -152,6 +152,11 @@ class HUD(object):
         self._info_text += [f"Nearest Intersection: {nearest_intersection_index}"]
         self._info_text += [""]
 
+        self._info_text += [f"At Traffic Light?: {ego_vehicle.carla_vehicle.is_at_traffic_light()}"]
+        current_traffic_light = ego_vehicle.carla_vehicle.get_traffic_light().get_opendrive_id() if ego_vehicle.carla_vehicle.get_traffic_light() is not None else ""
+        self._info_text += [f"Current Traffic Light: {current_traffic_light}"]
+        self._info_text += [""]
+
         if isinstance(c, carla.VehicleControl):
             self._info_text += [
                 ('Throttle:', c.throttle, 0.0, 1.0),

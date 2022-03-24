@@ -68,7 +68,7 @@ class MapExplorationExperiment(Experiment):
 
         # Add a new test vehicle to the map
         spawn_location = self.world.get_map().get_spawn_points()[2]
-        self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
+        ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
 
         # Add four other vehicles around the map
         for _ in range(4):

@@ -66,6 +66,19 @@ class Experiment:
         # A Carla.World object that stores the current world the simulation is running in
         self.world: carla.World = None
 
+        # TODO: Implement these four attributes (initialize them at the end of connect to server)
+        # A carla.Map object that stores the current map loaded in the simulation
+        self.map: carla.Map = None
+
+        # A list of carla.Transform that stores every recommended spawn point in the map
+        self.spawn_points: List[carla.Transform] = None
+
+        # A list of carla.Waypoint representing every waypoint present in the simulation
+        self.waypoints: List[carla.Waypoint] = None
+
+        # A list of carla.Junction represent every junction present in the simulation
+        self.junctions: List[carla.Junction] = None
+
         # A Carla.Action that represents the spectator in the Simulation
         self.spectator: carla.Actor = None
 
@@ -157,6 +170,10 @@ class Experiment:
             # TODO: display some message in the GUI when connected to the server
             logging.info(f"Successfully connected to the Carla Server")
             return
+
+        # Initialize the experiment properties that rely on the server
+        self.map = self.world.get_map()
+        self.waypoints
 
         # Exit the GUI if unable to connect to server
         logging.error("Unable to connect to Carla Server")
@@ -295,3 +312,12 @@ class Experiment:
             self.vehicle_list.append(new_vehicle)
 
         return new_vehicle
+
+    def get_vehicles_current_waypoint(self, vehicle: Vehicle) -> carla.Waypoint:
+        """
+        Gets an OpenDrive waypoint located at the Vehicle's current location.
+
+        :param vehicle: the Vehicle whose current waypoint is desired
+        :return: a carla.Waypoint located at the vehicle's current location
+        """
+        return self.world.get_map().get_waypoint(vehicle.carla_vehicle.get_location())
