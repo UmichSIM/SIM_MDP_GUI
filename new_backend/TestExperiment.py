@@ -21,6 +21,8 @@ Referenced By:
 # Local Imports
 from Controller import Controller
 from Experiment import Experiment
+from Intersection import Intersection
+from IntersectionController import IntersectionController
 from Helpers import ExperimentType, VehicleType
 from Threading import HeadlessWindow
 
@@ -28,7 +30,7 @@ from Threading import HeadlessWindow
 import carla
 from PyQt5.QtWidgets import QApplication
 import sys
-from typing import Dict
+from typing import Dict, List
 
 
 class TestExperiment(Experiment):
@@ -49,27 +51,33 @@ class TestExperiment(Experiment):
         :return: None
         """
 
-        # Initialize the waypoints
-        sim_map: carla.Map = self.world.get_map()
+        # Add a new managed intersection to the map
+        first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
+
+        # Add the first intersection to the controller
+        IntersectionController.section_list.append(first_intersection)
 
         # Add a new test vehicle to the map
-        spawn_location = self.world.get_map().get_spawn_points()[2]
+        spawn_location = self.spawn_points[2]
         ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
 
+        # Set the vehicle's initial section
+        ego_vehicle.set_next_section(1, first_intersection)
+
         # Generate a straight forward path for the ego vehicle
-        Controller.generate_path(ego_vehicle, sim_map.get_waypoint(spawn_location.location),
-                                 sim_map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
+        Controller.generate_path(ego_vehicle, self.map.get_waypoint(spawn_location.location),
+                                 self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
 
         # Add a target location to the Ego Vehicle
         self.ego_vehicle.target_location = carla.Location(x=-54, y=72, z=0)
 
         # Add a new vehicle directly in front of the initial vehicle
-        spawn_location = self.world.get_map().get_spawn_points()[276]
+        spawn_location = self.spawn_points[276]
         lead_vehicle = self.add_vehicle(spawn_location, ego=False, type_id=VehicleType.LEAD)
 
         # Generate a straight forward path for the vehicle in front
-        Controller.generate_path(lead_vehicle, sim_map.get_waypoint(spawn_location.location),
-                                 sim_map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
+        Controller.generate_path(lead_vehicle, self.map.get_waypoint(spawn_location.location),
+                                 self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
 
         # Visualize the waypoints of the lead vehicle
         self.vehicle_list[0].draw_waypoints(self.world)

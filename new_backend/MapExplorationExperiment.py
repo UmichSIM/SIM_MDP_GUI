@@ -51,24 +51,21 @@ class MapExplorationExperiment(Experiment):
         :return: None
         """
 
-        # Initialize the waypoints
-        sim_map: carla.Map = self.world.get_map()
-        waypoints: List[carla.Waypoint] = sim_map.generate_waypoints(WAYPOINT_SEPARATION)
-        waypoints = list(filter(lambda x: x.lane_type == carla.LaneType.Driving, waypoints))
-
         # Visualize each of the maps spawn points
-        all_spawn_points: List[carla.Transform] = self.world.get_map().get_spawn_points()
-        for spawn_point in all_spawn_points:
+        for spawn_point in self.spawn_points:
             self.world.debug.draw_point(spawn_point.location, size=0.05, color=GREEN, life_time=0.0)
 
         # Visualize each of the intersections of their waypoints
-        all_intersection_waypoints = filter(lambda x: x.is_junction, waypoints)
+        all_intersection_waypoints = [waypoint
+                                      for junction in self.junctions
+                                      for waypoint_pair in junction.get_waypoints(carla.LaneType.Driving)
+                                      for waypoint in waypoint_pair]
         for intersect_waypoint in all_intersection_waypoints:
             self.world.debug.draw_point(intersect_waypoint.transform.location, size=0.05, color=YELLOW, life_time=0.0)
 
         # Add a new test vehicle to the map
-        spawn_location = self.world.get_map().get_spawn_points()[2]
-        ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
+        spawn_location = self.spawn_points[2]
+        self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
 
         # Add four other vehicles around the map
         for _ in range(4):

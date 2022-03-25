@@ -41,6 +41,9 @@ STOP_DISTANCE_FACTOR = 0.25
 
 class Controller:
 
+    # Static carla.World object representing the simulator world
+    world: carla.World = None
+
     @staticmethod
     def update_control(current_vehicle: Vehicle) -> None:
         """
@@ -420,3 +423,13 @@ class Controller:
         throttle = current_vehicle.speed_pid_controller(current_vehicle.target_speed -
                                                         current_vehicle.get_current_speed())
         return max(min(throttle, 1), -1)
+
+    @staticmethod
+    def get_vehicles_current_waypoint(vehicle: Vehicle) -> carla.Waypoint:
+        """
+        Gets an OpenDrive waypoint located at the Vehicle's current location.
+
+        :param vehicle: the Vehicle whose current waypoint is desired
+        :return: a carla.Waypoint located at the vehicle's current location
+        """
+        return Controller.world.get_map().get_waypoint(vehicle.carla_vehicle.get_location())

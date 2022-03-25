@@ -20,14 +20,19 @@ Referenced By:
 
 # Local Imports
 from Controller import Controller
+from Intersection import Intersection
 from Helpers import VehicleType
 from Vehicle import Vehicle
 
 # Library Imports
 import carla
+from typing import List
 
 
 class IntersectionController:
+
+    # Static list that holds all the intersections in the experiment
+    section_list: List[Intersection] = []
 
     @staticmethod
     def update_control(current_vehicle: Vehicle) -> None:
@@ -45,10 +50,20 @@ class IntersectionController:
             return
 
         # Initialize the VehicleControl object
-        control: carla.VehicleControl = VehicleControl()
+        control: carla.VehicleControl = carla.VehicleControl()
 
         # Determine the steering angle needed
         steering_angle, end_of_path = Controller.steering_control(current_vehicle)
+
+        if current_vehicle.current_section is not None:
+            # Determine if the vehicle needs to stop at a light, set the target location if needed
+            stop_at_light, target_location = current_vehicle.current_section.stop_at_light(
+                Controller.get_vehicles_current_waypoint(current_vehicle),
+                current_vehicle.breaking_distance
+            )
+
+            if stop_at_light:
+                current_vehicle.target_location = target_location
 
         # Determine the throttle needed
         if current_vehicle.type_id == VehicleType.LEAD:
