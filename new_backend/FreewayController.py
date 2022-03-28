@@ -15,8 +15,11 @@ Referenced By:
 
 # Local Imports
 from Vehicle import Vehicle
+from Helpers import VehicleType
+import Controller
 
 # Library Imports
+import carla
 
 
 class FreewayController:
@@ -31,3 +34,36 @@ class FreewayController:
         :param current_vehicle:
         :return:
         """
+
+        # If the path for the vehicle was never generated, raise an error
+        if not current_vehicle.has_path():
+            return
+
+        # Initialize the VehicleControl object
+        control: carla.VehicleControl = carla.VehicleControl()
+
+        # Determine the steering angle needed
+        steering_angle, end_of_path = Controller.steering_control(current_vehicle)
+
+
+
+
+        # Determine the throttle needed
+        if current_vehicle.type_id == VehicleType.LEAD:
+            throttle = Controller.throttle_control(current_vehicle)
+        else:
+            throttle = Controller.throttle_control(current_vehicle)
+
+        # Stop the car if we've reached the end of the path
+        if end_of_path:
+            control.steer = 0
+            control.throttle = 0
+            control.brake = 1.0
+            current_vehicle.carla_vehicle.apply_control(control)
+            return
+
+        # Otherwise, apply the steering and constant acceleration
+        control.steer = steering_angle
+        control.throttle = throttle if throttle > 0 else 0
+        control.brake = abs(throttle) if throttle < 0 else 0
+        current_vehicle.apply_control(control)

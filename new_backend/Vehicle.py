@@ -223,7 +223,7 @@ class Vehicle:
 
         return False, 0.0
 
-    def check_vehicle_in_front(self) -> (bool, float):
+    def check_vehicle_in_front(self) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle in front of this vehicle.
 
