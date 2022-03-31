@@ -16,6 +16,7 @@ Referenced By:
 
 # Local Imports
 from Helpers import to_numpy_vector
+from Vehicle import Vehicle
 
 # Library Imports
 import carla
@@ -30,47 +31,51 @@ class Intersection:
         # The carla.Junction object that this Intersection corresponds to
         self.junction = junction
 
-        # Dictionary that stores the mapping from OpenDrive lane id to the carla.TrafficLight
-        # that affects that OpenDrive lane
-        self.lane_to_traffic_light: Dict[int, carla.TrafficLight] = {}
+        # List of all the carla.TrafficLights that affect this intersection
+        self.traffic_lights = traffic_lights
 
-        # Create the mappings from OpenDrive lane to TrafficLight
-        for traffic_light in traffic_lights:
-            if traffic_light is not None:
-                affected_waypoints = traffic_light.get_affected_lane_waypoints()
-                for waypoint in affected_waypoints:
-                    self.lane_to_traffic_light[waypoint.lane_id] = traffic_light
+        # Dictionary storing the index of each light in the traffic_lights light and a list of
+        # all vehicles that are stopped at that traffic light.
+        self.vehicles_at_lights: Dict[int, List[Vehicle]] = {}
+        for (i, _) in enumerate(self.traffic_lights):
+            self.vehicles_at_lights[i] = []
 
-        print("Done")
-
-    def stop_at_light(self, current_vehicle_waypoint: carla.Waypoint, braking_distance: float) -> Tuple[bool, carla.Location]:
+    def stop_at_light(self, current_vehicle: Vehicle, braking_distance: float) -> Tuple[bool, carla.Location]:
         """
         Determines if the vehicle needs to stop at the light, and gives the vehicle a target location to stop at.
 
-        :param current_vehicle_waypoint: a carla.Waypoint located at the vehicle's current location
+        :param current_vehicle: a Vehicle representing the current vehicle
         :param braking_distance: a float representing how long the car needs to break
         :return: a Tuple indicating if the vehicle needs to stop at the light and where it should stop
                  if needed
         """
 
         # Calculate the distance between the vehicle and the intersection
-        current_separation = self._distance_between(current_vehicle_waypoint.transform.location)
+        current_separation = self._distance_between(current_vehicle.get_current_location())
 
         if current_separation < braking_distance:
-            # Grab the traffic light affecting the current lane
-            lane_light: carla.TrafficLight = self.lane_to_traffic_light[current_vehicle_waypoint.lane_id]
+            # Select the traffic light that has a stop waypoint that is nearest to the vehicle
+            # This assumes that the controlled vehicles are acting rationally, and it may break in some niche cases.
+            # Please just trust me that this list comprehension does what it's supposed to
+            correct_light_index = min([(i, np.linalg.norm(current_vehicle.get_location_vector() - to_numpy_vector(waypoint.transform.location)))
+                                      for (i, light) in enumerate(self.traffic_lights)
+                                      for waypoint in light.get_stop_waypoints()], key=lambda x: x[1])[0]
+            lane_light = self.traffic_lights[correct_light_index]
 
             # Check if the light is red
             if lane_light.get_state() in [carla.TrafficLightState.Red, carla.TrafficLightState.Yellow]:
+
+                # Mark the vehicle as stopped at the selected light
+                self.vehicles_at_lights[correct_light_index].append(current_vehicle)
+
                 # Grab the possible stopping points in the vehicle's current lane
-                possible_stop_points: List[carla.Waypoint] = [x for x in lane_light.get_affected_lane_waypoints()
-                                                              if x.lane_id == current_vehicle_waypoint.lane_id]
+                possible_stop_points: List[carla.Waypoint] = lane_light.get_stop_waypoints()
 
                 # If there are multiple stopping options, choose the one closer to the Vehicle
                 if len(possible_stop_points) > 1:
                     print("Multiple stop points")
                     closest_index = np.argmin([np.linalg.norm(
-                                                to_numpy_vector(current_vehicle_waypoint.transform.location) -
+                                                current_vehicle.get_location_vector() -
                                                 to_numpy_vector(x.transform.location))
                                                for x in possible_stop_points])
                     return True, possible_stop_points[closest_index].transform.location
@@ -96,3 +101,21 @@ class Intersection:
         distance -= self.junction.bounding_box.extent.x
 
         return distance
+
+    def tick(self) -> None:
+        """
+        Updates the Intersection with each tick of the world.
+
+        Checks the state of each traffic light in the Intersection. For all the lights that are
+        currently green, checks if there are any vehicles waiting at that light. If there are waiting
+        vehicles, then remove their target location and advance them to the section section to allow them to proceed.
+        :return: None
+        """
+
+        for (i, light) in enumerate(self.traffic_lights):
+            if light.get_state() == carla.TrafficLightState.Green:
+                if len(self.vehicles_at_lights[i]) > 0:
+                    for vehicle in self.vehicles_at_lights[i]:
+                        vehicle.target_location = None
+                        vehicle.current_section = None # TODO: fix this
+                    self.vehicles_at_lights[i] = []

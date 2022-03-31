@@ -381,7 +381,7 @@ class Controller:
 
         # Calculate the distance to the target location
         distance_to_location = np.sum(to_numpy_vector(current_vehicle.target_location, dims=2) -
-                                      current_vehicle.get_current_position())
+                                      current_vehicle.get_location_vector(dims=2))
 
         # Calculate the vehicle's stopping distance
         stopping_distance = current_vehicle.get_current_speed() * STOP_DISTANCE_FACTOR

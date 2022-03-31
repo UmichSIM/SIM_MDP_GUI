@@ -21,7 +21,7 @@ Referenced By:
 # Local Imports
 from Controller import Controller
 from Intersection import Intersection
-from Helpers import VehicleType
+from Helpers import RED
 from Vehicle import Vehicle
 
 # Library Imports
@@ -30,9 +30,6 @@ from typing import List
 
 
 class IntersectionController:
-
-    # Static list that holds all the intersections in the experiment
-    section_list: List[Intersection] = []
 
     @staticmethod
     def update_control(current_vehicle: Vehicle) -> None:
@@ -56,20 +53,18 @@ class IntersectionController:
         steering_angle, end_of_path = Controller.steering_control(current_vehicle)
 
         if current_vehicle.current_section is not None:
-            # Determine if the vehicle needs to stop at a light, set the target location if needed
-            stop_at_light, target_location = current_vehicle.current_section.stop_at_light(
-                Controller.get_vehicles_current_waypoint(current_vehicle),
-                current_vehicle.breaking_distance
-            )
-
-            if stop_at_light:
-                current_vehicle.target_location = target_location
+            # Only check if the vehicle needs to stop if it hasn't already been assigned a target location
+            if current_vehicle.target_location is None:
+                # Determine if the vehicle needs to stop at a light, set the target location if needed
+                stop_at_light, target_location = current_vehicle.current_section.stop_at_light(
+                    current_vehicle,
+                    current_vehicle.breaking_distance
+                )
+                if stop_at_light:
+                    current_vehicle.target_location = target_location
 
         # Determine the throttle needed
-        if current_vehicle.type_id == VehicleType.LEAD:
-            throttle = Controller.throttle_control(current_vehicle)
-        else:
-            throttle = Controller.throttle_control(current_vehicle)
+        throttle = Controller.throttle_control(current_vehicle)
 
         # Stop the car if we've reached the end of the path
         if end_of_path:

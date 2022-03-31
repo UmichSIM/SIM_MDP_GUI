@@ -19,7 +19,6 @@ Referenced By:
 # Local Imports
 from FreewaySection import FreewaySection
 from Helpers import WorldDirection, VehicleType, to_numpy_vector, rotate_vector, ORANGE, RED
-from Intersection import Intersection
 
 # Library Imports
 import carla
@@ -81,9 +80,9 @@ class Vehicle:
         # the waypoints together
         self.trajectory: List[carla.Transform] = []
 
-        # The current section that the Vehicle is on
+        # The current section that the Vehicle is on, can either be an Intersection or Freeway Section
         self.current_section_index: int = -1
-        self.current_section: Union[Intersection, FreewaySection] = None
+        self.current_section = None
 
     def has_path(self):
         """
@@ -139,14 +138,13 @@ class Vehicle:
 
         raise Exception("Invalid units passed into get_current_speed function. Expected either \"kmh\" or \"mph\"")
 
-    def get_current_position(self) -> Tuple[float, float]:
+    def get_current_location(self) -> carla.Location:
         """
-        Gets the current position of the vehicle.
+        Gets the current Location of the vehicle.
 
-        :return: the current position of the Vehicle as an (x,y) tuple
+        :return: the current position of the Vehicle a carla.Location
         """
-        transform = self.carla_vehicle.get_transform()
-        return transform.location.x, transform.location.y
+        return self.carla_vehicle.get_location()
 
     def get_current_rotation(self) -> float:
         """
@@ -223,7 +221,7 @@ class Vehicle:
 
         return False, 0.0
 
-    def check_vehicle_in_front(self) -> (bool, float):
+    def check_vehicle_in_front(self) -> Tuple[bool, float]:
         """
         Determines if there is a vehicle in front of this vehicle.
 
@@ -296,7 +294,7 @@ class Vehicle:
             return np.array([location.x, location.y])
         raise Exception("Invalid number of dimensions passed to get_location_vector")
 
-    def set_next_section(self, index: int, next_section: Union[FreewaySection, Intersection]) -> None:
+    def set_next_section(self, index: int, next_section) -> None:
         """
         Updates the current section of the Vehicle to a new section
 

@@ -55,7 +55,7 @@ class TestExperiment(Experiment):
         first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
 
         # Add the first intersection to the controller
-        IntersectionController.section_list.append(first_intersection)
+        self.section_list.append(first_intersection)
 
         # Add a new test vehicle to the map
         spawn_location = self.spawn_points[2]
@@ -67,9 +67,6 @@ class TestExperiment(Experiment):
         # Generate a straight forward path for the ego vehicle
         Controller.generate_path(ego_vehicle, self.map.get_waypoint(spawn_location.location),
                                  self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
-
-        # Add a target location to the Ego Vehicle
-        self.ego_vehicle.target_location = carla.Location(x=-54, y=72, z=0)
 
         # Add a new vehicle directly in front of the initial vehicle
         spawn_location = self.spawn_points[276]
