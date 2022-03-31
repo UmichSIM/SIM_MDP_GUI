@@ -95,6 +95,9 @@ class Experiment:
         # List of all vehicles in the Simulation
         self.vehicle_list: List[Vehicle] = []
 
+        # List that holds all the intersections or freeway sections in the experiment
+        self.section_list: List[Union[Intersection, FreewaySection]] = []
+
 
     def initialize_carla_server(self, blocking: bool = False, port: int = 2000) -> None:
         """
@@ -242,6 +245,11 @@ class Experiment:
                 self.world.tick()
                 clock.tick(60)
                 pygame.event.pump()
+
+                # Update the state of each of the experiment sections (mainly applicable to intersection and
+                # traffic lights)
+                for section in self.section_list:
+                    section.tick()
 
                 # Update the relative locations of each vehicle
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:

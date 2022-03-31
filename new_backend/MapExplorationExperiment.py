@@ -20,9 +20,9 @@ Referenced By:
 """
 
 # Local Imports
-from Controller import WAYPOINT_SEPARATION
 from Experiment import Experiment
-from Helpers import ExperimentType, VehicleType, GREEN, YELLOW
+from Helpers import ExperimentType, VehicleType, GREEN, YELLOW, RED
+from Intersection import Intersection
 from Threading import HeadlessWindow
 
 # Library Imports
@@ -57,11 +57,18 @@ class MapExplorationExperiment(Experiment):
 
         # Visualize each of the intersections of their waypoints
         all_intersection_waypoints = [waypoint
-                                      for junction in self.junctions
+                                      for junction in self.junctions.values()
                                       for waypoint_pair in junction.get_waypoints(carla.LaneType.Driving)
                                       for waypoint in waypoint_pair]
         for intersect_waypoint in all_intersection_waypoints:
             self.world.debug.draw_point(intersect_waypoint.transform.location, size=0.05, color=YELLOW, life_time=0.0)
+
+        # Add a new managed intersection to the map
+        first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
+        for traffic_light in first_intersection.lane_to_traffic_light.values():
+            self.world.debug.draw_point(traffic_light[0].get_transform().location, size=1.0, color=RED, life_time=0.0)
+            for light_waypoint in traffic_light[0].get_stop_waypoints():
+                self.world.debug.draw_point(light_waypoint.transform.location, size=1.0, color=RED, life_time=0.0)
 
         # Add a new test vehicle to the map
         spawn_location = self.spawn_points[2]

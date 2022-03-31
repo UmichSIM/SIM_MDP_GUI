@@ -16,11 +16,11 @@ Referenced By:
 """
 
 # Local Imports
-from Controller import Controller
-from Vehicle import Vehicle
-
-# Library Imports
-import carla
+# from Controller import Controller
+# from Vehicle import Vehicle
+#
+# # Library Imports
+# import carla
 
 # get list of vehicles inside of freeway section -> get starting and ending waypoints of the vehicles to manage their movements
 # 2 lane highway (can get left/right lane separately -> start/end waypoints of the lanes) (we build experiement section by section)
@@ -44,9 +44,9 @@ class FreewaySection:
 #                       (in config dict determine start lane, ending lane[int])
 #                       create instance of freeway section (has start/end waypoints of every lane)
 #            # in what situations do we want to change lanes: lead car in front moves too slow
-            for every vehicles we find config (which has start and ending lane):
-                get start lane waypoint and end lane waypoint:
-                    generate path
+#             for every vehicles we find config (which has start and ending lane):
+#                 get start lane waypoint and end lane waypoint:
+#                     generate path
             # Controller.generate_path(curr_vehicle, starting_waypoint, ending_waypoint)
     #generate path from controller .... 
   
