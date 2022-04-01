@@ -53,16 +53,18 @@ class TestExperiment(Experiment):
 
         # Add a new managed intersection to the map
         first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
+        second_intersection = Intersection(self.junctions[207], self.world.get_traffic_lights_in_junction(207))
 
         # Add the first intersection to the controller
-        self.section_list.append(first_intersection)
+        self.add_section(first_intersection)
+        self.add_section(second_intersection)
 
         # Add a new test vehicle to the map
         spawn_location = self.spawn_points[2]
         ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
 
         # Set the vehicle's initial section
-        ego_vehicle.set_next_section(1, first_intersection)
+        ego_vehicle.current_section = first_intersection
 
         # Generate a straight forward path for the ego vehicle
         Controller.generate_path(ego_vehicle, self.map.get_waypoint(spawn_location.location),

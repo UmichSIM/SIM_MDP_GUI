@@ -212,53 +212,35 @@ class Controller:
         :return: a float representing the throttle to be applied to the vehicle (between -1 and 1)
         """
 
-        # Apply the target location control if necessary
+        # Determine the largest throttle that a vehicle should be allowed to apply. A Vehicle should
+        # never be allowed to travel faster than their target speed
+        max_throttle = Controller._throttle_target_speed(current_vehicle)
+        follow_throttle = None
+        stop_throttle = None
+
+        # Determine if the vehicle is close enough to the vehicle in front of it that it needs to
+        # adjust its throttle
+        if current_vehicle.type_id != VehicleType.LEAD:
+            car_in_front, current_distance = current_vehicle.check_vehicle_in_front()
+            if car_in_front:
+                follow_throttle = Controller._throttle_target_distance(current_vehicle, current_distance)
+
+        # Determine if the vehicle is close enough to an intersection that it needs to
+        # adjust its throttle
         if current_vehicle.target_location is not None:
             current_distance = np.sum(to_numpy_vector(current_vehicle.target_location) -
                                       current_vehicle.get_location_vector())
             if current_distance <= current_vehicle.breaking_distance:
-                return Controller._throttle_target_location(current_vehicle)
+                stop_throttle = Controller._throttle_target_location(current_vehicle)
 
-        # Apply the target distance control if necessary
-        if current_vehicle.type_id != VehicleType.LEAD:
-            car_in_front, current_distance = current_vehicle.check_vehicle_in_front()
-            if car_in_front:
-                return Controller._throttle_target_distance(current_vehicle, current_distance)
-
-        # Lastly, apply target speed control
-        return Controller._throttle_target_speed(current_vehicle)
-
-    @staticmethod
-    def _obey_traffic_light(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
-        """
-        Determines if the Vehicle needs to change its control to obey a traffic light.
-
-        Checks if the Vehicle is currently being affected by a traffic light, and
-        provides a new carla.VehicleControl object that will allow the Vehicle to
-        obey the light. Designed to be called either within or after update_control.
-
-        :param current_vehicle: the Vehicle object that will be checked for traffic lights
-        :return: a tuple of (bool, carla.VehicleControl). The first element will be True if the Vehicle
-                 is being affected by a traffic light. If True, the second element will contain a
-                 new carla.VehicleControl that should be applied to the Vehicle.
-        """
-
-        # is_changed = True
-        # control = self.VehicleControl
-        # curr_car_speed = get_vehicle_speed(current_vehicle)
-        #
-        # traffic_light_state = carla.get_traffic_light_state(current_vehicle)
-        #
-        # # if the traffic light is red and the vehicle is moving, stop
-        # if (traffic_light_state == 'Red' or traffic_light_state == 'Yellow') and curr_car_speed > 0.0:
-        #     control = carla.VehicleControl(throttle = 0.0,steer=steer,brake = 1.0) # stop car
-        # # if the traffic light is green or yellow and the vehicle is not moving, start moving
-        # elif traffic_light_state == 'Green' and curr_car_speed == 0.0:
-        #     control = carla.VehicleControl(throttle = 1.0,steer=steer,brake = 0.0) # start car
-        # else:
-        #     is_changed = False
-        #
-        # return Tuple[is_changed, control]
+        # Lastly, determine the most appropriate throttle to apply to the vehicle
+        if follow_throttle is not None and stop_throttle is not None:
+            return min([max_throttle, follow_throttle, stop_throttle])
+        if follow_throttle is not None:
+            return min([max_throttle, follow_throttle])
+        if stop_throttle is not None:
+            return min([max_throttle, stop_throttle])
+        return max_throttle
 
     @staticmethod
     def _avoid_collisions(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
@@ -275,32 +257,6 @@ class Controller:
                  new carla.VehicleControl that should be applied to the Vehicle.
         """
         pass
-
-    @staticmethod
-    def _obey_safety_distance(current_vehicle: Vehicle) -> Tuple[bool, carla.VehicleControl]:
-        """
-        Determines if the Vehicle needs to change its control to obey its safety distance.
-
-        Checks if the Vehicle is following too closely behind the Vehicle directly in front
-        of it, and provides a new carla.VehicleControl object that will allow the Vehicle to
-        move back to the safety distance. Designed to be called within update_control.
-
-        :param current_vehicle: the Vehicle object that will be checked for safety distance
-        :return: a tuple of (bool, carla.VehicleControl). The first element will be True if the Vehicle
-                 needs adjust to meet its safety distance. If True, the second element will contain a
-                 new carla.VehicleControl that should be applied to the Vehicle.
-        """
-        """
-        1) detect the vehicles in front of current_vehicle, check the distance in current_vehicle.other_vehicle_locations[0]
-        2) if distance < current_vehicle.safety_distance
-            - control = carla.VehicleControl(brake = x) # should x be proportion to distance?
-        """
-        hasVehicle, vehicleDistance = current_vehicle.check_vehicle_in_front(ExperimentType.INTERSECTION) # don't really sure why we need experiment type
-        control = carla.VehicleControl()
-        if hasVehicle and vehicleDistance < current_vehicle.safety_distance:
-            control.brake = 0.1 # this should be proportion to current speed and sita
-            return True, control
-        return False, control
 
     @staticmethod
     def _end_of_search(current_waypoint: carla.Waypoint, ending_waypoint: carla.Waypoint) -> bool:

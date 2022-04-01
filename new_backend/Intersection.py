@@ -26,7 +26,18 @@ from typing import Dict, List, Tuple
 
 class Intersection:
 
+    # Static ID variable used as a last number to assign Intersection Ids
+    id = 0
+
     def __init__(self, junction: carla.Junction, traffic_lights: List[carla.TrafficLight]):
+
+        # Store a local id number identifying the order of the intersection in this experiment
+        self.id = Intersection.id
+        Intersection.id += 1
+
+        # Store the next intersection that follows sequentially after this one (this will be set by
+        # the Experiment::add_section method)
+        self.next_section = None
 
         # The carla.Junction object that this Intersection corresponds to
         self.junction = junction
@@ -50,9 +61,17 @@ class Intersection:
                  if needed
         """
 
-        # Calculate the distance between the vehicle and the intersection
+        # Calculate the "distance" between the vehicle and the intersection, use the L1 norm so we have
+        # some sense of direction
         current_separation = self._distance_between(current_vehicle.get_current_location())
 
+        # If the current_separation is negative, then the vehicle is already in the intersection.
+        # Simple advance the vehicle to the next section
+        if current_separation < 0:
+            current_vehicle.current_section = current_vehicle.current_section.next_section
+            return False, None
+
+        # If it's time to brake
         if current_separation < braking_distance:
             # Select the traffic light that has a stop waypoint that is nearest to the vehicle
             # This assumes that the controlled vehicles are acting rationally, and it may break in some niche cases.
@@ -108,7 +127,7 @@ class Intersection:
 
         Checks the state of each traffic light in the Intersection. For all the lights that are
         currently green, checks if there are any vehicles waiting at that light. If there are waiting
-        vehicles, then remove their target location and advance them to the section section to allow them to proceed.
+        vehicles, then remove their target location and advance them to the next section to allow them to proceed.
         :return: None
         """
 
@@ -117,5 +136,5 @@ class Intersection:
                 if len(self.vehicles_at_lights[i]) > 0:
                     for vehicle in self.vehicles_at_lights[i]:
                         vehicle.target_location = None
-                        vehicle.current_section = None # TODO: fix this
+                        vehicle.current_section = self.next_section
                     self.vehicles_at_lights[i] = []

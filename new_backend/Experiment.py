@@ -286,7 +286,6 @@ class Experiment:
         for vehicle in self.vehicle_list:
             vehicle.carla_vehicle.destroy()
 
-    # TODO: add new parameters to this function as needed
     def add_vehicle(self, spawn_location: carla.Transform, type_id: VehicleType, ego: bool = False,
                     blueprint_id: str = None) -> Vehicle:
         """
@@ -331,3 +330,19 @@ class Experiment:
             self.vehicle_list.append(new_vehicle)
 
         return new_vehicle
+
+    def add_section(self, new_section: Union[Intersection, FreewaySection]) -> None:
+        """
+        Adds a new section to the Experiment.
+
+        Adds the section to the section_list. Also, handles setting the "next_section" property
+        of the previous section to point to the newly added section.
+
+        :param new_section: an Intersection or Freeway Section to add to the experiment
+        :return: None
+        """
+
+        if len(self.section_list) > 0:
+            self.section_list[-1].next_section = new_section
+
+        self.section_list.append(new_section)

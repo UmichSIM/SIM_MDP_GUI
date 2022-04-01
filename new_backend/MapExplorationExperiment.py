@@ -63,13 +63,6 @@ class MapExplorationExperiment(Experiment):
         for intersect_waypoint in all_intersection_waypoints:
             self.world.debug.draw_point(intersect_waypoint.transform.location, size=0.05, color=YELLOW, life_time=0.0)
 
-        # Add a new managed intersection to the map
-        first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
-        for traffic_light in first_intersection.lane_to_traffic_light.values():
-            self.world.debug.draw_point(traffic_light[0].get_transform().location, size=1.0, color=RED, life_time=0.0)
-            for light_waypoint in traffic_light[0].get_stop_waypoints():
-                self.world.debug.draw_point(light_waypoint.transform.location, size=1.0, color=RED, life_time=0.0)
-
         # Add a new test vehicle to the map
         spawn_location = self.spawn_points[2]
         self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)

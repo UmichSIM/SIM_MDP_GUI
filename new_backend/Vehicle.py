@@ -17,7 +17,6 @@ Referenced By:
 """
 
 # Local Imports
-from FreewaySection import FreewaySection
 from Helpers import WorldDirection, VehicleType, to_numpy_vector, rotate_vector, ORANGE, RED
 
 # Library Imports
@@ -25,14 +24,14 @@ import carla
 import math
 import numpy as np
 from simple_pid import PID
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 
 class Vehicle:
 
     def __init__(self, carla_vehicle: carla.Vehicle, name: str, type_id: VehicleType,
                  target_distance: float = 15.0, target_speed: float = 35.0,
-                 breaking_distance: float = 15.0):
+                 breaking_distance: float = 20.0):
         super().__init__()
 
         # Stores the Carla Vehicle object associated with this particular vehicle
@@ -62,7 +61,7 @@ class Vehicle:
         self.target_location: carla.Location = None
 
         # PID controller to manage arriving at the target location
-        self.location_pid_controller = PID(-0.5, -0.02, -0.3, setpoint=0)
+        self.location_pid_controller = PID(-0.5, -0.00, -0.3, setpoint=0)
         self.location_pid_controller.output_limits = (-1, 1)
 
         # The distance before the target location that the vehicle will start breaking
@@ -81,7 +80,6 @@ class Vehicle:
         self.trajectory: List[carla.Transform] = []
 
         # The current section that the Vehicle is on, can either be an Intersection or Freeway Section
-        self.current_section_index: int = -1
         self.current_section = None
 
     def has_path(self):
@@ -293,14 +291,3 @@ class Vehicle:
         if dims == 2:
             return np.array([location.x, location.y])
         raise Exception("Invalid number of dimensions passed to get_location_vector")
-
-    def set_next_section(self, index: int, next_section) -> None:
-        """
-        Updates the current section of the Vehicle to a new section
-
-        :param index: the index of the next section in the Experiments section_list
-        :param next_section: the FreewaySection or Intersection object that represents the next section
-        :return: None
-        """
-        self.current_section_index = index
-        self.current_section = next_section
