@@ -21,6 +21,7 @@ from Vehicle import Vehicle
 # Library Imports
 import carla
 import numpy as np
+from time import perf_counter
 from typing import Dict, List, Tuple
 
 
@@ -29,7 +30,9 @@ class Intersection:
     # Static ID variable used as a last number to assign Intersection Ids
     id = 0
 
-    def __init__(self, junction: carla.Junction, traffic_lights: List[carla.TrafficLight]):
+    def __init__(self, junction: carla.Junction, traffic_lights: List[carla.TrafficLight],
+                 green_time: float = 10.0, yellow_time: float = 3.0, first_pair: Tuple = (0, 2),
+                 second_pair: Tuple = (1, 3)):
 
         # Store a local id number identifying the order of the intersection in this experiment
         self.id = Intersection.id
@@ -44,12 +47,43 @@ class Intersection:
 
         # List of all the carla.TrafficLights that affect this intersection
         self.traffic_lights = traffic_lights
+        self.has_started = False
 
         # Dictionary storing the index of each light in the traffic_lights light and a list of
         # all vehicles that are stopped at that traffic light.
         self.vehicles_at_lights: Dict[int, List[Vehicle]] = {}
         for (i, _) in enumerate(self.traffic_lights):
             self.vehicles_at_lights[i] = []
+
+        # Store the light timings in a dictionary for easy retrieval
+        self.light_timings: Dict[carla.TrafficLightState, float] = {
+            carla.TrafficLightState.Green: green_time,
+            carla.TrafficLightState.Yellow: yellow_time,
+
+            # This only defines the overlap where both sets of lights will be red. Otherwise, one
+            # pair of lights will remain red until the active pair of lights has finished their cycle
+            carla.TrafficLightState.Red: 1.0
+        }
+
+        # Store the indexes of the traffic light that make up opposite pairs (opposite pairs of
+        # traffic lights will be synced up, the first pair will always start on green)
+        self.first_pair: Tuple = first_pair
+        self.second_pair: Tuple = second_pair
+
+        # The active pair refers to which pair of traffic lights is currently active. The inactive
+        # pair will remain red until the active pair has moved from green -> yellow -> red
+        self.active_pair = 'first'
+
+        # Start time used to track how long a light has been in a particular state
+        self.start_time: float = None
+
+        # Set the timings for each of the traffic lights
+        for (i, light) in enumerate(self.traffic_lights):
+            light.freeze(True)
+            if i in self.first_pair:
+                light.set_state(carla.TrafficLightState.Green)
+            else:
+                light.set_state(carla.TrafficLightState.Red)
 
     def stop_at_light(self, current_vehicle: Vehicle, braking_distance: float) -> Tuple[bool, carla.Location]:
         """
@@ -131,10 +165,61 @@ class Intersection:
         :return: None
         """
 
-        for (i, light) in enumerate(self.traffic_lights):
-            if light.get_state() == carla.TrafficLightState.Green:
-                if len(self.vehicles_at_lights[i]) > 0:
-                    for vehicle in self.vehicles_at_lights[i]:
-                        vehicle.target_location = None
-                        vehicle.current_section = self.next_section
-                    self.vehicles_at_lights[i] = []
+        if not self.has_started:
+            self.has_started = True
+            self._reset_light_timer()
+            # for light in self.traffic_lights:
+            #     light.freeze(False)
+
+        # Get a reference to the current pair of lights that are active
+        if self.active_pair == 'first':
+            current_pair = self.first_pair
+            inactive_pair = self.second_pair
+        else:
+            current_pair = self.second_pair
+            inactive_pair = self.first_pair
+
+        # Check to see if the light's state needs to change
+        current_state = self.traffic_lights[current_pair[0]].get_state()
+        if self._get_elapsed_time() > self.light_timings[current_state]:
+
+            # If the active lights are green, move them to yellow
+            if current_state == carla.TrafficLightState.Green:
+                for light in [self.traffic_lights[index] for index in current_pair]:
+                    light.set_state(carla.TrafficLightState.Yellow)
+
+            # If the active lights are yellow, move them to red
+            if current_state == carla.TrafficLightState.Yellow:
+                # Set the currently active lights to red
+                for light in [self.traffic_lights[index] for index in current_pair]:
+                    light.set_state(carla.TrafficLightState.Red)
+
+            # If the active lights are red, activate the next group
+            if current_state == carla.TrafficLightState.Red:
+                for index, light in [(index, self.traffic_lights[index]) for index in inactive_pair]:
+                    light.set_state(carla.TrafficLightState.Green)
+                    # When setting a light to green, update the vehicles waiting at that light
+                    if len(self.vehicles_at_lights[index]) > 0:
+                        for vehicle in self.vehicles_at_lights[index]:
+                            vehicle.target_location = None
+                            vehicle.current_section = self.next_section
+                self.active_pair = 'first' if self.active_pair == 'second' else 'second'
+
+            # Reset the timer
+            self._reset_light_timer()
+
+    def _reset_light_timer(self) -> None:
+        """
+        Resets the start_time whenever the light's change state
+
+        :return: None
+        """
+        self.start_time = perf_counter()
+
+    def _get_elapsed_time(self) -> float:
+        """
+        Gets the number of seconds that have elapsed since _reset_light_timer() was last called
+
+        :return: the number of seconds as a float
+        """
+        return perf_counter() - self.start_time

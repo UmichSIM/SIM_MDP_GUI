@@ -61,7 +61,7 @@ class Vehicle:
         self.target_location: carla.Location = None
 
         # PID controller to manage arriving at the target location
-        self.location_pid_controller = PID(-0.5, -0.00, -0.3, setpoint=0)
+        self.location_pid_controller = PID(-0.5, -0.1, -0.3, setpoint=0)
         self.location_pid_controller.output_limits = (-1, 1)
 
         # The distance before the target location that the vehicle will start breaking

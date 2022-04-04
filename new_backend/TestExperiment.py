@@ -74,6 +74,9 @@ class TestExperiment(Experiment):
         spawn_location = self.spawn_points[276]
         lead_vehicle = self.add_vehicle(spawn_location, ego=False, type_id=VehicleType.LEAD)
 
+        # Set the vehicle's initial section
+        lead_vehicle.current_section = first_intersection
+
         # Generate a straight forward path for the vehicle in front
         Controller.generate_path(lead_vehicle, self.map.get_waypoint(spawn_location.location),
                                  self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
