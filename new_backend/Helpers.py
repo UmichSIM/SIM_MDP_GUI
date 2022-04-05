@@ -157,3 +157,27 @@ def smooth_path(current_path: List[carla.Transform], num_passes=1) -> List[carla
         starting_path = smoothed_path
 
     return smoothed_path
+
+
+def project_forward(transform: carla.Transform, distance: float) -> carla.Transform:
+    """
+    Projects a carla.Transform forward a given distance in the direction of the Transforms yaw
+
+    This function only calculates the projection in two dimension. Only yaw is used as the direction
+    for the project, so there will be no changes to the Z axis. Pass in a negative distance to project
+    backwards.
+
+    :param transform: the carla.Transform to project forward
+    :param distance: the distance to project forward
+    :return: a new carla.Transform that represents the transform projected forward
+    """
+
+    x_component = math.cos(transform.rotation.yaw * (math.pi / 180))
+    y_component = math.sin(transform.rotation.yaw * (math.pi / 180))
+
+    projected_location = carla.Location(x=transform.location.x + distance * x_component,
+                                        y=transform.location.y + distance * y_component,
+                                        z=transform.location.z)
+
+    return carla.Transform(projected_location, transform.rotation)
+

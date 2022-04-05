@@ -126,7 +126,6 @@ class Intersection:
 
                 # If there are multiple stopping options, choose the one closer to the Vehicle
                 if len(possible_stop_points) > 1:
-                    print("Multiple stop points")
                     closest_index = np.argmin([np.linalg.norm(
                                                 current_vehicle.get_location_vector() -
                                                 to_numpy_vector(x.transform.location))

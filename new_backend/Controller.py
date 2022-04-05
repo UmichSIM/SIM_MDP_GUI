@@ -313,7 +313,7 @@ class Controller:
 
         # Also add additional waypoints if the current waypoint is an intersection
         if current_waypoint.is_junction:
-            junction_points = current_waypoint.get_junction().get_waypoints(carla.LaneType.Any)
+            junction_points = current_waypoint.get_junction().get_waypoints(carla.LaneType.Driving)
             for pair in junction_points:
                 if pair[0].id == current_waypoint.id:
                     new_potential_waypoints.append(pair[1])

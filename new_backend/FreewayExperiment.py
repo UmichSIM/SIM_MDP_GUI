@@ -28,11 +28,11 @@ import random
 import sys
 from typing import Dict, List, Tuple
 
+
 class FreewayExperiment(Experiment):
 
     def __init__(self) -> None:
-        
-        #test config dictioniary where key is the vehicle id and the value is a tuple/dict waypoints 
+        # test config dictioniary where key is the vehicle id and the value is a tuple/dict waypoints
         config = {1: Tuple[w1, w2], 
                   2: Tuple[0, 1],
                   3: Tuple[0, 1]}
