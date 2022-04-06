@@ -63,20 +63,30 @@ class IntersectionController:
                 if stop_at_light:
                     current_vehicle.target_location = target_location
 
+        # Determine if the vehicle is currently turning and set the target speed appropriately
+        if abs(steering_angle) > 0.05:
+            current_vehicle.target_speed = current_vehicle.turning_speed
+        else:
+            current_vehicle.target_speed = current_vehicle.straight_speed
+
         # Determine the throttle needed
         throttle = Controller.throttle_control(current_vehicle)
 
-        # Stop the car if we've reached the end of the path
-        if end_of_path:
-            control.steer = 0
-            control.throttle = 0
-            control.brake = 1.0
-            current_vehicle.carla_vehicle.apply_control(control)
-            return
+        # Temp
+        if current_vehicle.active:
 
-        # Otherwise, apply the steering and constant acceleration
-        control.steer = steering_angle
-        control.throttle = throttle if throttle > 0 else 0
-        control.brake = abs(throttle) if throttle < 0 else 0
-        current_vehicle.apply_control(control)
+            # Stop the car if we've reached the end of the path
+            if end_of_path:
+                current_vehicle.active = False
+                control.steer = 0
+                control.throttle = 0
+                control.brake = 1.0
+                current_vehicle.carla_vehicle.apply_control(control)
+                return
+
+            # Otherwise, apply the steering and constant acceleration
+            control.steer = steering_angle
+            control.throttle = throttle if throttle > 0 else 0
+            control.brake = abs(throttle) if throttle < 0 else 0
+            current_vehicle.apply_control(control)
 

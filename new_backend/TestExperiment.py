@@ -22,7 +22,7 @@ Referenced By:
 from Controller import Controller
 from Experiment import Experiment
 from Intersection import Intersection
-from IntersectionController import IntersectionController
+from IntersectionExperiment import IntersectionExperiment
 from Helpers import ExperimentType, VehicleType
 from Threading import HeadlessWindow
 
@@ -33,13 +33,13 @@ import sys
 from typing import Dict, List
 
 
-class TestExperiment(Experiment):
+class TestExperiment(IntersectionExperiment):
 
     def __init__(self, headless: bool) -> None:
         super(TestExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.INTERSECTION
 
-    def initialize_experiment(self, configuration: Dict[str, str] = None) -> None:
+    def initialize_experiment(self, configuration: Dict[str, str] = {}) -> None:
         """
         Uses an existing connection to the Carla server and configures the world according to the experiment design.
 
@@ -52,37 +52,31 @@ class TestExperiment(Experiment):
         """
 
         # Add a new managed intersection to the map
-        first_intersection = Intersection(self.junctions[1427], self.world.get_traffic_lights_in_junction(1427))
-        second_intersection = Intersection(self.junctions[207], self.world.get_traffic_lights_in_junction(207))
+        first_intersection = Intersection(self.junctions[838], self.world.get_traffic_lights_in_junction(838))
+        second_intersection = Intersection(self.junctions[979], self.world.get_traffic_lights_in_junction(979))
 
         # Add the first intersection to the controller
         self.add_section(first_intersection)
         self.add_section(second_intersection)
 
-        # Add a new test vehicle to the map
-        spawn_location = self.spawn_points[2]
-        ego_vehicle = self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
+        # Add a new vehicle at a subsequence intersection
+        turning_spawn_location = self.spawn_points[253]
+        turning_vehicle = self.add_vehicle(turning_spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
 
-        # Set the vehicle's initial section
-        ego_vehicle.current_section = first_intersection
+        # Set the vehicle's active intersections
+        turning_vehicle.set_active_sections(second_intersection, second_intersection)
 
-        # Generate a straight forward path for the ego vehicle
-        Controller.generate_path(ego_vehicle, self.map.get_waypoint(spawn_location.location),
-                                 self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
+        # Configure what the turning vehicle will do at each intersection
+        turning_configuration = {
+            1: 'right'
+        }
+        configuration[turning_vehicle.id] = turning_configuration
 
-        # Add a new vehicle directly in front of the initial vehicle
-        spawn_location = self.spawn_points[276]
-        lead_vehicle = self.add_vehicle(spawn_location, ego=False, type_id=VehicleType.LEAD)
+        # Generate the paths for all the vehicles
+        self._generate_intersection_paths(configuration)
 
-        # Set the vehicle's initial section
-        lead_vehicle.current_section = first_intersection
-
-        # Generate a straight forward path for the vehicle in front
-        Controller.generate_path(lead_vehicle, self.map.get_waypoint(spawn_location.location),
-                                 self.map.get_waypoint(carla.Location(x=-54, y=107, z=0)))
-
-        # Visualize the waypoints of the lead vehicle
-        self.vehicle_list[0].draw_waypoints(self.world)
+        # Visualize the waypoints of the ego vehicle
+        self.ego_vehicle.draw_waypoints(self.world)
 
 
 def main() -> None:

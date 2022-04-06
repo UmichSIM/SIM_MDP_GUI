@@ -33,7 +33,7 @@ from typing import List, Tuple
 WAYPOINT_SEPARATION = 15
 
 # Global constant that dictates how strongly speed affects the Pure Pursuit lookahead distance
-SPEED_CONSTANT = 0.1
+SPEED_CONSTANT = 0.075
 
 # Global constant that dictates how much additional stopping distance the vehicle gains per kilometer per hour
 STOP_DISTANCE_FACTOR = 0.25
@@ -156,7 +156,7 @@ class Controller:
 
         # Determine what our lookahead distance should be
         current_forward_speed = np.linalg.norm(to_numpy_vector(current_vehicle.carla_vehicle.get_velocity()))
-        lookahead_distance = 4 + current_forward_speed * SPEED_CONSTANT
+        lookahead_distance = 1.0 + current_forward_speed * SPEED_CONSTANT
 
         # Find the next waypoint that is at least lookahead distance away, or at the end of the path
         current_distance = 0
@@ -182,8 +182,10 @@ class Controller:
             np.arctan2(unit_forward_facing_vector[1], unit_forward_facing_vector[0])
 
         # Lastly, get the length of the vehicle and calculate the steering angle
+        # The 1.5 is an arbitrary scaling factor to account for the fact that Pure Pursuit doesn't do
+        # 90 degree turns very well
         vehicle_length = current_vehicle.carla_vehicle.bounding_box.extent.y * 2
-        steering_angle = np.arctan2(2 * vehicle_length * np.sin(theta), distance_from_current_location_to_goal)
+        steering_angle = 1.5 * np.arctan2(2 * vehicle_length * np.sin(theta), distance_from_current_location_to_goal)
 
         return steering_angle, False
 

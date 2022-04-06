@@ -181,3 +181,25 @@ def project_forward(transform: carla.Transform, distance: float) -> carla.Transf
 
     return carla.Transform(projected_location, transform.rotation)
 
+
+def angle_difference(first: float, second: float) -> float:
+    """
+    Calculates the difference between two angles in Degrees.
+
+    Accounts for the rollover from 359 degrees -> 0 degrees
+
+    :param first: the first angle measurement in degrees
+    :param second: the second angle measurement in degrees
+    :return: the angle difference in degrees
+    """
+
+    # Account for negative angles and convert to positive angles
+    if first < 0:
+        first += 360
+
+    if second < 0:
+        second += 360
+
+    # I think that this works. There's some interesting edge cases though
+    return min(abs(first - second),
+               abs(abs(first - second) - 360))

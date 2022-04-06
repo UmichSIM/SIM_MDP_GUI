@@ -15,7 +15,7 @@ Referenced By:
 """
 
 # Local Imports
-from Helpers import to_numpy_vector
+from Helpers import to_numpy_vector, project_forward, angle_difference
 from Vehicle import Vehicle
 
 # Library Imports
@@ -37,6 +37,9 @@ class Intersection:
         # Store a local id number identifying the order of the intersection in this experiment
         self.id = Intersection.id
         Intersection.id += 1
+
+        # Vehicles that start at this section (TODO: move this to the base section class)
+        self.initial_vehicles: List[Vehicle] = []
 
         # Store the next intersection that follows sequentially after this one (this will be set by
         # the Experiment::add_section method)
@@ -102,7 +105,7 @@ class Intersection:
         # If the current_separation is negative, then the vehicle is already in the intersection.
         # Simple advance the vehicle to the next section
         if current_separation < 0:
-            current_vehicle.current_section = current_vehicle.current_section.next_section
+            current_vehicle.advance_section()
             return False, None
 
         # If it's time to brake
@@ -111,6 +114,8 @@ class Intersection:
             # Determine what light is controlled the current vehicle's lane and the carla.Waypoint
             # that the vehicle needs to stop at
             light_index, stop_waypoint = self.get_stop_location(current_vehicle.get_location_vector())
+
+            debug = self.traffic_lights[light_index].get_state()
 
             # Check if the light is red
             if self.traffic_lights[light_index].get_state() in [carla.TrafficLightState.Red, carla.TrafficLightState.Yellow]:
@@ -152,13 +157,15 @@ class Intersection:
         # If there's only one stopping option, just return that
         return correct_light_index, possible_stop_points[-1]
 
-    def get_turn_waypoint(self, current_transform: carla.Transform, direction: str) -> carla.Waypoint:
+    def get_thru_waypoints(self, map: carla.Map, current_transform: carla.Transform,
+                           direction: str) -> List[carla.Waypoint]:
         """
-        Determines the waypoint that corresponds with a particular turn at the intersection
+        Determines the waypoints that corresponds with a particular turn at the intersection
 
+        :param map: the carla.Map that the experiment is running on
         :param current_transform: the current transform of the Vehicle about to turn
-        :param direction: a string presenting the direction to turn (either "left" or "right")
-        :return: a carla.Waypoint corresponding with the desired turn
+        :param direction: a string presenting the direction to turn (either "left" or "right" or "straight")
+        :return: a List of carla.Waypoints corresponding with the desired turn
         """
 
         # Grab all possible pairs of starting -> ending waypoints
@@ -179,20 +186,46 @@ class Intersection:
                    possible_waypoint_pairs)
         )
 
-        # Now determine the target yaw
-        target_yaw = current_transform.rotation.yaw + (90 if direction == "right" else -90)
+        # Now determine the target yaw (add the change in angle caused by the maneuver and mod by 360)
+        target_yaw = current_transform.rotation.yaw +\
+            (90 if direction == "right" else -90 if direction == "left" else 0) % 360
+
+        # Convert negative angles into their positive equivalent
+        if target_yaw < 0:
+            target_yaw += 360
 
         # Now, out of the possible pairs, choose the ending waypoint with the yaw closest to the target
-        closest_yaw = np.argmin([abs(x[1].transform.rotation.yaw - target_yaw) for x in possible_waypoint_pairs])
+        closest_yaw = np.argmin([angle_difference(x[1].transform.rotation.yaw, target_yaw) for x in possible_waypoint_pairs])
 
-        # Make sure that the chosen waypoint has the expected yaw
-        # Return None if the chosen waypoint isn't close to the expected yaw
-        turn_waypoint = possible_waypoint_pairs[closest_yaw][1]
-        if abs(turn_waypoint.transform.rotation.yaw - target_yaw) > 5:
+        # Make sure that the chosen waypoint has a correct yaw
+        thru_waypoint = possible_waypoint_pairs[closest_yaw][1]
+        # Absolute values are necessary since Carla uses positive and negative yaws interchangeably for same angle
+        yaw_difference = angle_difference(thru_waypoint.transform.rotation.yaw, target_yaw)
+        if yaw_difference > 5:
             return None
 
-        # Otherwise, return our selected waypoint
-        return turn_waypoint
+        # Grab the starting and ending intersection waypoints
+        waypoints = [starting_waypoint, thru_waypoint]
+
+        # If the maneuver is a turn,then add a waypoint at the midpoint of the turn to smooth it out and
+        # some closely spaced waypoints after the turn to stabilize the vehicle's direction in the new lane
+        if direction in ("left", "right"):
+
+            # Midpoint waypoint
+            waypoints.insert(1, map.get_waypoint(carla.Location(
+                x=starting_waypoint.transform.location.x + ((thru_waypoint.transform.location.x - starting_waypoint.transform.location.x) / 2),
+                y=starting_waypoint.transform.location.y + ((thru_waypoint.transform.location.y - starting_waypoint.transform.location.y) / 2),
+                z=0.0
+            )))
+
+            # Closely spaced waypoints after turn
+            for dist in range(4, 20, 2):
+                waypoints.append(
+                    map.get_waypoint(project_forward(thru_waypoint.transform, dist).location)
+                )
+
+        # Then return the waypoints
+        return waypoints
 
     def _distance_between(self, current_location: carla.Location) -> float:
         """
@@ -259,7 +292,8 @@ class Intersection:
                     if len(self.vehicles_at_lights[index]) > 0:
                         for vehicle in self.vehicles_at_lights[index]:
                             vehicle.target_location = None
-                            vehicle.current_section = self.next_section
+                            vehicle.advance_section()
+                        self.vehicles_at_lights[index] = []
                 self.active_pair = 'first' if self.active_pair == 'second' else 'second'
 
             # Reset the timer

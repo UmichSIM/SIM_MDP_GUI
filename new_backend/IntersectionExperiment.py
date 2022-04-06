@@ -92,12 +92,55 @@ class IntersectionExperiment(Experiment):
         }
         configuration[lead_vehicle.id] = lead_configuration
 
+        # Add a new right turning vehicle at the initial intersection
+        initial_turning_spawn_location = self.spawn_points[59]
+        initial_turning_vehicle = self.add_vehicle(initial_turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
+
+        # Set the vehicle's active intersections
+        initial_turning_vehicle.set_active_sections(first_intersection, first_intersection)
+
+        # Configure what the initial turning vehicle will do at each intersection
+        initial_turning_configuration = {
+            0: 'right'
+        }
+        configuration[initial_turning_vehicle.id] = initial_turning_configuration
+
+        # Add a new vehicle at a subsequence intersection
+        turning_spawn_location = self.spawn_points[253]
+        turning_vehicle = self.add_vehicle(turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
+
+        # Set the vehicle's active intersections
+        turning_vehicle.set_active_sections(second_intersection, second_intersection)
+
+        # Configure what the turning vehicle will do at each intersection
+        turning_configuration = {
+            1: 'right'
+        }
+        configuration[turning_vehicle.id] = turning_configuration
+
+        # Add a new left turning vehicle at the third intersection
+        left_turning_spawn_location = self.spawn_points[277]
+        left_turning_vehicle = self.add_vehicle(left_turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
+
+        # Set the vehicle's active intersections
+        left_turning_vehicle.set_active_sections(third_intersection, fourth_intersection)
+
+        # Configure what the left turning vehicle will do at each intersection
+        left_turning_configuration = {
+            2: 'left',
+            3: 'left'
+        }
+        configuration[left_turning_vehicle.id] = left_turning_configuration
+
         # Generate the paths for all the vehicles
         self._generate_intersection_paths(configuration)
 
         # Visualize the waypoints of the lead and ego vehicles
         self.ego_vehicle.draw_waypoints(self.world)
         self.vehicle_list[0].draw_waypoints(self.world)
+        self.vehicle_list[1].draw_waypoints(self.world)
+        self.vehicle_list[2].draw_waypoints(self.world)
+        self.vehicle_list[3].draw_waypoints(self.world)
 
     def _generate_intersection_paths(self, configuration: Dict[int, Dict[int, str]]) -> None:
         """
@@ -115,26 +158,28 @@ class IntersectionExperiment(Experiment):
 
             # Generate a path for the vehicles current last waypoint to the next intersection
             for (i, intersection) in enumerate(self.section_list):
+
+                # Skip this intersection if the vehicle doesn't interact with it
+                if i not in vehicle_configuration:
+                    continue
+
+                # Generate the path from the vehicles current position to their next intersection
                 current_location = vehicle.waypoints[-1].transform.location
                 _, next_waypoint = intersection.get_stop_location(to_numpy_vector(current_location))
                 Controller.generate_path(vehicle, vehicle.waypoints[-1], next_waypoint)
 
                 # Add a new waypoint to move the vehicle through the intersection
-                if vehicle_configuration[i] == 'straight':
-                    vehicle.waypoints.append(
-                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 15.0).location)
-                    )
-                else:
-                    next_waypoint = intersection.get_turn_waypoint(vehicle.carla_vehicle.get_transform(),
-                                                                   vehicle_configuration[i])
-                    if next_waypoint is not None:
-                        vehicle.waypoints.append(next_waypoint)
+                thru_waypoints = intersection.get_thru_waypoints(self.map,
+                                                                 vehicle.carla_vehicle.get_transform(),
+                                                                 vehicle_configuration[i])
+                if thru_waypoints is not None:
+                    vehicle.waypoints += thru_waypoints
 
                 # If we've arrived at the last intersection, move forward some to clear the intersection
                 # then stop
                 if intersection.id == vehicle.ending_section.id:
                     vehicle.waypoints.append(
-                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 25.0).location)
+                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 15.0).location)
                     )
                     # Also, make sure to re-smooth the trajectory
                     vehicle.trajectory = smooth_path(vehicle.waypoints)

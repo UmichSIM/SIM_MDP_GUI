@@ -33,8 +33,8 @@ class Vehicle:
     id = 0
 
     def __init__(self, carla_vehicle: carla.Vehicle, name: str, type_id: VehicleType,
-                 target_distance: float = 10.0, target_speed: float = 35.0,
-                 breaking_distance: float = 20.0):
+                 target_distance: float = 10.0, straight_speed: float = 35.0,
+                 turning_speed: float = 25.0, breaking_distance: float = 20.0):
         super().__init__()
 
         # Stores the Carla Vehicle object associated with this particular vehicle
@@ -57,8 +57,12 @@ class Vehicle:
         self.distance_pid_controller = PID(0.5, 0.02, 0.3, setpoint=0)
         self.distance_pid_controller.output_limits = (-1, 1)
 
+        # Target speeds that are used when the Vehicle is traveling straight or turning
+        self.straight_speed = straight_speed
+        self.turning_speed = turning_speed
+
         # The target speed that the vehicle will maintain (current in KM/H)
-        self.target_speed = target_speed
+        self.target_speed = self.straight_speed
 
         # PID controller to manage maintaining the target speed
         self.speed_pid_controller = PID(-0.5, -0.02, -0.3, setpoint=0)
@@ -91,6 +95,9 @@ class Vehicle:
 
         # The ending section is the section at which the Vehicle's path will end
         self.ending_section = None
+
+        # Whether the current Vehicle is active or not (an inactive vehicle will not move)
+        self.active: bool = True
 
     def has_path(self):
         """
@@ -313,3 +320,25 @@ class Vehicle:
 
         self.current_section = starting_section
         self.ending_section = ending_section
+
+        # Set the Vehicle as inactive if it doesn't start at the first section (unless it's the ego)
+        if starting_section.id != 0 and self.id != 0:
+            self.active = False
+            starting_section.initial_vehicles.append(self)
+
+    def advance_section(self) -> None:
+        """
+        Advances this vehicle to the next section.
+
+        If the vehicle is the ego vehicle, this section will become active and all
+        initial vehicles at this section will become active.
+
+        :return: None
+        """
+
+        if self.current_section is not None:
+            self.current_section = self.current_section.next_section
+            # If the current vehicle is the ego, active all vehicles waiting at this section
+            if self.id == 0 and self.current_section is not None:
+                for vehicle in self.current_section.initial_vehicles:
+                    vehicle.active = True
