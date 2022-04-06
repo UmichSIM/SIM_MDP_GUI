@@ -139,7 +139,7 @@ def smooth_path(current_path: List[carla.Transform], num_passes=1) -> List[carla
     :return: a List of carla.Transforms representing the newly smoothed path
     """
 
-    starting_path: List[carla.Transform] = current_path
+    starting_path: List[carla.Transform] = [waypoint.transform for waypoint in current_path]
     smoothed_path: List[carla.Transform] = [starting_path[0]]
     for _ in range(num_passes):
         for i in range(1, len(starting_path), 1):

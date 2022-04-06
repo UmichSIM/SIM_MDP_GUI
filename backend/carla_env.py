@@ -405,7 +405,7 @@ class CARLA_ENV():
         
         # get the bounding box of this vehicle
         vehicle_bb = self.vehicle_dict[uniquename].bounding_box.extent
-        safety_distance += vehicle_bb.x / 2 # add the half length of the vehicle
+        safety_distance += vehicle_bb.y / 2 # add the half length of the vehicle
         
         has_vehicle_in_front = False
         distance = None

@@ -102,8 +102,8 @@ class Controller:
             # If the search is over, backtrack to build the path
             if Controller._end_of_search(current_waypoint, ending_point):
                 waypoints = Controller._backtrack_path(explored_list)
-                current_vehicle.waypoints = waypoints
-                current_vehicle.trajectory = smooth_path(waypoints)
+                current_vehicle.waypoints += waypoints
+                current_vehicle.trajectory = smooth_path(current_vehicle.waypoints)
                 return
 
             # Check all the potential next waypoints and add them to the potential list
@@ -294,7 +294,7 @@ class Controller:
 
         # Continue backtracking until the first waypoint is reached
         while current_index != -1:
-            path.append(current_waypoint.transform)
+            path.append(current_waypoint)
             current_waypoint, current_index = explored_list[current_index]
 
         return path[::-1]

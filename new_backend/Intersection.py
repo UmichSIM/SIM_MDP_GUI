@@ -107,34 +107,92 @@ class Intersection:
 
         # If it's time to brake
         if current_separation < braking_distance:
-            # Select the traffic light that has a stop waypoint that is nearest to the vehicle
-            # This assumes that the controlled vehicles are acting rationally, and it may break in some niche cases.
-            # Please just trust me that this list comprehension does what it's supposed to
-            correct_light_index = min([(i, np.linalg.norm(current_vehicle.get_location_vector() - to_numpy_vector(waypoint.transform.location)))
-                                      for (i, light) in enumerate(self.traffic_lights)
-                                      for waypoint in light.get_stop_waypoints()], key=lambda x: x[1])[0]
-            lane_light = self.traffic_lights[correct_light_index]
+
+            # Determine what light is controlled the current vehicle's lane and the carla.Waypoint
+            # that the vehicle needs to stop at
+            light_index, stop_waypoint = self.get_stop_location(current_vehicle.get_location_vector())
 
             # Check if the light is red
-            if lane_light.get_state() in [carla.TrafficLightState.Red, carla.TrafficLightState.Yellow]:
-
+            if self.traffic_lights[light_index].get_state() in [carla.TrafficLightState.Red, carla.TrafficLightState.Yellow]:
                 # Mark the vehicle as stopped at the selected light
-                self.vehicles_at_lights[correct_light_index].append(current_vehicle)
+                self.vehicles_at_lights[light_index].append(current_vehicle)
+                return True, stop_waypoint.transform.location
 
-                # Grab the possible stopping points in the vehicle's current lane
-                possible_stop_points: List[carla.Waypoint] = lane_light.get_stop_waypoints()
-
-                # If there are multiple stopping options, choose the one closer to the Vehicle
-                if len(possible_stop_points) > 1:
-                    closest_index = np.argmin([np.linalg.norm(
-                                                current_vehicle.get_location_vector() -
-                                                to_numpy_vector(x.transform.location))
-                                               for x in possible_stop_points])
-                    return True, possible_stop_points[closest_index].transform.location
-
-                return True, possible_stop_points[-1].transform.location
-
+        # Otherwise, it's not time to brake
         return False, None
+
+    def get_stop_location(self, location_vector: np.array) -> Tuple[int, carla.Waypoint]:
+        """
+        Determines the traffic light that the vehicle should stop at given its current location and lane.
+
+        :param location_vector: the current position of the Vehicle as a np.array
+        :return: the index corresponding to the lane's traffic light in the self.traffic_lights list and
+                 the carla.Waypoint that the vehicle should stop at when they arrive at the intersection
+
+        """
+
+        # Select the traffic light that has a stop waypoint that is nearest to the vehicle
+        # This assumes that the controlled vehicles are acting rationally, and it may break in some niche cases.
+        # Please just trust me that this list comprehension does what it's supposed to
+        correct_light_index = \
+            min([(i, np.linalg.norm(location_vector - to_numpy_vector(waypoint.transform.location)))
+                 for (i, light) in enumerate(self.traffic_lights)
+                 for waypoint in light.get_stop_waypoints()], key=lambda x: x[1])[0]
+        lane_light = self.traffic_lights[correct_light_index]
+
+        # Grab the possible stopping points in the vehicle's current lane
+        possible_stop_points: List[carla.Waypoint] = lane_light.get_stop_waypoints()
+
+        # If there are multiple stopping options, choose the one closest to the Vehicle
+        if len(possible_stop_points) > 1:
+            closest_index = np.argmin([np.linalg.norm(location_vector - to_numpy_vector(x.transform.location))
+                                       for x in possible_stop_points])
+            return correct_light_index, possible_stop_points[closest_index]
+
+        # If there's only one stopping option, just return that
+        return correct_light_index, possible_stop_points[-1]
+
+    def get_turn_waypoint(self, current_transform: carla.Transform, direction: str) -> carla.Waypoint:
+        """
+        Determines the waypoint that corresponds with a particular turn at the intersection
+
+        :param current_transform: the current transform of the Vehicle about to turn
+        :param direction: a string presenting the direction to turn (either "left" or "right")
+        :return: a carla.Waypoint corresponding with the desired turn
+        """
+
+        # Grab all possible pairs of starting -> ending waypoints
+        possible_waypoint_pairs: List[Tuple[carla.Waypoint, carla.Waypoint]] = self.junction.get_waypoints(carla.LaneType.Driving)
+        possible_starting_waypoints: List[carla.Waypoint] = [pair[0] for pair in possible_waypoint_pairs]
+
+        # Find the closest starting intersection waypoint
+        current_location = to_numpy_vector(current_transform.location)
+        closest_starting_waypoint_index = np.argmin([
+            np.linalg.norm(current_location - to_numpy_vector(waypoint.transform.location))
+            for waypoint in possible_starting_waypoints
+        ])
+
+        # Reduce the possible number of pairs down to only those that start as the closest waypoint
+        starting_waypoint = possible_starting_waypoints[closest_starting_waypoint_index]
+        possible_waypoint_pairs = list(
+            filter(lambda x: np.linalg.norm(to_numpy_vector(x[0].transform.location) - to_numpy_vector(starting_waypoint.transform.location)) < 1.0,
+                   possible_waypoint_pairs)
+        )
+
+        # Now determine the target yaw
+        target_yaw = current_transform.rotation.yaw + (90 if direction == "right" else -90)
+
+        # Now, out of the possible pairs, choose the ending waypoint with the yaw closest to the target
+        closest_yaw = np.argmin([abs(x[1].transform.rotation.yaw - target_yaw) for x in possible_waypoint_pairs])
+
+        # Make sure that the chosen waypoint has the expected yaw
+        # Return None if the chosen waypoint isn't close to the expected yaw
+        turn_waypoint = possible_waypoint_pairs[closest_yaw][1]
+        if abs(turn_waypoint.transform.rotation.yaw - target_yaw) > 5:
+            return None
+
+        # Otherwise, return our selected waypoint
+        return turn_waypoint
 
     def _distance_between(self, current_location: carla.Location) -> float:
         """
