@@ -73,11 +73,16 @@ class FreewaySection:
         # has a dict containing tuple of each lane w starting waypoint n ending waypoint
 
         # find lane we are in given XXXXX[current_tranform or smth else](curr_lane)
-        # starting waypoint -> curr lane waypoint
-        # if left, new_lane = curr_lane - 1
-        # if right, new_lane = curr_lane + 1
-        # if straight, new_lane = curr_lane
-        # ending waypoint -> new lane waypoint
+
+        # new_lane = curr_lane
+        # if direction == 'left':
+        #   new_lane = curr_lane - 1
+        # elif direction == 'right':
+        #   new_lane = curr_lane + 1
+
+        # starting_waypoint = starting_waypoints[curr_lane]
+        # ending_waypoint = ending_waypoints[new_lane]
+        
         # waypoints = [starting_waypoint, ending_waypoint]
         # find waypoints for that lane switch (not a gradual change over the section, but over
         # a given amount of path length)
