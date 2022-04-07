@@ -16,11 +16,12 @@ Referenced By:
 """
 
 # Local Imports
-# from Controller import Controller
-# from Vehicle import Vehicle
-#
-# # Library Imports
-# import carla
+from Controller import Controller
+from Vehicle import Vehicle
+
+# Library Imports
+import carla
+from typing import List
 
 # get list of vehicles inside of freeway section -> get starting and ending waypoints of the vehicles to manage their movements
 # 2 lane highway (can get left/right lane separately -> start/end waypoints of the lanes) (we build experiement section by section)
@@ -33,9 +34,55 @@ Referenced By:
 # self.waypoints  (generate path and write waypoints into this (auto?)) / self.trajectory
 class FreewaySection:
 
-    def __init__(self, starting_waypoint, ending_waypoint):
-        self.starting_waypoint = starting_waypoint
-        self.ending_waypoint = ending_waypoint
+    # Static ID variable used as a last number to assign Intersection Ids
+    id = 0
+
+    def __init__(self, starting_waypoints: List[carla.Waypoint], ending_waypoints: List[carla.Waypoint]):
+        
+        # Store a local id number identifying the order of the FreewaySection in this experiment
+        self.id = FreewaySection.id
+        FreewaySection.id += 1
+
+        # List of Vehicles that start at this section (TODO: move this to base section class)
+        self.initial_vehicles: List[Vehicle] = []
+
+        # Store the next intersection that follows sequentially after this one (this will be set by
+        # the Experiment::add_section method)
+        self.next_section = None
+
+        # List of waypoints that represent the start of this section. The index
+        # in the list corresponds to the lane number
+        self.starting_waypoints: List[carla.Waypoint] = starting_waypoints
+        
+        # List of waypoints that represent the end of this section. The index
+        # in the list corresponds to the lane number
+        self.ending_waypoints: List[carla.Waypoint] = ending_waypoints
+        
+        
+    def get_waypoints(self, map: carla.Map, current_transform: carla.Transform,
+                           direction: str) -> List[carla.Waypoint]:
+        """
+        Determines the waypoints that corresponds with a lane shift
+        Runs before the experiment is running
+
+        :param map: the carla.Map that the experiment is running on
+        :param current_transform: the current transform of the Vehicle about to shift lanes
+        :param direction: a string presenting the direction to shift lanes (left, right, straight)
+        :return: a List of carla.Waypoints corresponding with the desired lane shift
+        """
+        # has a dict containing tuple of each lane w starting waypoint n ending waypoint
+
+        # find lane we are in given XXXXX[current_tranform or smth else](curr_lane)
+        # starting waypoint -> curr lane waypoint
+        # if left, new_lane = curr_lane - 1
+        # if right, new_lane = curr_lane + 1
+        # if straight, new_lane = curr_lane
+        # ending waypoint -> new lane waypoint
+        # waypoints = [starting_waypoint, ending_waypoint]
+        # find waypoints for that lane switch (not a gradual change over the section, but over
+        # a given amount of path length)
+
+        pass
 
 # def car going straight -> starting waypoint of lane and ending waypoint of same lane
 # -- configuration: Dict[str, str] in TestExperiment to tell whether a vehicle ging straight or changing
