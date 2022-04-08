@@ -35,6 +35,9 @@ from typing import Dict, List
 
 class MapExplorationExperiment(Experiment):
 
+    # Current map from the Map Exploration experiment
+    MAP = "Town04"
+
     def __init__(self, headless: bool) -> None:
         super(MapExplorationExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.INTERSECTION
@@ -64,7 +67,7 @@ class MapExplorationExperiment(Experiment):
             self.world.debug.draw_point(intersect_waypoint.transform.location, size=0.05, color=YELLOW, life_time=0.0)
 
         # Add a new test vehicle to the map
-        spawn_location = self.spawn_points[2]
+        spawn_location = self.spawn_points[1]
         self.add_vehicle(spawn_location, ego=True, type_id=VehicleType.EGO_FULL_MANUAL)
 
         # Add four other vehicles around the map

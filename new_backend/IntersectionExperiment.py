@@ -31,6 +31,72 @@ from PyQt5.QtWidgets import QApplication
 import sys
 from typing import Dict, List
 
+# Sample configuration dictionary
+# Notes: the vehicle with ID 0 must always be the ego vehicle,
+# the vehicle's ID's must increase in consecutive order, otherwise later vehicles will be left out,
+# the value of spawn_point corresponds with the spawn_point numbers found in the MapExplorationExperiment,
+# spawn_offset shifts the spawn point forward or backward by x meters
+configuration_dictionary = {
+    "debug": True,
+    "number_of_vehicles": 5,
+
+    # Ego vehicle that simply goes straight through each intersection
+    0: {
+        "type": VehicleType.EGO_FULL_AUTOMATIC,
+        "spawn_point": 188,
+        "spawn_offset": 0.0,
+        "intersections": {
+            0: 'straight',
+            1: 'straight',
+            2: 'straight',
+            3: 'straight'
+        }
+    },
+
+    # Initial lead vehicle that turns right at the second intersection
+    1: {
+        "type": VehicleType.LEAD,
+        "spawn_point": 188,
+        "spawn_offset": 10.0,
+        "intersections": {
+            0: 'straight',
+            1: 'right'
+        }
+    },
+
+    # Vehicle that turns right at initial intersection
+    2: {
+        "type": VehicleType.GENERIC,
+        "spawn_point": 59,
+        "spawn_offset": 0.0,
+        "intersections": {
+            0: 'right'
+        }
+    },
+
+    # Vehicle that turns right at the second intersection
+    3: {
+        "type": VehicleType.GENERIC,
+        "spawn_point": 253,
+        "spawn_offset": 0.0,
+        "intersections": {
+            1: 'right'
+        }
+    },
+
+    # Vehicle that turns left at the third intersection
+    4: {
+        "type": VehicleType.GENERIC,
+        "spawn_point": 277,
+        "spawn_offset": 0.0,
+        "intersections": {
+            2: 'left',
+            3: 'left'  # Current this is left due to some weirdness with Carla lanes, it actually goes straight
+        }
+    }
+}
+
+
 
 class IntersectionExperiment(Experiment):
 
@@ -62,85 +128,32 @@ class IntersectionExperiment(Experiment):
         self.add_section(third_intersection)
         self.add_section(fourth_intersection)
 
-        # Add a new test vehicle to the map
-        ego_spawn_location = self.spawn_points[188]
-        ego_vehicle = self.add_vehicle(ego_spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
+        for i in range(configuration["number_of_vehicles"]):
+            vehicle_configuration = configuration[i]
 
-        # Set the vehicle's initial section
-        ego_vehicle.set_active_sections(first_intersection, fourth_intersection)
+            # Set up the Vehicle's spawn point
+            spawn_point = self.spawn_points[vehicle_configuration["spawn_point"]]
+            if vehicle_configuration["spawn_offset"] > 0.0:
+                spawn_point = project_forward(spawn_point, vehicle_configuration["spawn_offset"])
 
-        # Config what the ego vehicle will do at each intersection
-        ego_configuration = {
-            0: 'straight',
-            1: 'straight',
-            2: 'straight',
-            3: 'straight'
-        }
-        configuration[ego_vehicle.id] = ego_configuration
+            # Create the vehicle
+            is_ego = vehicle_configuration["type"] in (VehicleType.EGO_FULL_AUTOMATIC, VehicleType.EGO_FULL_MANUAL,
+                                                       VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE,
+                                                       VehicleType.EGO_AUTOMATIC_STEER_MANUAL_THROTTLE)
+            vehicle = self.add_vehicle(spawn_point, ego=is_ego, type_id=vehicle_configuration["type"])
 
-        # Add a new vehicle directly in front of the initial vehicle
-        lead_spawn_location = project_forward(ego_spawn_location, 10.0)
-        lead_vehicle = self.add_vehicle(lead_spawn_location, ego=False, type_id=VehicleType.LEAD)
-
-        # Set the vehicle's initial section
-        lead_vehicle.set_active_sections(first_intersection, second_intersection)
-
-        # Configure what the lead vehicle will do at each intersection
-        lead_configuration = {
-            0: 'straight',
-            1: 'right'
-        }
-        configuration[lead_vehicle.id] = lead_configuration
-
-        # Add a new right turning vehicle at the initial intersection
-        initial_turning_spawn_location = self.spawn_points[59]
-        initial_turning_vehicle = self.add_vehicle(initial_turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
-
-        # Set the vehicle's active intersections
-        initial_turning_vehicle.set_active_sections(first_intersection, first_intersection)
-
-        # Configure what the initial turning vehicle will do at each intersection
-        initial_turning_configuration = {
-            0: 'right'
-        }
-        configuration[initial_turning_vehicle.id] = initial_turning_configuration
-
-        # Add a new vehicle at a subsequence intersection
-        turning_spawn_location = self.spawn_points[253]
-        turning_vehicle = self.add_vehicle(turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
-
-        # Set the vehicle's active intersections
-        turning_vehicle.set_active_sections(second_intersection, second_intersection)
-
-        # Configure what the turning vehicle will do at each intersection
-        turning_configuration = {
-            1: 'right'
-        }
-        configuration[turning_vehicle.id] = turning_configuration
-
-        # Add a new left turning vehicle at the third intersection
-        left_turning_spawn_location = self.spawn_points[277]
-        left_turning_vehicle = self.add_vehicle(left_turning_spawn_location, ego=False, type_id=VehicleType.GENERIC)
-
-        # Set the vehicle's active intersections
-        left_turning_vehicle.set_active_sections(third_intersection, fourth_intersection)
-
-        # Configure what the left turning vehicle will do at each intersection
-        left_turning_configuration = {
-            2: 'left',
-            3: 'left'
-        }
-        configuration[left_turning_vehicle.id] = left_turning_configuration
+            # Set which intersections the vehicle will be active at
+            starting_section = min(vehicle_configuration["intersections"].keys())
+            ending_section = max(vehicle_configuration["intersections"].keys())
+            vehicle.set_active_sections(self.section_list[starting_section], self.section_list[ending_section])
 
         # Generate the paths for all the vehicles
         self._generate_intersection_paths(configuration)
 
-        # Visualize the waypoints of the lead and ego vehicles
-        self.ego_vehicle.draw_waypoints(self.world)
-        self.vehicle_list[0].draw_waypoints(self.world)
-        self.vehicle_list[1].draw_waypoints(self.world)
-        self.vehicle_list[2].draw_waypoints(self.world)
-        self.vehicle_list[3].draw_waypoints(self.world)
+        # Visualize the waypoints of the vehicles
+        if configuration["debug"]:
+            for vehicle in [self.ego_vehicle] + self.vehicle_list:
+                vehicle.draw_waypoints(self.world)
 
     def _generate_intersection_paths(self, configuration: Dict[int, Dict[int, str]]) -> None:
         """
@@ -154,13 +167,13 @@ class IntersectionExperiment(Experiment):
         for vehicle in [self.ego_vehicle] + self.vehicle_list:
             # Set the vehicle's first waypoint to their initial position
             vehicle.waypoints.append(self.map.get_waypoint(vehicle.get_current_location()))
-            vehicle_configuration = configuration[vehicle.id]
+            intersection_configuration = configuration[vehicle.id]["intersections"]
 
             # Generate a path for the vehicles current last waypoint to the next intersection
             for (i, intersection) in enumerate(self.section_list):
 
                 # Skip this intersection if the vehicle doesn't interact with it
-                if i not in vehicle_configuration:
+                if i not in intersection_configuration:
                     continue
 
                 # Generate the path from the vehicles current position to their next intersection
@@ -171,7 +184,7 @@ class IntersectionExperiment(Experiment):
                 # Add a new waypoint to move the vehicle through the intersection
                 thru_waypoints = intersection.get_thru_waypoints(self.map,
                                                                  vehicle.carla_vehicle.get_transform(),
-                                                                 vehicle_configuration[i])
+                                                                 intersection_configuration[i])
                 if thru_waypoints is not None:
                     vehicle.waypoints += thru_waypoints
 
@@ -198,7 +211,7 @@ def main() -> None:
     experiment.initialize_carla_server(blocking=True)
 
     # Set up the experiment
-    experiment.initialize_experiment()
+    experiment.initialize_experiment(configuration_dictionary)
 
     # Start the main simulation loop
     try:
