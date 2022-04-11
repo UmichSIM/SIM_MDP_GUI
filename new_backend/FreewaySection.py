@@ -64,7 +64,7 @@ class FreewaySection:
         """
 
         # get location from waypoint, find closest starting lane waypoint to it
-        curr_lane = get_lane(curr_vehicle, True)
+        curr_lane = self.get_lane(curr_vehicle, True)
 
         new_lane = curr_lane
         if direction == 'left':
