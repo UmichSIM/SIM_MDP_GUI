@@ -118,9 +118,7 @@ class FreewayExperiment(Experiment):
                     continue
 
                 # Add a new waypoint to move the vehicle through the lane
-                thru_waypoints = lane.get_waypoints(self.map,
-                                                                 vehicle.carla_vehicle.get_transform(),
-                                                                 vehicle_configuration[i])
+                thru_waypoints = lane.get_waypoints(vehicle, vehicle_configuration[i])
                 if thru_waypoints is not None:
                     vehicle.waypoints += thru_waypoints
                 
