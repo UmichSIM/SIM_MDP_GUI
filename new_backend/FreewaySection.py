@@ -23,15 +23,9 @@ from Vehicle import Vehicle
 import carla
 from typing import List
 
-# get list of vehicles inside of freeway section -> get starting and ending waypoints of the vehicles to manage their movements
-# 2 lane highway (can get left/right lane separately -> start/end waypoints of the lanes) (we build experiement section by section)
-# sections facilitate path generation
-# generate paths for all vehicles ahead of time (b4 experiment runs)
-# for each car, we do shit ???? 
-# def car going straight -> starting waypoint of lane and ending waypoint of same lane
-# def lane change -> starting waypoint in one and ending waypoint of other lane
-# only generating path -> dont fuck with controller
-# self.waypoints  (generate path and write waypoints into this (auto?)) / self.trajectory
+#Number of lanes in the freeway going in one direction. Able to change for future customizable maps / experiments
+NUM_LANES = 4;
+
 class FreewaySection:
 
     # Static ID variable used as a last number to assign Intersection Ids
@@ -70,7 +64,9 @@ class FreewaySection:
         :param direction: a string presenting the direction to shift lanes (left, right, straight)
         :return: a List of carla.Waypoints corresponding with the desired lane shift
         """
-        # has a dict containing tuple of each lane w starting waypoint n ending waypoint
+
+        minDist = float("inf");# get location from waypoint, find closest starting lane waypoint to it       
+        for i in NUM_LANES:
 
         # find lane we are in given XXXXX[current_tranform or smth else](curr_lane)
 

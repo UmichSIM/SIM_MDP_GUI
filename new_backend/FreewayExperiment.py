@@ -64,6 +64,9 @@ class FreewayExperiment(Experiment):
         self.add_section(fourth_freeway)
         self.add_section(fifth_freeway)
 
+        # Starting waypoints of lanes
+        # Ending waypoint of lanes
+
          # Add a new test vehicle to the map TODO: figure out ego spwan point 
         ego_spawn_location = None 
         ego_vehicle = self.add_vehicle(ego_spawn_location, ego=True, type_id=VehicleType.EGO_FULL_AUTOMATIC)
