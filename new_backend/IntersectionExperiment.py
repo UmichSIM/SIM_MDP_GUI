@@ -111,7 +111,7 @@ class IntersectionExperiment(Experiment):
         Adds vehicles to the map in the needed configuration for testing. Please modify this class to meet
         your testing needs
 
-        :param configuration: a Dictionary containing the user defined settings for the experiment (exact properties
+        :param configuration: a Dictionary containing the user defined settings for the Intersection experiment (exact properties
                               vary from experiment to experiment)
         :return: None
         """
