@@ -34,8 +34,14 @@ class FreewaySection:
         self.id = FreewaySection.id
         FreewaySection.id += 1
 
-        # List of Vehicles that start at this section (TODO: move this to base section class)
+        # Vehicles that start at this section (TODO: move this to the base section class)
         self.initial_vehicles: List[Vehicle] = []
+
+        # List of Vehicles active in this section
+        self.active_vehicles: List[Vehicle] = []
+        
+        # Boolean to init active_vehicles to initial_vehicles at beginning of tick
+        self.start = True
 
         # Store the next intersection that follows sequentially after this one (this will be set by
         # the Experiment::add_section method)
@@ -54,17 +60,27 @@ class FreewaySection:
     def get_waypoints(self, curr_vehicle: carla.Vehicle,
                            direction: str) -> List[carla.Waypoint]:
         """
-        Determines the waypoints that corresponds with a lane shift
+        Determines the starting and ending waypoints that corresponds with a lane shift
         Runs before the experiment is running
 
-        :param map: the carla.Map that the experiment is running on
-        :param curr_vehicle: the current transform of the Vehicle about to shift lanes
+        :param curr_vehicle: the current vehicle about to shift lanes
         :param direction: a string presenting the direction to shift lanes (left, right, straight)
         :return: a List of carla.Waypoints corresponding with the desired lane shift
         """
 
         # get location from waypoint, find closest starting lane waypoint to it
-        curr_lane = self.get_lane(curr_vehicle, True)
+        minDist = float("inf")
+        curr_lane = -1
+        lane_loc = None
+        self_loc = curr_vehicle.get_location()
+
+        for (i, waypoint) in enumerate(self.starting_waypoints):
+            lane_loc = waypoint.transform.location
+            dist = self_loc.distance(lane_loc)
+
+            if dist < minDist:
+                curr_lane = i
+                minDist = dist
 
         new_lane = curr_lane
         if direction == 'left':
@@ -80,52 +96,14 @@ class FreewaySection:
         return waypoints
 
     def tick(self) -> None :
-        if not self.has_started:
-            self.has_started = True
-
-        for vehicle in self.initial_vehicles:
+        if self.start:
+            self.active_vehicles = self.initial_vehicles
+            self.start = False
+        for (i, vehicle) in enumerate(self.active_vehicles):                   
             curr_location = vehicle.get_current_location()
             for ending_waypoint in self.ending_waypoints:
                 distance = curr_location.distance(ending_waypoint.transform.location)
-                if distance < 0.01:
-                    vehicle.target_location = None 
+                if distance < 1.0:
+                    self.vehicles_in_freeway.pop(i)
                     vehicle.advance_section()
                     break
-
-        return
-    
-    #Helper function that calculates  the  curr_lane of vehicle
-    def get_lane(self, curr_vehicle: carla.Vehicle, start: bool) -> int:
-        minDist = float("inf")
-        curr_lane = -1
-        lane_loc = None
-
-        for i in range(len(self.starting_waypoints)):
-
-            if start:
-                lane_loc = self.starting_waypoints[i].transform.location
-            else:
-                lane_loc = self.ending_waypoints[i].transform.location
-    
-            self_loc = curr_vehicle.get_location()
-            dist = self_loc.distance(lane_loc)
-
-            if dist < minDist:
-                curr_lane = i
-                minDist = dist
-
-        return curr_lane 
-        
-#waypoint of lane and ending waypoint of same lane
-# -- configuration: Dict[str, str] in TestExperiment to tell whether a vehicle ging straight or changing
-# def lane change -> starting waypoint in one and ending waypoint of other lane
-# freewayexperiement -> read dicts and call straight path/change lanes 
-#                       (in config dict determine start lane, ending lane[int])
-#                       create instance of freeway section (has start/end waypoints of every lane)
-#            # in what situations do we want to change lanes: lead car in front moves too slow
-#             for every vehicles we find config (which has start and ending lane):
-#                 get start lane waypoint and end lane waypoint:
-#                     generate path
-            # Controller.generate_path(curr_vehicle, starting_waypoint, ending_waypoint)
-    #generate path from controller .... 
-  

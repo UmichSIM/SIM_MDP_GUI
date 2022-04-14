@@ -77,10 +77,10 @@ class FreewayExperiment(Experiment):
         # Config what the ego vehicle will do at each FreewaySection
         ego_configuration = {
             0: 'straight',
-            1: 'left',
-            2: 'right',
+            1: 'straight',
+            2: 'straight',
             3: 'straight',
-            4: 'left'
+            4: 'straight'
         }
         configuration[ego_vehicle.id] = ego_configuration
 
@@ -93,8 +93,6 @@ class FreewayExperiment(Experiment):
 
         # Visualize the waypoints of the ego vehicle
         self.ego_vehicle.draw_waypoints(self.world)
-
-
 
     def _generate_freeway_paths(self, configuration: Dict[int, Dict[int, str]]) -> None:
         """
@@ -118,12 +116,10 @@ class FreewayExperiment(Experiment):
                     continue
 
                 # Add a new waypoint to move the vehicle through the lane
-                thru_waypoints = lane.get_waypoints(vehicle, vehicle_configuration[i])
-                if thru_waypoints is not None:
-                    vehicle.waypoints += thru_waypoints
-                
+                move_waypoints = lane.get_waypoints(vehicle, vehicle_configuration[i])
+                if move_waypoints is not None:
+                    Controller.generate_path(vehicle, move_waypoints[0], move_waypoints[1])
 
-            None
 
 def main() -> None:
     """
