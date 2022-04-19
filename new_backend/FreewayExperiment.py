@@ -74,7 +74,8 @@ class FreewayExperiment(Experiment):
         # Set the vehicle's initial section
         ego_vehicle.set_active_sections(first_freeway, fifth_freeway)
 
-        # Config what the ego vehicle will do at each FreewaySection
+        # Config what the ego vehicle will do at each FreewaySection 
+        # (CHANGE to format like IntersectionExperiment if desired)
         ego_configuration = {
             0: 'straight',
             1: 'straight',
@@ -108,17 +109,23 @@ class FreewayExperiment(Experiment):
             vehicle.waypoints.append(self.map.get_waypoint(vehicle.get_current_location()))
             vehicle_configuration = configuration[vehicle.id]
             
-            # Generate a path for the vehicles current last waypoint to the next lane TODO: FIX 
-            for (i, lane) in enumerate(self.section_list):
+            # Generate a path for the vehicles current last waypoint to the next lane 
+            for (i, freewaySection) in enumerate(self.section_list):
 
                 # Skip this lane if the vehicle doesn't interact with it
                 if i not in vehicle_configuration:
                     continue
 
-                # Add a new waypoint to move the vehicle through the lane
-                move_waypoints = lane.get_waypoints(vehicle, vehicle_configuration[i])
-                if move_waypoints is not None:
-                    Controller.generate_path(vehicle, move_waypoints[0], move_waypoints[1])
+                # Generate the path from the vehicles current position to their next freeway
+                move_waypoints = freewaySection.get_waypoints(vehicle, vehicle_configuration[i])
+                Controller.generate_path(vehicle, move_waypoints[0], move_waypoints[1])
+                
+                # If we've arrived at the last freeway, move forward some to clear the freeway
+                # then stop
+                if freewaySection.id == vehicle.ending_section.id:
+                    vehicle.waypoints.append(
+                        # CHANGE if needed
+                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 15.0).location))
 
 
 def main() -> None:
