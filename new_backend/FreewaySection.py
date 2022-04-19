@@ -65,10 +65,11 @@ class FreewaySection:
 
         :param curr_vehicle: the current vehicle about to shift lanes
         :param direction: a string presenting the direction to shift lanes (left, right, straight)
-        :return: a List of carla.Waypoints corresponding with the desired lane shift
+                          we assume the car can shift at most one lane left or right
+        :return: a List of the two carla.Waypoints corresponding with the desired lane shift
         """
 
-        # get location from waypoint, find closest starting lane waypoint to it
+        # Get location from waypoint, find closest starting lane waypoint to it
         minDist = float("inf")
         curr_lane = -1
         lane_loc = None
@@ -82,27 +83,43 @@ class FreewaySection:
                 curr_lane = i
                 minDist = dist
 
+        # Determine the ending lane for the vehicle based on "direction"
         new_lane = curr_lane
         if direction == 'left':
            new_lane = curr_lane - 1
         elif direction == 'right':
            new_lane = curr_lane + 1
 
+        # Get starting and ending waypoints for the given lanes for the vehicle
         starting_waypoint = self.starting_waypoints[curr_lane]
         ending_waypoint = self.ending_waypoints[new_lane]
-        
         waypoints = [starting_waypoint, ending_waypoint]
 
         return waypoints
 
     def tick(self) -> None :
+        """
+        Updates the Intersection with each tick of the world.
+        Checks the state of each vehicle in the FreewaySection. 
+        
+        If the vehicle is close enough to one of the FreewaySection's ending waypoints, 
+        advance the vehicle to the next section to allow them to proceed.
+        
+        :return: None
+        """
+        # Initialize active_vehicles to initial_vehicles at the start of the FreewaySection
         if self.start:
             self.active_vehicles = self.initial_vehicles
             self.start = False
+            
+        # Go through each active vehicle in the FreeWaySection and determine if the vehicle is
+        # viable to advance sections
         for (i, vehicle) in enumerate(self.active_vehicles):                   
             curr_location = vehicle.get_current_location()
             for ending_waypoint in self.ending_waypoints:
                 distance = curr_location.distance(ending_waypoint.transform.location)
+                # If the distance between the current location of the vehicle and a ending waypoint
+                # is close enough, advance the vehicle to the next section and proceed forward 
                 if distance < 1.0:
                     self.vehicles_in_freeway.pop(i)
                     vehicle.advance_section()
