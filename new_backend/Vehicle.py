@@ -90,6 +90,10 @@ class Vehicle:
         # the waypoints together
         self.trajectory: List[carla.Transform] = []
 
+        # Stores the current lane that this vehicle is in on the roadway (this is a custom lane ID and
+        # will not line up with the OpenDrive lane ID)
+        self.current_lane = None
+
         # The current section that the Vehicle is on, can either be an Intersection or Freeway Section
         self.current_section = None
 

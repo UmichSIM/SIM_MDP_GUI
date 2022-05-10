@@ -20,13 +20,10 @@ Referenced By:
 
 # Local Imports
 from Controller import Controller
-from Intersection import Intersection
-from Helpers import RED
 from Vehicle import Vehicle
 
 # Library Imports
 import carla
-from typing import List
 
 
 class IntersectionController:
@@ -72,9 +69,8 @@ class IntersectionController:
         # Determine the throttle needed
         throttle = Controller.throttle_control(current_vehicle)
 
-        # Temp
+        # Don't allow inactive vehicles to move
         if current_vehicle.active:
-
             # Stop the car if we've reached the end of the path
             if end_of_path:
                 current_vehicle.active = False

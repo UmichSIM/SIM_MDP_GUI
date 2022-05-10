@@ -60,7 +60,8 @@ class Controller:
         pass
 
     @staticmethod
-    def generate_path(current_vehicle: Vehicle, starting_point: carla.Waypoint, ending_point: carla.Waypoint) -> None:
+    def generate_path(current_vehicle: Vehicle, starting_point: carla.Waypoint, ending_point: carla.Waypoint) -> \
+            Tuple[List[carla.Waypoint], List[carla.Waypoint]]:
         """
         Calculates the shortest trajectory between the starting endpoint and ending waypoint of the Vehicle's route.
 
@@ -102,9 +103,8 @@ class Controller:
             # If the search is over, backtrack to build the path
             if Controller._end_of_search(current_waypoint, ending_point):
                 waypoints = Controller._backtrack_path(explored_list)
-                current_vehicle.waypoints += waypoints
-                current_vehicle.trajectory = smooth_path(current_vehicle.waypoints)
-                return
+                trajectory = smooth_path(waypoints, num_passes=2) if len(waypoints) > 0 else waypoints
+                return waypoints, trajectory
 
             # Check all the potential next waypoints and add them to the potential list
             # if they haven't already been explored

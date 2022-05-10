@@ -32,7 +32,7 @@ from Controller import WAYPOINT_SEPARATION, Controller
 from EgoController import EgoController
 from FreewayController import FreewayController
 from FreewaySection import FreewaySection
-from Helpers import ExperimentType, VehicleType
+from Helpers import ExperimentType, VehicleType, project_forward, to_numpy_vector, smooth_path
 from Intersection import Intersection
 from IntersectionController import IntersectionController
 from Threading import SIMThread, ThreadWorker
@@ -208,6 +208,50 @@ class Experiment:
         """
         pass
 
+    def _generate_section_paths(self, configuration: Dict[int, Dict[int, str]]) -> None:
+        """
+        For each Vehicle, generate the path that will navigate them through each section in
+        the experiment, following the commands provided for each section.
+
+        :param configuration: a Dict of Dicts storing what each Vehicle should do at each section
+        :return: None
+        """
+
+        for vehicle in [self.ego_vehicle] + self.vehicle_list:
+            # Set the vehicle's first waypoint to their initial position
+            vehicle.waypoints.append(self.map.get_waypoint(vehicle.get_current_location()))
+            section_configuration = configuration[vehicle.id]["sections"]
+
+            # Generate a path for the vehicles current last waypoint to the next intersection
+            for (i, section) in enumerate(self.section_list):
+
+                # Skip this intersection if the vehicle doesn't interact with it
+                if i not in section_configuration:
+                    continue
+
+                # Generate the path from the vehicles current position to the start of the next section
+                initial_waypoint = section.get_initial_waypoint(vehicle)
+                waypoints, trajectory = Controller.generate_path(vehicle, vehicle.waypoints[-1], initial_waypoint)
+                vehicle.waypoints += waypoints
+                vehicle.trajectory += trajectory
+
+                # Add a new waypoint to move the vehicle through the intersection
+                thru_waypoints = section.get_thru_waypoints(self.map,
+                                                            vehicle,
+                                                            section_configuration[i])
+                if thru_waypoints is not None:
+                    vehicle.waypoints += thru_waypoints
+
+                # If we've arrived at the last intersection, move forward some to clear the intersection
+                # then stop
+                if section.id == vehicle.ending_section.id:
+                    vehicle.waypoints.append(
+                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 15.0).location)
+                    )
+                    # Also, make sure to re-smooth the trajectory
+                    vehicle.trajectory = smooth_path(vehicle.waypoints)
+                    break
+
     def run_experiment(self) -> None:
         """
         Runs a basic main simulation loop to drive the experiment.
@@ -330,6 +374,38 @@ class Experiment:
             self.vehicle_list.append(new_vehicle)
 
         return new_vehicle
+
+    def add_vehicles_from_configuration(self, configuration: Dict[int, Dict[int, str]]):
+        """
+        Adds vehicles to the Experiment according to the configuration dictionary.
+
+        :param configuration:
+        :return:
+        """
+
+        for i in range(configuration["number_of_vehicles"]):
+            vehicle_configuration = configuration[i]
+
+            # Set up the Vehicle's spawn point
+            spawn_point = self.spawn_points[vehicle_configuration["spawn_point"]]
+            if "spawn_offset" in vehicle_configuration and vehicle_configuration["spawn_offset"] != 0.0:
+                spawn_point = project_forward(spawn_point, vehicle_configuration["spawn_offset"])
+
+            # Create the vehicle
+            is_ego = vehicle_configuration["type"] in (VehicleType.EGO_FULL_AUTOMATIC, VehicleType.EGO_FULL_MANUAL,
+                                                       VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE,
+                                                       VehicleType.EGO_AUTOMATIC_STEER_MANUAL_THROTTLE)
+            vehicle = self.add_vehicle(spawn_point, ego=is_ego, type_id=vehicle_configuration["type"])
+
+            # Set which sections the vehicle will be active at
+            starting_section = min(vehicle_configuration["sections"].keys())
+            ending_section = max(vehicle_configuration["sections"].keys())
+            vehicle.set_active_sections(self.section_list[starting_section], self.section_list[ending_section])
+
+            # Set the initial lane index that the vehicle is starting in
+            # (this currently doesn't exist in the IntersectionExperiment but it should be added)
+            if "initial_lane_index" in vehicle_configuration:
+                vehicle.current_lane = vehicle_configuration["initial_lane_index"]
 
     def add_section(self, new_section: Union[Intersection, FreewaySection]) -> None:
         """

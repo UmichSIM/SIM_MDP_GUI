@@ -18,34 +18,88 @@ Referenced By:
 # Local Imports
 from Controller import Controller
 from Experiment import Experiment
+from FreewaySection import FreewaySection
+from Helpers import ExperimentType, VehicleType, project_forward
 from Vehicle import Vehicle
 from Threading import HeadlessWindow
 
 # Library Imports
 import carla
 from PyQt5.QtWidgets import QApplication
-import random
 import sys
 from typing import Dict, List, Tuple
 
 
+# Sample configuration dictionary
+# Notes: the vehicle with ID 0 must always be the ego vehicle,
+# the vehicle's ID's must increase in consecutive order, otherwise later vehicles will be left out,
+# the value of spawn_point corresponds with the spawn_point numbers found in the MapExplorationExperiment,
+# spawn_offset shifts the spawn point forward or backward by x meters
+configuration_dictionary = {
+    "debug": True,
+    "number_of_vehicles": 2,
+
+    # Ego vehicle that simply goes straight through each Freeway section
+    0: {
+        "type": VehicleType.EGO_FULL_AUTOMATIC,
+        "spawn_point": 13,
+        "spawn_offset": -10.0,
+        "initial_lane_index": 1,
+        "sections": {
+            0: 'straight'
+        }
+    },
+
+    # Initial lead vehicle that turns right at the second intersection
+    1: {
+        "type": VehicleType.LEAD,
+        "spawn_point": 13,
+        "spawn_offset": 0.0,
+        "initial_lane_index": 1,
+        "sections": {
+            0: 'straight'
+        }
+    }
+}
+
+
 class FreewayExperiment(Experiment):
 
-    def __init__(self) -> None:
-        # test config dictioniary where key is the vehicle id and the value is a tuple/dict waypoints
-        config = {1: Tuple[w1, w2], 
-                  2: Tuple[0, 1],
-                  3: Tuple[0, 1]}
-        # hardcode config dict for now (connect to gui later)
-        # lanes - (lane #, starting waypoint, ending waypoint) (do we need to know lane numbers?)
+    # Current map from the Freeway experiment
+    MAP = "Town04"
 
-    def initialize_experiment(self, config: Dict[int, Tuple[carla.Waypoint, carla.Waypoint]]) -> None:
-        
-        for vehicle in self.vehicle_list:
-            # get start lane waypoint and end lane waypoint:
-            starting_waypoint = config[vehicle][0]
-            ending_waypoint = config[vehicle][1]
-            Controller.generate_path(vehicle, starting_waypoint, ending_waypoint)
+    def __init__(self, headless: bool) -> None:
+        super(FreewayExperiment, self).__init__(headless)
+        self.experiment_type = ExperimentType.FREEWAY
+
+    def initialize_experiment(self, configuration: Dict[int, Dict[int, str]] = {}) -> None:
+        """
+        Uses an existing connection to the Carla server and configures the world according to the experiment design.
+
+        :param configuration: a Dictionary containing the user defined settings for the experiment
+        :return: None
+        """
+
+        # Add the managed sections to the Experiment
+        first_section = FreewaySection(
+            [self.map.get_waypoint(x.location) for x in (self.spawn_points[14], self.spawn_points[13], self.spawn_points[1])],
+            [self.map.get_waypoint(x.location) for x in (self.spawn_points[20], self.spawn_points[19], self.spawn_points[18])]
+        )
+
+        # Add the FreewaySections to the experiment (must be added in order)
+        self.add_section(first_section)
+
+        # Add the vehicles according to the configuration dictionary
+        self.add_vehicles_from_configuration(configuration)
+
+        # Generate the paths for all the vehicles
+        self._generate_section_paths(configuration)
+
+        # Visualize the waypoints of the vehicles
+        if configuration["debug"]:
+            for vehicle in [self.ego_vehicle] + self.vehicle_list:
+                vehicle.draw_waypoints(self.world)
+
 
 def main() -> None:
     """
@@ -59,7 +113,7 @@ def main() -> None:
     experiment.initialize_carla_server(blocking=True)
 
     # Set up the experiment
-    experiment.initialize_experiment()
+    experiment.initialize_experiment(configuration_dictionary)
 
     # Start the main simulation loop
     try:

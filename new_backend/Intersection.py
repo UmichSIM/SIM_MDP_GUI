@@ -16,6 +16,7 @@ Referenced By:
 
 # Local Imports
 from Helpers import to_numpy_vector, project_forward, angle_difference
+from Section import Section
 from Vehicle import Vehicle
 
 # Library Imports
@@ -25,7 +26,7 @@ from time import perf_counter
 from typing import Dict, List, Tuple
 
 
-class Intersection:
+class Intersection(Section):
 
     # Static ID variable used as a last number to assign Intersection Ids
     id = 0
@@ -33,17 +34,7 @@ class Intersection:
     def __init__(self, junction: carla.Junction, traffic_lights: List[carla.TrafficLight],
                  green_time: float = 10.0, yellow_time: float = 3.0, first_pair: Tuple = (0, 2),
                  second_pair: Tuple = (1, 3)):
-
-        # Store a local id number identifying the order of the intersection in this experiment
-        self.id = Intersection.id
-        Intersection.id += 1
-
-        # Vehicles that start at this section (TODO: move this to the base section class)
-        self.initial_vehicles: List[Vehicle] = []
-
-        # Store the next intersection that follows sequentially after this one (this will be set by
-        # the Experiment::add_section method)
-        self.next_section = None
+        super(Intersection, self).__init__()
 
         # The carla.Junction object that this Intersection corresponds to
         self.junction = junction
@@ -126,6 +117,17 @@ class Intersection:
         # Otherwise, it's not time to brake
         return False, None
 
+    def get_initial_waypoint(self, vehicle: Vehicle) -> carla.Waypoint:
+        """
+        Get the carla.Waypoint where the Vehicle will enter the intersection.
+
+        :param vehicle: the current Vehicle
+        :return: a carla.Waypoint representing where the Vehicle will enter the section
+        """
+        current_location = vehicle.waypoints[-1].transform.location
+        _, next_waypoint = self.get_stop_location(to_numpy_vector(current_location))
+        return next_waypoint
+
     def get_stop_location(self, location_vector: np.array) -> Tuple[int, carla.Waypoint]:
         """
         Determines the traffic light that the vehicle should stop at given its current location and lane.
@@ -157,13 +159,13 @@ class Intersection:
         # If there's only one stopping option, just return that
         return correct_light_index, possible_stop_points[-1]
 
-    def get_thru_waypoints(self, map: carla.Map, current_transform: carla.Transform,
+    def get_thru_waypoints(self, carla_map: carla.Map, current_vehicle: Vehicle,
                            direction: str) -> List[carla.Waypoint]:
         """
-        Determines the waypoints that corresponds with a particular turn at the intersection
+        Determines the waypoints that correspond with a particular turn at the intersection
 
-        :param map: the carla.Map that the experiment is running on
-        :param current_transform: the current transform of the Vehicle about to turn
+        :param carla_map: the carla.Map that the experiment is running on
+        :param current_vehicle: the current Vehicle
         :param direction: a string presenting the direction to turn (either "left" or "right" or "straight")
         :return: a List of carla.Waypoints corresponding with the desired turn
         """
@@ -173,6 +175,7 @@ class Intersection:
         possible_starting_waypoints: List[carla.Waypoint] = [pair[0] for pair in possible_waypoint_pairs]
 
         # Find the closest starting intersection waypoint
+        current_transform = current_vehicle.carla_vehicle.get_transform()
         current_location = to_numpy_vector(current_transform.location)
         closest_starting_waypoint_index = np.argmin([
             np.linalg.norm(current_location - to_numpy_vector(waypoint.transform.location))
@@ -212,7 +215,7 @@ class Intersection:
         if direction in ("left", "right"):
 
             # Midpoint waypoint
-            waypoints.insert(1, map.get_waypoint(carla.Location(
+            waypoints.insert(1, carla_map.get_waypoint(carla.Location(
                 x=starting_waypoint.transform.location.x + ((thru_waypoint.transform.location.x - starting_waypoint.transform.location.x) / 2),
                 y=starting_waypoint.transform.location.y + ((thru_waypoint.transform.location.y - starting_waypoint.transform.location.y) / 2),
                 z=0.0
@@ -221,7 +224,7 @@ class Intersection:
             # Closely spaced waypoints after turn
             for dist in range(4, 20, 2):
                 waypoints.append(
-                    map.get_waypoint(project_forward(thru_waypoint.transform, dist).location)
+                    carla_map.get_waypoint(project_forward(thru_waypoint.transform, dist).location)
                 )
 
         # Then return the waypoints
@@ -258,8 +261,6 @@ class Intersection:
         if not self.has_started:
             self.has_started = True
             self._reset_light_timer()
-            # for light in self.traffic_lights:
-            #     light.freeze(False)
 
         # Get a reference to the current pair of lights that are active
         if self.active_pair == 'first':
