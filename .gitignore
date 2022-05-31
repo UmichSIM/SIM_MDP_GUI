@@ -6,3 +6,4 @@ data_collection/*
 .vs/*
 Icon
 .DS_Store
+_out/
