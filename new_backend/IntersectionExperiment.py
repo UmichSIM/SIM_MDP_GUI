@@ -42,7 +42,7 @@ configuration_dictionary = {
 
     # Ego vehicle that simply goes straight through each intersection
     0: {
-        "type": VehicleType.EGO_FULL_AUTOMATIC,
+        "type": VehicleType.EGO_FULL_MANUAL,
         "spawn_point": 188,
         "spawn_offset": 0.0,
         "sections": {

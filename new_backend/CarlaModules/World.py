@@ -153,8 +153,8 @@ class World(object):
         except Exception:
             pass
 
-    def tick(self, clock, ego_vehicle):
-        self.hud.tick(self, clock, ego_vehicle)
+    def tick(self, clock, ego_vehicle, lead_speed):
+        self.hud.tick(self, clock, ego_vehicle, lead_speed)
 
     def render(self, display):
         self.camera_manager.render(display)

@@ -87,7 +87,7 @@ class HUD(object):
         default_font = 'ubuntumono'
         mono = default_font if default_font in fonts else fonts[0]
         mono = pygame.font.match_font(mono)
-        self._font_mono = pygame.font.Font(mono, 12 if os.name == 'nt' else 14)
+        self._font_mono = pygame.font.Font(mono, 20 if os.name == 'nt' else 30)
         self._notifications = FadingText(font, (width, 40), (0, height - 40))
         self.help = HelpText(pygame.font.Font(mono, 16), width, height)
         self.server_fps = 0
@@ -103,32 +103,38 @@ class HUD(object):
         self.frame = timestamp.frame
         self.simulation_time = timestamp.elapsed_seconds
 
-    def tick(self, world: World, clock, ego_vehicle: Vehicle):
+    def tick(self, world: World, clock, ego_vehicle: Vehicle, lead_speed: float):
         self._notifications.tick(world, clock)
         if not self._show_info:
             return
-        t = world.player.get_transform()
+        #t = world.player.get_transform()
         v = world.player.get_velocity()
-        c = world.player.get_control()
-        compass = world.imu_sensor.compass
+        #c = world.player.get_control()
+        '''compass = world.imu_sensor.compass
         heading = 'N' if compass > 270.5 or compass < 89.5 else ''
         heading += 'S' if 90.5 < compass < 269.5 else ''
         heading += 'E' if 0.5 < compass < 179.5 else ''
-        heading += 'W' if 180.5 < compass < 359.5 else ''
-        colhist = world.collision_sensor.get_collision_history()
-        collision = [colhist[x + self.frame - 200] for x in range(0, 200)]
-        max_col = max(1.0, max(collision))
-        collision = [x / max_col for x in collision]
-        vehicles = world.world.get_actors().filter('vehicle.*')
+        heading += 'W' if 180.5 < compass < 359.5 else '''''
+        #colhist = world.collision_sensor.get_collision_history()
+        #collision = [colhist[x + self.frame - 200] for x in range(0, 200)]
+        #max_col = max(1.0, max(collision))
+        #collision = [x / max_col for x in collision]
+        #vehicles = world.world.get_actors().filter('vehicle.*')
         self._info_text = [
-            'Server:  % 16.0f FPS' % self.server_fps,
-            'Client:  % 16.0f FPS' % clock.get_fps(),
+            'Server:  % 3.0f FPS' % self.server_fps,
+            'Client:  % 3.0f FPS' % clock.get_fps(),
             '',
+            'Speed:   % 1.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))]
+
+        '''
             'Vehicle: % 20s' % get_actor_display_name(world.player, truncate=20),
             'Map:     % 20s' % world.map.name.split('/')[-1],
             'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
             '',
-            'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
+        '''
+            
+
+        '''
             u'Compass:% 17.0f\N{DEGREE SIGN} % 2s' % (compass, heading),
             'Accelero: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.accelerometer),
             'Gyroscop: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.gyroscope),
@@ -141,7 +147,9 @@ class HUD(object):
         self._info_text += ["   Y: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.y)]
         self._info_text += ["   Z: {:.2f}".format(ego_vehicle.carla_vehicle.get_transform().location.z)]
         self._info_text += [""]
+        '''
 
+        '''
         # Initialize global variables variables
         if spawn_points is None or intersections is None or intersection_waypoints is None:
             self.initialize_spawn_points_and_junctions(world)
@@ -156,7 +164,9 @@ class HUD(object):
         current_traffic_light = ego_vehicle.carla_vehicle.get_traffic_light().get_opendrive_id() if ego_vehicle.carla_vehicle.get_traffic_light() is not None else ""
         self._info_text += [f"Current Traffic Light: {current_traffic_light}"]
         self._info_text += [""]
+        '''
 
+        '''
         if isinstance(c, carla.VehicleControl):
             self._info_text += [
                 ('Throttle:', c.throttle, 0.0, 1.0),
@@ -184,7 +194,13 @@ class HUD(object):
                 if d > 200.0:
                     break
                 vehicle_type = get_actor_display_name(vehicle, truncate=22)
-                self._info_text.append('% 4dm %s' % (d, vehicle_type))
+                self._info_text.append('  %s ' %vehicle_type)
+                self._info_text.append('  Distance: % 14d m' %d)
+                #other vehicle speed
+                self._info_text.append('  Speed:% 15.0f km/h' % lead_speed)
+                self._info_text.append('')
+
+            
 
             # HUD Text for vehicle direction detection
             self._info_text += ['']
@@ -195,6 +211,7 @@ class HUD(object):
                     self._info_text.append(f'{direction.name}: {distance}')
                 else:
                     self._info_text.append(f'{direction.name}: None')
+            '''
 
     def toggle_info(self):
         self._show_info = not self._show_info
@@ -240,8 +257,8 @@ class HUD(object):
                     surface = self._font_mono.render(item, True, (255, 255, 255))
                     display.blit(surface, (8, v_offset))
                 v_offset += 18
-        self._notifications.render(display)
-        self.help.render(display)
+        #self._notifications.render(display)
+        #self.help.render(display)
 
     @staticmethod
     def initialize_spawn_points_and_junctions(world):

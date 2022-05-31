@@ -377,9 +377,15 @@ class Controller:
         :param current_vehicle: the Vehicle to calculate the throttle for
         :return: the throttle value to apply to the Vehicle (between -1 and 1)
         """
+        
+        #rand_result = random.randint(77, 91)
+        
+        #throttle = current_vehicle.speed_pid_controller(rand_result -
+        #                                                current_vehicle.get_current_speed())
 
+       
         throttle = current_vehicle.speed_pid_controller(current_vehicle.target_speed -
-                                                        current_vehicle.get_current_speed())
+                                                       current_vehicle.get_current_speed())
         return max(min(throttle, 1), -1)
 
     @staticmethod

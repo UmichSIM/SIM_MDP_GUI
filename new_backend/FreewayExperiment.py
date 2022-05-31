@@ -36,18 +36,19 @@ from typing import Dict, List, Tuple
 # the value of spawn_point corresponds with the spawn_point numbers found in the MapExplorationExperiment,
 # spawn_offset shifts the spawn point forward or backward by x meters
 configuration_dictionary = {
-    "debug": True,
+    "debug": False,
     "number_of_vehicles": 2,
 
     # Ego vehicle that simply goes straight through each Freeway section
     0: {
-        "type": VehicleType.EGO_FULL_AUTOMATIC,
+        "type": VehicleType.EGO_FULL_MANUAL,
         "spawn_point": 13,
         "spawn_offset": -10.0,
         "initial_lane_index": 1,
         "sections": {
             0: 'straight'
-        }
+        },
+        "car_name": 'vehicle.mercedes.coupe_2020'
     },
 
     # Initial lead vehicle that turns right at the second intersection

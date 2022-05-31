@@ -1,0 +1,6 @@
+[submodule "new_backend/Wizard"]
+	path = new_backend/Wizard
+	url = https://github.com/UmichSIM/Wizard.git
+[submodule "Thirdparty/Wizard"]
+	path = Thirdparty/Wizard
+	url = https://github.com/UmichSIM/Wizard.git

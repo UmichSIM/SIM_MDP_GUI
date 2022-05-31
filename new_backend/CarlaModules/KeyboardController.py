@@ -260,7 +260,7 @@ class KeyboardControl(object):
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         if keys[K_UP] or keys[K_w]:
-            self._control.throttle = min(self._control.throttle + 0.01, 1.00)
+            self._control.throttle = min(self._control.throttle + 0.1, 1.00)
         else:
             self._control.throttle = 0.0
 

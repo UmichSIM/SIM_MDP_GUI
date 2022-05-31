@@ -1,11 +1,13 @@
 """
 Backend - Experiment Class
-Created on Tue February 15, 2022
+Created on Tue May 31, 2022
 
 Summary: The Experiment class is a base class that describes the high level interface that all
     derived experiments must implement. It provides all the functionality that is universal to all
     experiments and experiment types. Specific experiment types and specific maps must be represented
     as derived classes from this base class.
+    
+Update: trying to add wizard support
 
 References:
     CarlaModules
@@ -24,8 +26,8 @@ Referenced By:
 """
 
 # Local Imports
-from CarlaModules.HUD import HUD
-from CarlaModules.World import World
+# from CarlaModules.HUD import HUD
+# from CarlaModules.World import World
 from CarlaModules.KeyboardController import KeyboardControl
 from CarlaModules.GlobalFunctions import DefaultSettings
 from Controller import WAYPOINT_SEPARATION, Controller
@@ -37,6 +39,9 @@ from Intersection import Intersection
 from IntersectionController import IntersectionController
 from Threading import SIMThread, ThreadWorker
 from Vehicle import Vehicle
+from wizard.controller import Controller as WizardController
+from wizard.hud import HUD
+from wizard.world import World
 
 # Library Imports
 import carla
@@ -277,10 +282,10 @@ class Experiment:
 
         # Initialize the objects that will be rendered by Pygame
         hud = HUD(display.get_size()[0], display.get_size()[1])
-        world = World(self.ego_vehicle.carla_vehicle, self.world, hud, DefaultSettings())
+        world = World(client.get_world(), hud, 'vehicle.*')
 
         # Initialize the controller to handle user input
-        controller = KeyboardControl(world, False)
+        controller = Controller.get_instance()
 
         count_time = 0
         count_array = 0
@@ -308,9 +313,10 @@ class Experiment:
                 if self.ego_vehicle is not None:
                     # Lambda used to avoid passing all the arguments into the update_control function
                     EgoController.update_control(self.ego_vehicle,
-                                                 lambda: controller.parse_events(self.client, world, clock, True),
+                                                 lambda: controller.tick(clock),
                                                  self.experiment_type)
-                # Apply control to every other Vehicle
+                # Apply control to every other Vehicle().render(display)
+                pygame.display.flip()
                 lead_speed = 0
                 for vehicle in self.vehicle_list:
                     '''
@@ -330,9 +336,8 @@ class Experiment:
                     count_array = 0
                 
                 # Update the UI elements
-                world.tick(clock, self.ego_vehicle, lead_speed)
-                world.render(display)
-                pygame.display.flip()             
+                World.get_instance().render(display)
+                pygame.display.flip()
             
         finally:
             world.destroy()
