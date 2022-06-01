@@ -6,7 +6,7 @@ Summary: The Experiment class is a base class that describes the high level inte
     derived experiments must implement. It provides all the functionality that is universal to all
     experiments and experiment types. Specific experiment types and specific maps must be represented
     as derived classes from this base class.
-    
+
 Update: trying to add wizard support
 
 References:
@@ -52,7 +52,27 @@ import sys
 from typing import List, Dict, Union
 
 # List of pseudo random numbers for speed generation
-random_speed = [77, 80, 88, 82, 80, 91, 82, 87, 86, 91, 80, 84, 90, 87, 81, 85, 82, 87, 86, 82, 90, 83, 82, 88, 80, 78, 84, 78, 85, 84, 79, 80, 80, 79, 83, 77, 87, 78, 84, 87, 84, 85, 90, 77, 78, 86, 83, 78, 82, 90, 90, 80, 83, 82, 83, 87, 78, 83, 85, 91, 88, 85, 83, 78, 89, 85, 78, 80, 83, 78, 85, 86, 89, 87, 83, 81, 79, 85, 77, 91, 84, 79, 88, 83, 86, 81, 89, 80, 77, 79, 84, 90, 84, 83, 90, 78, 89, 78, 77, 90, 77, 91, 87, 77, 88, 85, 90, 78, 87, 85, 81, 80, 83, 89, 86, 81, 84, 78, 91, 88, 77, 78, 79, 88, 78, 89, 87, 84, 82, 79, 83, 84, 89, 79, 89, 86, 88, 82, 80, 77, 86, 80, 90, 80, 82, 91, 77, 85, 80, 83, 80, 81, 90, 89, 79, 90, 89, 77, 91, 84, 86, 78, 81, 87, 79, 78, 89, 86, 91, 78, 80, 86, 78, 88, 90, 84, 82, 86, 82, 84, 77, 86, 91, 91, 79, 91, 87, 84, 85, 87, 85, 82, 89, 77, 79, 87, 89, 87, 85, 77, 85, 80, 77, 87, 81, 91, 81, 91, 86, 88, 85, 83, 77, 89, 85, 87, 83, 79, 88, 81, 90, 83, 88, 82, 85, 85, 87, 89, 77, 88, 85, 91, 77, 78, 82, 86, 90, 82, 89, 82, 77, 84, 83, 84, 88, 80, 84, 91, 78, 86, 77, 84, 90, 89, 88, 78, 81, 82, 86, 88, 89, 85, 89, 90, 90, 78, 81, 77, 77, 83, 86, 81, 79, 81, 78, 89, 78, 88, 80, 87, 78, 80, 91, 87, 84, 83, 82, 78, 77, 83, 87, 80, 79, 83, 83, 89, 83, 90, 82, 84, 87, 82, 79, 84, 88, 81, 91, 83, 86, 87, 77, 79, 82, 78, 86, 87, 87, 90, 91, 83, 79, 83, 88, 78, 91, 82, 82, 81, 82, 77, 87, 79, 83, 90, 84, 78, 86, 87]
+random_speed = [
+    77, 80, 88, 82, 80, 91, 82, 87, 86, 91, 80, 84, 90, 87, 81, 85, 82, 87, 86,
+    82, 90, 83, 82, 88, 80, 78, 84, 78, 85, 84, 79, 80, 80, 79, 83, 77, 87, 78,
+    84, 87, 84, 85, 90, 77, 78, 86, 83, 78, 82, 90, 90, 80, 83, 82, 83, 87, 78,
+    83, 85, 91, 88, 85, 83, 78, 89, 85, 78, 80, 83, 78, 85, 86, 89, 87, 83, 81,
+    79, 85, 77, 91, 84, 79, 88, 83, 86, 81, 89, 80, 77, 79, 84, 90, 84, 83, 90,
+    78, 89, 78, 77, 90, 77, 91, 87, 77, 88, 85, 90, 78, 87, 85, 81, 80, 83, 89,
+    86, 81, 84, 78, 91, 88, 77, 78, 79, 88, 78, 89, 87, 84, 82, 79, 83, 84, 89,
+    79, 89, 86, 88, 82, 80, 77, 86, 80, 90, 80, 82, 91, 77, 85, 80, 83, 80, 81,
+    90, 89, 79, 90, 89, 77, 91, 84, 86, 78, 81, 87, 79, 78, 89, 86, 91, 78, 80,
+    86, 78, 88, 90, 84, 82, 86, 82, 84, 77, 86, 91, 91, 79, 91, 87, 84, 85, 87,
+    85, 82, 89, 77, 79, 87, 89, 87, 85, 77, 85, 80, 77, 87, 81, 91, 81, 91, 86,
+    88, 85, 83, 77, 89, 85, 87, 83, 79, 88, 81, 90, 83, 88, 82, 85, 85, 87, 89,
+    77, 88, 85, 91, 77, 78, 82, 86, 90, 82, 89, 82, 77, 84, 83, 84, 88, 80, 84,
+    91, 78, 86, 77, 84, 90, 89, 88, 78, 81, 82, 86, 88, 89, 85, 89, 90, 90, 78,
+    81, 77, 77, 83, 86, 81, 79, 81, 78, 89, 78, 88, 80, 87, 78, 80, 91, 87, 84,
+    83, 82, 78, 77, 83, 87, 80, 79, 83, 83, 89, 83, 90, 82, 84, 87, 82, 79, 84,
+    88, 81, 91, 83, 86, 87, 77, 79, 82, 78, 86, 87, 87, 90, 91, 83, 79, 83, 88,
+    78, 91, 82, 82, 81, 82, 77, 87, 79, 83, 90, 84, 78, 86, 87
+]
+
 
 # noinspection PyTypeChecker
 class Experiment:
@@ -105,8 +125,9 @@ class Experiment:
         # List that holds all the intersections or freeway sections in the experiment
         self.section_list: List[Union[Intersection, FreewaySection]] = []
 
-
-    def initialize_carla_server(self, blocking: bool = False, port: int = 2000) -> None:
+    def initialize_carla_server(self,
+                                blocking: bool = False,
+                                port: int = 2000) -> None:
         """
         Connects to the Carla server.
 
@@ -150,16 +171,16 @@ class Experiment:
         self.world = self.client.load_world(self.MAP)
 
         # Set the world to have some default weather parameters
-        weather = carla.WeatherParameters(
-            cloudiness=10.0,
-            precipitation=0.0,
-            sun_altitude_angle=90.0)
+        weather = carla.WeatherParameters(cloudiness=10.0,
+                                          precipitation=0.0,
+                                          sun_altitude_angle=90.0)
         self.world.set_weather(weather)
 
         # Set the world spectator to some arbitrary position
         self.spectator = self.world.get_spectator()
         self.spectator.set_transform(
-            carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw=56.9, roll=0.0)))
+            carla.Transform(carla.Location(x=-170, y=-151, z=116.5),
+                            carla.Rotation(pitch=-33, yaw=56.9, roll=0.0)))
 
     def _finish_server_connection(self, status: bool) -> None:
         """
@@ -176,8 +197,9 @@ class Experiment:
 
         # Initialize the experiment properties that rely on the server
         self.map = self.world.get_map()
-        self.waypoints = list(filter(lambda x: x.lane_type == carla.LaneType.Driving,
-                                     self.map.generate_waypoints(WAYPOINT_SEPARATION)))
+        self.waypoints = list(
+            filter(lambda x: x.lane_type == carla.LaneType.Driving,
+                   self.map.generate_waypoints(WAYPOINT_SEPARATION)))
         self.spawn_points = self.map.get_spawn_points()
 
         # Initialize the junctions from the map
@@ -185,7 +207,8 @@ class Experiment:
         for waypoint in self.waypoints:
             if waypoint.is_junction:
                 if waypoint.get_junction().id not in self.junctions:
-                    self.junctions[waypoint.get_junction().id] = waypoint.get_junction()
+                    self.junctions[
+                        waypoint.get_junction().id] = waypoint.get_junction()
 
         # Give each controller a copy of the world to use
         Controller.world = self.world
@@ -215,7 +238,8 @@ class Experiment:
         """
         pass
 
-    def _generate_section_paths(self, configuration: Dict[int, Dict[int, str]]) -> None:
+    def _generate_section_paths(
+            self, configuration: Dict[int, Dict[int, str]]) -> None:
         """
         For each Vehicle, generate the path that will navigate them through each section in
         the experiment, following the commands provided for each section.
@@ -226,7 +250,8 @@ class Experiment:
 
         for vehicle in [self.ego_vehicle] + self.vehicle_list:
             # Set the vehicle's first waypoint to their initial position
-            vehicle.waypoints.append(self.map.get_waypoint(vehicle.get_current_location()))
+            vehicle.waypoints.append(
+                self.map.get_waypoint(vehicle.get_current_location()))
             section_configuration = configuration[vehicle.id]["sections"]
 
             # Generate a path for the vehicles current last waypoint to the next intersection
@@ -238,14 +263,14 @@ class Experiment:
 
                 # Generate the path from the vehicles current position to the start of the next section
                 initial_waypoint = section.get_initial_waypoint(vehicle)
-                waypoints, trajectory = Controller.generate_path(vehicle, vehicle.waypoints[-1], initial_waypoint)
+                waypoints, trajectory = Controller.generate_path(
+                    vehicle, vehicle.waypoints[-1], initial_waypoint)
                 vehicle.waypoints += waypoints
                 vehicle.trajectory += trajectory
 
                 # Add a new waypoint to move the vehicle through the intersection
-                thru_waypoints = section.get_thru_waypoints(self.map,
-                                                            vehicle,
-                                                            section_configuration[i])
+                thru_waypoints = section.get_thru_waypoints(
+                    self.map, vehicle, section_configuration[i])
                 if thru_waypoints is not None:
                     vehicle.waypoints += thru_waypoints
 
@@ -253,8 +278,9 @@ class Experiment:
                 # then stop
                 if section.id == vehicle.ending_section.id:
                     vehicle.waypoints.append(
-                        self.map.get_waypoint(project_forward(vehicle.waypoints[-1].transform, 15.0).location)
-                    )
+                        self.map.get_waypoint(
+                            project_forward(vehicle.waypoints[-1].transform,
+                                            15.0).location))
                     # Also, make sure to re-smooth the trajectory
                     vehicle.trajectory = smooth_path(vehicle.waypoints)
                     break
@@ -275,8 +301,7 @@ class Experiment:
 
         # Initialize the Pygame display
         display = pygame.display.set_mode(
-            (0, 0),
-            pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
+            (0, 0), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
         display.fill((0, 0, 0))
         pygame.display.flip()
 
@@ -296,25 +321,26 @@ class Experiment:
                 count_time += 1
 
                 # Tick the Carla Simulation
-                self.world.tick()
+                # world.tick()
                 clock.tick(60)
                 #pygame.event.pump()
-                
+
                 # Update the state of each of the experiment sections (mainly applicable to intersection and
                 # traffic lights)
                 for section in self.section_list:
                     section.tick()
-                
+
                 # Update the relative locations of each vehicle
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
                     vehicle.update_other_vehicle_locations(self.vehicle_list)
-                
+
                 # Apply control to the Ego Vehicle
                 if self.ego_vehicle is not None:
                     # Lambda used to avoid passing all the arguments into the update_control function
-                    EgoController.update_control(self.ego_vehicle,
-                                                 lambda: controller.tick(clock),
-                                                 self.experiment_type)
+                    EgoController.update_control(
+                        self.ego_vehicle,
+                        lambda: controller.tick_no_control(clock),
+                        self.experiment_type)
                 # Apply control to every other Vehicle().render(display)
                 pygame.display.flip()
                 lead_speed = 0
@@ -324,21 +350,21 @@ class Experiment:
                         IntersectionController.update_control(vehicle)
                     elif self.experiment_type == ExperimentType.FREEWAY:
                     '''
-                    if(count_time == 150):
+                    if (count_time == 150):
                         vehicle.target_speed = random_speed[count_array]
                         count_array += 1
                         count_time = 0
                         print(clock.get_fps())
                     FreewayController.update_control(vehicle)
                     lead_speed = vehicle.get_current_speed()
-                
+
                 if (count_array == len(random_speed)):
                     count_array = 0
-                
+
                 # Update the UI elements
                 World.get_instance().render(display)
                 pygame.display.flip()
-            
+
         finally:
             world.destroy()
 
@@ -351,7 +377,10 @@ class Experiment:
         for vehicle in self.vehicle_list:
             vehicle.carla_vehicle.destroy()
 
-    def add_vehicle(self, spawn_location: carla.Transform, type_id: VehicleType, ego: bool = False,
+    def add_vehicle(self,
+                    spawn_location: carla.Transform,
+                    type_id: VehicleType,
+                    ego: bool = False,
                     blueprint_id: str = None) -> Vehicle:
         """
         Adds a new Vehicle to the experiment.
@@ -368,11 +397,15 @@ class Experiment:
         """
 
         # Grab the selected blueprint if one was provided, otherwise select a random non-bike blueprint
-        blueprint_list = self.world.get_blueprint_library().filter('vehicle.*.*')
+        blueprint_list = self.world.get_blueprint_library().filter(
+            'vehicle.*.*')
         if blueprint_id is not None:
             blueprint = blueprint_list.find(blueprint_id)
         else:
-            blueprint_list = [x for x in blueprint_list if int(x.get_attribute('number_of_wheels')) != 2]
+            blueprint_list = [
+                x for x in blueprint_list
+                if int(x.get_attribute('number_of_wheels')) != 2
+            ]
             blueprint = random.choice(blueprint_list)
 
         if ego:
@@ -380,23 +413,29 @@ class Experiment:
                 raise Exception("Unable to add multiple ego vehicles.")
 
             # Create a new ego vehicle in the Simulation
-            new_carla_vehicle = self.world.spawn_actor(blueprint, spawn_location)
+            new_carla_vehicle = self.world.spawn_actor(blueprint,
+                                                       spawn_location)
             new_vehicle = Vehicle(new_carla_vehicle, "Ego", type_id)
             self.ego_vehicle = new_vehicle
 
             # Set the camera to be located at the Ego vehicle
             self.world.tick()
-            self.spectator.set_transform(new_vehicle.carla_vehicle.get_transform())
+            self.spectator.set_transform(
+                new_vehicle.carla_vehicle.get_transform())
 
         else:
             # Create a new non-ego vehicle in the Simulation
-            new_carla_vehicle = self.world.spawn_actor(blueprint, spawn_location)
-            new_vehicle = Vehicle(new_carla_vehicle, "temp_id", VehicleType.GENERIC)
+            new_carla_vehicle = self.world.spawn_actor(blueprint,
+                                                       spawn_location)
+            new_vehicle = Vehicle(new_carla_vehicle, "temp_id",
+                                  VehicleType.GENERIC)
             self.vehicle_list.append(new_vehicle)
 
         return new_vehicle
 
-    def add_vehicles_from_configuration(self, configuration: Dict[int, Dict[int, str]]):
+    def add_vehicles_from_configuration(self, configuration: Dict[int,
+                                                                  Dict[int,
+                                                                       str]]):
         """
         Adds vehicles to the Experiment according to the configuration dictionary.
 
@@ -408,32 +447,46 @@ class Experiment:
             vehicle_configuration = configuration[i]
 
             # Set up the Vehicle's spawn point
-            spawn_point = self.spawn_points[vehicle_configuration["spawn_point"]]
-            if "spawn_offset" in vehicle_configuration and vehicle_configuration["spawn_offset"] != 0.0:
-                spawn_point = project_forward(spawn_point, vehicle_configuration["spawn_offset"])
+            spawn_point = self.spawn_points[
+                vehicle_configuration["spawn_point"]]
+            if "spawn_offset" in vehicle_configuration and vehicle_configuration[
+                    "spawn_offset"] != 0.0:
+                spawn_point = project_forward(
+                    spawn_point, vehicle_configuration["spawn_offset"])
 
             # Create the vehicle
-            is_ego = vehicle_configuration["type"] in (VehicleType.EGO_FULL_AUTOMATIC, VehicleType.EGO_FULL_MANUAL,
-                                                       VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE,
-                                                       VehicleType.EGO_AUTOMATIC_STEER_MANUAL_THROTTLE)
+            is_ego = vehicle_configuration["type"] in (
+                VehicleType.EGO_FULL_AUTOMATIC, VehicleType.EGO_FULL_MANUAL,
+                VehicleType.EGO_MANUAL_STEER_AUTOMATIC_THROTTLE,
+                VehicleType.EGO_AUTOMATIC_STEER_MANUAL_THROTTLE)
             if (is_ego):
                 #get blueprint_id
                 car_blueprint_id = vehicle_configuration["car_name"]
-                vehicle = self.add_vehicle(spawn_point, ego=is_ego, type_id=vehicle_configuration["type"], blueprint_id=car_blueprint_id)
+                vehicle = self.add_vehicle(
+                    spawn_point,
+                    ego=is_ego,
+                    type_id=vehicle_configuration["type"],
+                    blueprint_id=car_blueprint_id)
             else:
-                vehicle = self.add_vehicle(spawn_point, ego=is_ego, type_id=vehicle_configuration["type"])
+                vehicle = self.add_vehicle(
+                    spawn_point,
+                    ego=is_ego,
+                    type_id=vehicle_configuration["type"])
 
             # Set which sections the vehicle will be active at
             starting_section = min(vehicle_configuration["sections"].keys())
             ending_section = max(vehicle_configuration["sections"].keys())
-            vehicle.set_active_sections(self.section_list[starting_section], self.section_list[ending_section])
+            vehicle.set_active_sections(self.section_list[starting_section],
+                                        self.section_list[ending_section])
 
             # Set the initial lane index that the vehicle is starting in
             # (this currently doesn't exist in the IntersectionExperiment but it should be added)
             if "initial_lane_index" in vehicle_configuration:
-                vehicle.current_lane = vehicle_configuration["initial_lane_index"]
+                vehicle.current_lane = vehicle_configuration[
+                    "initial_lane_index"]
 
-    def add_section(self, new_section: Union[Intersection, FreewaySection]) -> None:
+    def add_section(self, new_section: Union[Intersection,
+                                             FreewaySection]) -> None:
         """
         Adds a new section to the Experiment.
 
