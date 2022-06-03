@@ -77,5 +77,4 @@ class EgoController:
                 manual_control.throttle = throttle
             else:
                 manual_control.brake = abs(throttle)
-
         current_vehicle.apply_control(manual_control)

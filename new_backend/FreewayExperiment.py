@@ -16,8 +16,8 @@ Referenced By:
 """
 
 # Local Imports
-from Controller import Controller
-from Experiment import Experiment
+from WizardExperiment import Experiment
+# from Controller import Controller
 from FreewaySection import FreewaySection
 from Helpers import ExperimentType, VehicleType, project_forward
 from Vehicle import Vehicle

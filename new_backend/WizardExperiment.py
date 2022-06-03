@@ -50,6 +50,7 @@ import pygame
 import random
 import sys
 from typing import List, Dict, Union
+import csv
 
 # List of pseudo random numbers for speed generation
 random_speed = [
@@ -73,6 +74,7 @@ random_speed = [
     78, 91, 82, 82, 81, 82, 77, 87, 79, 83, 90, 84, 78, 86, 87
 ]
 
+logarray= []
 
 # noinspection PyTypeChecker
 class Experiment:
@@ -307,10 +309,10 @@ class Experiment:
 
         # Initialize the objects that will be rendered by Pygame
         hud = HUD(display.get_size()[0], display.get_size()[1])
-        world = World(client.get_world(), hud, 'vehicle.*')
+        world = World(self.client.get_world(), hud, 'vehicle.*')
 
         # Initialize the controller to handle user input
-        controller = Controller.get_instance()
+        controller = WizardController(self.ego_vehicle.carla_vehicle)
 
         count_time = 0
         count_array = 0
@@ -334,6 +336,11 @@ class Experiment:
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
                     vehicle.update_other_vehicle_locations(self.vehicle_list)
 
+                # tick wizard controller
+                output = controller.tick(clock)
+                if pygame.time.get_ticks() % 2 == 0:
+                    logarray.append(output)             
+
                 # Apply control to the Ego Vehicle
                 if self.ego_vehicle is not None:
                     # Lambda used to avoid passing all the arguments into the update_control function
@@ -354,7 +361,6 @@ class Experiment:
                         vehicle.target_speed = random_speed[count_array]
                         count_array += 1
                         count_time = 0
-                        print(clock.get_fps())
                     FreewayController.update_control(vehicle)
                     lead_speed = vehicle.get_current_speed()
 
@@ -376,6 +382,13 @@ class Experiment:
         """
         for vehicle in self.vehicle_list:
             vehicle.carla_vehicle.destroy()
+            
+        #Append log array to file
+        with open('log_experiment.csv', 'w', newline='') as csvfile:
+            log_writer = csv.writer(csvfile, delimiter=' ',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            shit_arr = ['time', 'speed', 'distance', 'collision']
+            log_writer.writerows(logarray)
 
     def add_vehicle(self,
                     spawn_location: carla.Transform,
