@@ -161,6 +161,10 @@ class Experiment:
         self.client = carla.Client("localhost", port)
         self.client.set_timeout(20.0)
         self.world = self.client.load_world(self.MAP)
+        
+        ##########Optimization#########
+        # Unload maps for maps with opt
+        #self.world.unload_map_layer(carla.MapLayer.All)
 
         # Set the world to have some default weather parameters
         weather = carla.WeatherParameters(

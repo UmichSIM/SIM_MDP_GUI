@@ -39,7 +39,10 @@ class Vehicle:
 
         # Stores the Carla Vehicle object associated with this particular vehicle
         self.carla_vehicle: carla.Vehicle = carla_vehicle
+        
+        
 
+        
         # The type of this Vehicle
         self.type_id: VehicleType = type_id
 
@@ -102,6 +105,8 @@ class Vehicle:
 
         # Whether the current Vehicle is active or not (an inactive vehicle will not move)
         self.active: bool = True
+        
+        
 
     def has_path(self):
         """

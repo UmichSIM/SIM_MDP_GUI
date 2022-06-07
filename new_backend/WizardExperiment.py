@@ -321,7 +321,6 @@ class Experiment:
             clock = pygame.time.Clock()
             while (1):
                 count_time += 1
-
                 # Tick the Carla Simulation
                 # world.tick()
                 clock.tick(60)
@@ -336,10 +335,7 @@ class Experiment:
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
                     vehicle.update_other_vehicle_locations(self.vehicle_list)
 
-                # tick wizard controller
-                output = controller.tick(clock)
-                if pygame.time.get_ticks() % 2 == 0:
-                    logarray.append(output)             
+                          
 
                 # Apply control to the Ego Vehicle
                 if self.ego_vehicle is not None:
@@ -350,19 +346,26 @@ class Experiment:
                         self.experiment_type)
                 # Apply control to every other Vehicle().render(display)
                 pygame.display.flip()
-                lead_speed = 0
                 for vehicle in self.vehicle_list:
                     '''
                     if self.experiment_type == ExperimentType.INTERSECTION:
                         IntersectionController.update_control(vehicle)
                     elif self.experiment_type == ExperimentType.FREEWAY:
                     '''
+                    lead_speed = 0
                     if (count_time == 150):
                         vehicle.target_speed = random_speed[count_array]
                         count_array += 1
                         count_time = 0
                     FreewayController.update_control(vehicle)
-                    lead_speed = vehicle.get_current_speed()
+                    #lead speed for other vehicle to mph
+                    lead_speed = vehicle.get_current_speed() / 1.6
+                    
+                    
+                # tick wizard controller
+                output = controller.tick(clock)
+                if pygame.time.get_ticks() % 5 == 0:
+                    logarray.append(output)   
 
                 if (count_array == len(random_speed)):
                     count_array = 0
@@ -387,7 +390,7 @@ class Experiment:
         with open('log_experiment.csv', 'w', newline='') as csvfile:
             log_writer = csv.writer(csvfile, delimiter=' ',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            shit_arr = ['time', 'speed', 'distance', 'collision']
+            #shit_arr = ['time', 'speed', 'distance', 'collision']
             log_writer.writerows(logarray)
 
     def add_vehicle(self,
@@ -395,9 +398,7 @@ class Experiment:
                     type_id: VehicleType,
                     ego: bool = False,
                     blueprint_id: str = None) -> Vehicle:
-        """
-        Adds a new Vehicle to the experiment.
-
+        """a
         The new vehicle will be added at the location specified by spawn_location. The specific type of the vehicle
         must be specified so the correct type of control is applied to the vehicle.
 
@@ -414,20 +415,41 @@ class Experiment:
             'vehicle.*.*')
         if blueprint_id is not None:
             blueprint = blueprint_list.find(blueprint_id)
+            
         else:
             blueprint_list = [
                 x for x in blueprint_list
                 if int(x.get_attribute('number_of_wheels')) != 2
             ]
             blueprint = random.choice(blueprint_list)
-
+            
+        
         if ego:
             if self.ego_vehicle is not None:
                 raise Exception("Unable to add multiple ego vehicles.")
-
+            
+            
+            
             # Create a new ego vehicle in the Simulation
             new_carla_vehicle = self.world.spawn_actor(blueprint,
                                                        spawn_location)
+            # Make vehicle have automatic lights
+            new_carla_vehicle.set_light_state(carla.VehicleLightState.Position)
+            '''
+            #Physics of the ego car - can change the parameters of the car
+            physics_control = new_carla_vehicle.get_physics_control()
+            #Change the physics of the wheels
+            front_left_wheel  = carla.WheelPhysicsControl(tire_friction=8.0, damping_rate=2.0, max_steer_angle=70.0, radius=25.0)
+            front_right_wheel = carla.WheelPhysicsControl(tire_friction=8.0, damping_rate=2.0, max_steer_angle=70.0, radius=25.0)
+            rear_left_wheel   = carla.WheelPhysicsControl(tire_friction=8.0, damping_rate=2.0, max_steer_angle=0.0,  radius=20.0)
+            rear_right_wheel  = carla.WheelPhysicsControl(tire_friction=8.0, damping_rate=2.0, max_steer_angle=0.0,  radius=20.0)
+
+            wheels = [front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel]
+            physics_control.wheels = wheels
+            #apply physics to vehicle
+            new_carla_vehicle.apply_physics_control(physics_control)
+            '''
+            
             new_vehicle = Vehicle(new_carla_vehicle, "Ego", type_id)
             self.ego_vehicle = new_vehicle
 
@@ -437,12 +459,16 @@ class Experiment:
                 new_vehicle.carla_vehicle.get_transform())
 
         else:
+            # Sets color of car (for other cars only)
+            blueprint.set_attribute('color','8,0,0')
             # Create a new non-ego vehicle in the Simulation
             new_carla_vehicle = self.world.spawn_actor(blueprint,
                                                        spawn_location)
             new_vehicle = Vehicle(new_carla_vehicle, "temp_id",
                                   VehicleType.GENERIC)
             self.vehicle_list.append(new_vehicle)
+            
+        
 
         return new_vehicle
 
@@ -484,13 +510,15 @@ class Experiment:
                 vehicle = self.add_vehicle(
                     spawn_point,
                     ego=is_ego,
-                    type_id=vehicle_configuration["type"])
+                    type_id=vehicle_configuration["type"],
+                    blueprint_id=car_blueprint_id)
 
             # Set which sections the vehicle will be active at
             starting_section = min(vehicle_configuration["sections"].keys())
             ending_section = max(vehicle_configuration["sections"].keys())
             vehicle.set_active_sections(self.section_list[starting_section],
                                         self.section_list[ending_section])
+            
 
             # Set the initial lane index that the vehicle is starting in
             # (this currently doesn't exist in the IntersectionExperiment but it should be added)

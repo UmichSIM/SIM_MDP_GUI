@@ -48,7 +48,7 @@ configuration_dictionary = {
         "sections": {
             0: 'straight'
         },
-        "car_name": 'vehicle.mercedes.coupe_2020'
+        "car_name": 'vehicle.chevrolet.impala'
     },
 
     # Initial lead vehicle that turns right at the second intersection
@@ -59,7 +59,8 @@ configuration_dictionary = {
         "initial_lane_index": 1,
         "sections": {
             0: 'straight'
-        }
+        },
+        "car_name": 'vehicle.mercedes.coupe_2020'
     }
 }
 
@@ -68,7 +69,7 @@ class FreewayExperiment(Experiment):
 
     # Current map from the Freeway experiment
     MAP = "Town04"
-
+    
     def __init__(self, headless: bool) -> None:
         super(FreewayExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.FREEWAY
