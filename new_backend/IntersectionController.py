@@ -83,6 +83,6 @@ class IntersectionController:
             # Otherwise, apply the steering and constant acceleration
             control.steer = steering_angle
             control.throttle = throttle if throttle > 0 else 0
-            control.brake = abs(throttle) if throttle < 0 else 0
+            control.brake = abs(throttle) + 0.5 if throttle < 0 else 0
             current_vehicle.apply_control(control)
 

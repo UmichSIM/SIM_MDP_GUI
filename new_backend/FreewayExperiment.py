@@ -42,25 +42,28 @@ configuration_dictionary = {
     # Ego vehicle that simply goes straight through each Freeway section
     0: {
         "type": VehicleType.EGO_FULL_MANUAL,
-        "spawn_point": 13,
+        "spawn_point": 18,
         "spawn_offset": -10.0,
         "initial_lane_index": 1,
         "sections": {
             0: 'straight'
         },
-        "car_name": 'vehicle.chevrolet.impala'
+        "car_name": 'vehicle.mercedes.coupe_2020'
     },
 
     # Initial lead vehicle that turns right at the second intersection
     1: {
         "type": VehicleType.LEAD,
-        "spawn_point": 13,
+        "spawn_point": 18,
         "spawn_offset": 0.0,
         "initial_lane_index": 1,
         "sections": {
             0: 'straight'
         },
         "car_name": 'vehicle.mercedes.coupe_2020'
+        #set car for sepecific mode
+        #black car
+        #white car
     }
 }
 
@@ -68,7 +71,7 @@ configuration_dictionary = {
 class FreewayExperiment(Experiment):
 
     # Current map from the Freeway experiment
-    MAP = "Town04"
+    MAP = "road03"
     
     def __init__(self, headless: bool) -> None:
         super(FreewayExperiment, self).__init__(headless)
