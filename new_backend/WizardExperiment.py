@@ -171,11 +171,7 @@ class Experiment:
         self.client = carla.Client("localhost", port)
         self.client.set_timeout(20.0)
         self.world = self.client.load_world(self.MAP)
-        
-        #Get available maps
-        print(self.client.get_available_maps())
 
-        
         # Set the world to have some default weather parameters
         weather = carla.WeatherParameters(cloudiness=10.0,
                                           precipitation=0.0,
@@ -356,18 +352,20 @@ class Experiment:
                         IntersectionController.update_control(vehicle)
                     elif self.experiment_type == ExperimentType.FREEWAY:
                     '''
+                    lead_speed = 0
                     if (count_time == 150):
                         vehicle.target_speed = random_speed[count_array]
                         count_array += 1
                         count_time = 0
                     FreewayController.update_control(vehicle)
+                    #lead speed for other vehicle to mph
+                    lead_speed = vehicle.get_current_speed() / 1.6
                     
                     
                 # tick wizard controller
                 output = controller.tick(clock)
-                output.append(pygame.time.get_ticks())
-                
-                logarray.append(output)   
+                if pygame.time.get_ticks() % 5 == 0:
+                    logarray.append(output)   
 
                 if (count_array == len(random_speed)):
                     count_array = 0
@@ -390,14 +388,8 @@ class Experiment:
             
         #Append log array to file
         with open('log_experiment.csv', 'w', newline='') as csvfile:
-            #write header
-            headers = ['TimeStamp', 'Speed', 'Distance','Collision','Leading Speed','Ticks']
-            writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n',fieldnames=headers)
-            writer.writeheader()
-            #write rows
             log_writer = csv.writer(csvfile, delimiter=' ',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            
             #shit_arr = ['time', 'speed', 'distance', 'collision']
             log_writer.writerows(logarray)
 
@@ -468,7 +460,7 @@ class Experiment:
 
         else:
             # Sets color of car (for other cars only)
-            blueprint.set_attribute('color','255,255,255') # (8, 0, 0) is a black car
+            blueprint.set_attribute('color','8,0,0')
             # Create a new non-ego vehicle in the Simulation
             new_carla_vehicle = self.world.spawn_actor(blueprint,
                                                        spawn_location)
