@@ -6,7 +6,7 @@ authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-   { include = "old/backend" },
+   { include = "legacy/backend" },
    { include = "new_backend"}
 ]
 
