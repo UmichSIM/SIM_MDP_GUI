@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 packages = [
    { include = "legacy/backend" },
-   { include = "new_backend"}
+   { include = "sim_backend"}
 ]
 
 [tool.poetry.dependencies]
