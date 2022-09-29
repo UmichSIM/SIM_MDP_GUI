@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "sim-mdp-gui"
+version = "0.1.0"
+description = "GUI tool to help human-vehicle interaction researchers design and conduct traffic experiments"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+   { include = "backend" },
+   { include = "new_backend"}
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8, <3.9"
+carla = "^0.9.13"
+pygame = "^2.1.2"
+simple-pid = "^1.0.1"
+PyQt5 = "^5.15.7"
+numpy = "^1.23.3"
+configobj = "^5.0.6"
+matplotlib = "^3.6.0"
+control = "^0.9.2"
+openpyxl = "^3.0.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
