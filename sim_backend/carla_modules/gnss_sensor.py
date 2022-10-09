@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+import carla
+import weakref
+from .world import World
+from .vehicle import Vehicle
+
+
+class GnssSensor(object):
+    """
+    Sensor to collect geographical data
+    """
+
+    def __init__(self):
+        self.sensor = None
+        self._parent = Vehicle.get_instance().vehicle
+        self.lat = 0.0
+        self.lon = 0.0
+        world = self._parent.get_world()
+        bp = world.get_blueprint_library().find('sensor.other.gnss')
+        self.sensor = world.spawn_actor(bp,
+                                        carla.Transform(
+                                            carla.Location(x=1.0, z=2.8)),
+                                        attach_to=self._parent)
+        World.get_instance().register_death(self.sensor)
+        # We need to pass the lambda a weak reference to self to avoid circular
+        # reference.
+        weak_self = weakref.ref(self)
+        self.sensor.listen(
+            lambda event: GnssSensor._on_gnss_event(weak_self, event))
+
+    @staticmethod
+    def _on_gnss_event(weak_self, event):
+        self = weak_self()
+        if not self:
+            return
+        self.lat = event.latitude
+        self.lon = event.longitude

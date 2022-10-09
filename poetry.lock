@@ -69,6 +69,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "evdev"
+version = "1.6.0"
+description = "Bindings to the Linux input handling subsystem"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "fonttools"
 version = "4.37.3"
 description = "Tools to manipulate font files"
@@ -117,6 +125,26 @@ pillow = ">=6.2.0"
 pyparsing = ">=2.2.1"
 python-dateutil = ">=2.7"
 setuptools_scm = ">=7"
+
+[[package]]
+name = "msgpack-python"
+version = "0.5.6"
+description = "MessagePack (de)serializer."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "msgpack-rpc-python"
+version = "0.4.1"
+description = "MessagePack RPC"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+msgpack-python = "*"
+tornado = ">=3,<5"
 
 [[package]]
 name = "numpy"
@@ -288,6 +316,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "tornado"
+version = "4.5.3"
+description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -298,7 +334,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <3.9"
-content-hash = "a6a2fec33d224c863c0f77212baec6b94f31d37dc38083e469027b45f9e39640"
+content-hash = "66be188b5009f44893249bb0a5cba215c429337dc7b1d05ab42fabd6a0953afe"
 
 [metadata.files]
 carla = [
@@ -394,6 +430,9 @@ cycler = [
 et-xmlfile = [
     {file = "et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
     {file = "et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
+]
+evdev = [
+    {file = "evdev-1.6.0.tar.gz", hash = "sha256:ecfa01b5c84f7e8c6ced3367ac95288f43cd84efbfd7dd7d0cdbfc0d18c87a6a"},
 ]
 fonttools = [
     {file = "fonttools-4.37.3-py3-none-any.whl", hash = "sha256:a5bc5f5d48faa4085310b8ebd4c5d33bf27c6636c5f10a7de792510af2745a81"},
@@ -511,6 +550,12 @@ matplotlib = [
     {file = "matplotlib-3.6.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4699bb671dbc4afdb544eb893e4deb8a34e294b7734733f65b4fd2787ba5fbc6"},
     {file = "matplotlib-3.6.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:657fb7712185f82211170ac4debae0800ed4f5992b8f7ebba2a9eabaf133a857"},
     {file = "matplotlib-3.6.0.tar.gz", hash = "sha256:c5108ebe67da60a9204497d8d403316228deb52b550388190c53a57394d41531"},
+]
+msgpack-python = [
+    {file = "msgpack-python-0.5.6.tar.gz", hash = "sha256:378cc8a6d3545b532dfd149da715abae4fda2a3adb6d74e525d0d5e51f46909b"},
+]
+msgpack-rpc-python = [
+    {file = "msgpack-rpc-python-0.4.1.tar.gz", hash = "sha256:ba7188129f2ba95fb9731f906aa82a5abd5827dd54ecfc715008f5ce2314535f"},
 ]
 numpy = [
     {file = "numpy-1.23.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c9f707b5bb73bf277d812ded9896f9512a43edff72712f31667d0a8c2f8e71ee"},
@@ -754,6 +799,13 @@ six = [
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+tornado = [
+    {file = "tornado-4.5.3-cp35-cp35m-win32.whl", hash = "sha256:92b7ca81e18ba9ec3031a7ee73d4577ac21d41a0c9b775a9182f43301c3b5f8e"},
+    {file = "tornado-4.5.3-cp35-cp35m-win_amd64.whl", hash = "sha256:b36298e9f63f18cad97378db2222c0e0ca6a55f6304e605515e05a25483ed51a"},
+    {file = "tornado-4.5.3-cp36-cp36m-win32.whl", hash = "sha256:ab587996fe6fb9ce65abfda440f9b61e4f9f2cf921967723540679176915e4c3"},
+    {file = "tornado-4.5.3-cp36-cp36m-win_amd64.whl", hash = "sha256:5ef073ac6180038ccf99411fe05ae9aafb675952a2c8db60592d5daf8401f803"},
+    {file = "tornado-4.5.3.tar.gz", hash = "sha256:6d14e47eab0e15799cf3cdcc86b0b98279da68522caace2bd7ce644287685f0a"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
