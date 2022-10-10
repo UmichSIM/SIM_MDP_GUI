@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from .base_wheel import BaseWheel
-from .inputs import InputDevType, WheelKeyType, ControlEventType
+from . import InputDevType, WheelKeyType, ControlEventType
 
 g29_key_map: dict = {
     # WheelKeyType.XBOX: ControlEventType.RESTART_WORLD, # TODO: recover this

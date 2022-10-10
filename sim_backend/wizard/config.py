@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from sim_backend.wizard.drivers.inputs import InputDevType, WheelKeyType, ControlEventType
+from sim_backend.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
 from sim_backend.wizard.drivers import G920, G27, G29
 # frame rate for client
 client_frame_rate: int = 60

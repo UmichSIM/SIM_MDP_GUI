@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from .base_wheel import BaseWheel
-from .inputs import InputDevType, WheelKeyType, ControlEventType
+from . import InputDevType, WheelKeyType, ControlEventType
 
 g27_key_map: dict = {
     WheelKeyType.LTOP: ControlEventType.CLOSE,

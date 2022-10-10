@@ -4,7 +4,7 @@ from queue import Queue
 from typing import Callable
 from sim_backend.carla_modules import World, HUD, Vehicle
 from sim_backend.wizard.rpc import RPC
-from sim_backend.wizard.drivers.inputs import ControlEventType, InputDevType, InputPacket
+from sim_backend.wizard.drivers import ControlEventType, InputDevType, InputPacket
 from sim_backend.wizard import config
 import pygame
 
