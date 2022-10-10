@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import msgpackrpc
-from sim_backend.wizard.drivers.inputs import InputDevType
+from sim_backend.wizard.drivers import InputDevType
 from sim_backend.wizard import config
 
 

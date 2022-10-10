@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from time import time
 import carla
-from sim_backend.wizard.drivers.inputs import InputDevType, InputPacket
+from sim_backend.wizard.drivers import InputDevType, InputPacket
 from sim_backend.wizard import config
 from sim_backend.wizard.rpc import RPC
 from sim_backend.wizard.config import WheelType

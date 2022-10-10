@@ -6,7 +6,7 @@ from abc import ABC
 
 from sim_backend.wizard.utils.map import LinearMap
 from sim_backend.wizard.utils.limits import *
-from sim_backend.wizard.drivers.inputs import InputDevType, WheelKeyType, ControlEventType
+from sim_backend.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
 
 
 class BaseWheel(ABC):
