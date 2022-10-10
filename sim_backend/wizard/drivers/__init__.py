@@ -7,6 +7,13 @@ from enum import IntEnum, auto
 from dataclasses import dataclass
 
 
+class WheelType(IntEnum):
+    "Type of Racing Wheel"
+    G920 = 0
+    G29 = auto()
+    G27 = auto()
+
+
 class ControlEventType(IntEnum):
     """
     Enum indicating the event requested for controller to handle
