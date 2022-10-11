@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 from hydra.conf import ConfigStore
-from umich_sim.wizard.drivers import InputDevType, WheelType
+from umich_sim.wizard.inputs import InputDevType, WheelType
 
 
 # Configs

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import msgpackrpc
-from umich_sim.wizard.drivers import InputDevType
+from umich_sim.wizard.inputs import InputDevType
 
 
 class RPC:
