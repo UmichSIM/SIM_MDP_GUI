@@ -32,10 +32,6 @@ class BaseWheel(ABC):
         self.ev_events: list = []
         self.ev_type_accepted: tuple = (1, 3)
 
-        # thread
-        self._thread = threading.Thread(target=self.events_handler)
-        # type
-        self.dev_type: InputDevType = dev_type
         # evdev device
         self._ev = None
         self._ctl_key_map: dict = {}
