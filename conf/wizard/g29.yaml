@@ -1,0 +1,5 @@
+defaults:
+  - base_wizard
+
+wheel_type: G29
+dev_path: "/dev/input/event270"

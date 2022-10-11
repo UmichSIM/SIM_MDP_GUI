@@ -2,10 +2,9 @@
 import argparse
 import logging
 import pygame
-from sim_backend.wizard.drivers import InputDevType
-from sim_backend.wizard.controller import Controller
-from sim_backend.carla_modules import HUD, World
-from sim_backend.wizard import config
+from umich_sim.wizard.drivers import InputDevType
+from umich_sim.wizard.controller import Controller
+from umich_sim.sim_backend.carla_modules import HUD, World
 import carla
 
 
