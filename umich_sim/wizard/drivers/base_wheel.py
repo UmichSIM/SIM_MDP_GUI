@@ -4,9 +4,9 @@ import math
 import threading
 from abc import ABC
 
-from sim_backend.wizard.utils.map import LinearMap
-from sim_backend.wizard.utils.limits import *
-from sim_backend.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
+from umich_sim.wizard.utils.map import LinearMap
+from umich_sim.wizard.utils.limits import *
+from umich_sim.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
 
 
 class BaseWheel(ABC):
