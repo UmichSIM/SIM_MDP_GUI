@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import msgpackrpc
-from umich_sim.wizard.inputs import InputDevType
+from umich_sim.wizard.inputs import ClientMode
+from umich_sim.sim_config import ConfigPool, Config
 
 
 class RPC:
@@ -10,20 +11,21 @@ class RPC:
     _instance = None
 
     def __init__(self):
+        config: Config = ConfigPool.get_config()
         self.client = msgpackrpc.Client(
             msgpackrpc.Address(config.server_addr, config.rpc_port))
-        if RPC._instance == None:
+        if RPC._instance is None:
             RPC._instance = self
         else:
             raise Exception("Error: Reinitialization of RPC")
 
     @staticmethod
     def get_instance():
-        if RPC._instance == None:
+        if RPC._instance is None:
             RPC._instance = RPC()
         return RPC._instance
 
-    def set_driver(self, driver: InputDevType):
+    def set_driver(self, driver: ClientMode):
         """
         Set the current driver
         Inputs:
@@ -31,9 +33,9 @@ class RPC:
         """
         self.client.call("set_driver", driver)
 
-    def get_driver(self) -> InputDevType:
+    def get_driver(self) -> ClientMode:
         "Get the current driver"
-        return InputDevType(self.client.call("get_driver"))
+        return ClientMode(self.client.call("get_driver"))
 
     def set_wheel(self, pos: float):
         """

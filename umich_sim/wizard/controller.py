@@ -2,9 +2,8 @@
 from threading import Lock
 from queue import Queue
 from typing import Callable
-from umich_simsim_backend.carla_modules import World, HUD, Vehicle
-from umich_sim.wizard.rpc import RPC
-from umich_sim.wizard.inputs import ControlEventType, InputDevType, InputPacket
+from umich_sim.sim_config import ConfigPool
+from umich_sim.wizard.inputs import ControlEventType, ClientMode, InputPacket
 import pygame
 
 
@@ -29,36 +28,40 @@ class Controller:
         else:
             raise Exception("Error: Reinitialization of Controller")
         # objects and references
+        from umich_sim.sim_backend.carla_modules import World, HUD, Vehicle
         self.__world: World = World.get_instance()
         self.__world.restart()
         self.__hud: HUD = HUD.get_instance()
 
         self.__vehicle: Vehicle = Vehicle.get_instance()
         # vars
-        self.driver: InputDevType = InputDevType.WHEEL
+        self.driver: ClientMode = ClientMode.EGO
         self.__stopping = False
 
         # events handling
         self.__event_lock: Lock = Lock()
         self.__eventsq: Queue = Queue()
-        self.__event_handlers: list = [
-            onpush(self.__world.next_weather),  # change weather
-            onpush(self.__world.restart),  # restart world
-            onpush(self.__hud.toggle_info),  # toggle info
-            onpush(self.__toggle_cam),  # toggle camera
-            onpush(self.__toggle_sensor),  # toggle sensor
-            onpush(self.__hud.help.toggle),  # toggle help
-            lambda data: self.__vehicle.set_reverse(data.dev, True
-                                                    ),  # Decrease Gear
-            lambda data: self.__vehicle.set_reverse(data.dev, False
-                                                    ),  # Increate Gear
-            self.__vehicle.set_throttle,  # Accelerator
-            self.__vehicle.set_brake,  # Brake
-            self.__vehicle.set_steer,  # Steer
-            lambda data: None,  # Clutch
-            self.__vehicle.switch_driver,  # switch driver
-            lambda data: self.stop(),  # Close program
-        ]
+        self.__event_handlers: dict = {
+            ControlEventType.CHANGE_WEATHER: onpush(self.__world.next_weather),
+            ControlEventType.RESTART_WORLD: onpush(self.__world.restart),
+            ControlEventType.TOGGLE_INFO: onpush(self.__hud.toggle_info),
+            ControlEventType.TOGGLE_CAMERA: onpush(self.__toggle_cam),
+            ControlEventType.TOGGLE_SENSOR: onpush(self.__toggle_sensor),
+            ControlEventType.TOGGLE_HELP: onpush(self.__hud.help.toggle),
+            ControlEventType.DEC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, True),
+            ControlEventType.INC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, False
+                                                                               ),
+            ControlEventType.GAS: self.__vehicle.set_throttle,
+            ControlEventType.BRAKE: self.__vehicle.set_brake,
+            ControlEventType.STEER: self.__vehicle.set_steer,
+            ControlEventType.CLUTCH: lambda data: None,
+            ControlEventType.KB_GAS: lambda data: self.__vehicle.change_throttle(1),
+            ControlEventType.KB_BRAKE: lambda data: self.__vehicle.change_throttle(-1),
+            ControlEventType.KB_LEFT: lambda data: self.__vehicle.change_steer(-0.05),
+            ControlEventType.KB_RIGHT: lambda data: self.__vehicle.change_steer(0.05),
+            ControlEventType.SWITCH_DRIVER: self.__vehicle.switch_driver,
+            ControlEventType.CLOSE: lambda data: self.stop(),
+        }
         # start multithreading
         self.__vehicle.start()
 
@@ -70,8 +73,8 @@ class Controller:
 
     def register_event(self,
                        event_type: ControlEventType,
-                       dev: InputDevType = InputDevType.KBD,
-                       val: int = 0) -> None:
+                       dev: ClientMode,
+                       val: int) -> None:
         """
         Register the input event into the event queue
         Inputs:
@@ -89,7 +92,7 @@ class Controller:
         """
         while True:
             if self.__stopping: return
-            clock.tick_busy_loop(config.client_frame_rate)
+            clock.tick_busy_loop(ConfigPool.get_config().client_frame_rate)
             self.tick(clock)
             self.__world.render(display)
             pygame.display.flip()
@@ -109,6 +112,7 @@ class Controller:
         while not self.__eventsq.empty():
             with self.__event_lock:
                 pac: InputPacket = self.__eventsq.get_nowait()
+
             self.__event_handlers[pac.event_type](pac)
 
     def __toggle_cam(self):

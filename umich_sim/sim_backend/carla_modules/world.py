@@ -52,12 +52,8 @@ class World(object):
         return World.__instance
 
     def restart(self):
-        from sim_backend.carla_modules.collision_sensor import CollisionSensor
-        from sim_backend.carla_modules.lane_invasion_sensor import LaneInvasionSensor
-        from sim_backend.carla_modules.gnss_sensor import GnssSensor
-        from sim_backend.carla_modules.imu_sensor import IMUSensor
-        from sim_backend.carla_modules.camera_manager import CameraManager
-        from sim_backend.carla_modules.vehicle import Vehicle
+        from umich_sim.sim_backend.carla_modules import CollisionSensor, LaneInvasionSensor, GnssSensor, IMUSensor, \
+            CameraManager, Vehicle
         # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0

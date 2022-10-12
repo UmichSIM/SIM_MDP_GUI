@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from .base_wheel import BaseWheel
-from . import InputDevType, WheelKeyType, ControlEventType
+from . import ClientMode, WheelKeyType, ControlEventType
 
 g920_key_map: dict = {
     # WheelKeyType.XBOX: ControlEventType.RESTART_WORLD, # TODO: recover this
@@ -26,17 +26,15 @@ g920_key_map: dict = {
     WheelKeyType.BRAKE:
     ControlEventType.BRAKE,
     WheelKeyType.ACC:
-    ControlEventType.ACCELERATOR,
+    ControlEventType.GAS,
 }
 
 
 class G920(BaseWheel):
     # register keymap
-    def __init__(self,
-                 ev_path: str,
-                 dev_type: InputDevType = InputDevType.WHEEL):
+    def __init__(self, ev_path: str, client_mode: ClientMode = ClientMode.EGO):
         # super class
-        super().__init__(dev_type)
+        super().__init__(ev_path, client_mode)
         self._ctl_key_map: dict = g920_key_map
         self.ev_key_map = {
             288: WheelKeyType.A,
@@ -64,4 +62,4 @@ class G920(BaseWheel):
 
 
 if __name__ == "__main__":
-    rw = G920(InputDevType.WHEEL)
+    rw = G920(ClientMode.EGO)
