@@ -3,11 +3,14 @@ from enum import IntEnum, auto
 from dataclasses import dataclass
 
 
-class WheelType(IntEnum):
-    "Type of Racing Wheel"
+class InputDevType(IntEnum):
+    """
+    Type of input device
+    """
     G920 = 0
     G29 = auto()
     G27 = auto()
+    KBD = auto()
 
 
 class ControlEventType(IntEnum):
@@ -24,26 +27,29 @@ class ControlEventType(IntEnum):
     # Racing wheel
     DEC_GEAR = auto()
     INC_GEAR = auto()
-    ACCELERATOR = auto()
+    GAS = auto()
     BRAKE = auto()
     STEER = auto()
     CLUTCH = auto()
+    # Keyboard specific
+    KB_GAS = auto()
+    KB_BRAKE = auto()
+    KB_LEFT = auto()
+    KB_RIGHT = auto()
     # Controls
     SWITCH_DRIVER = auto()
     CLOSE = auto()  # close the program
     NONE = auto()  # do nothing
 
 
-class InputDevType(IntEnum):
+class ClientMode(IntEnum):
     """
     Enum indicating input device type
-        KEYBOARD: keyboard input for debug usage
-        WHEEL: Driver input
+        EGO: Driver input
         WIZARD: Wizard input as autopilot
     """
-    WHEEL = 0
+    EGO = 0
     WIZARD = 1
-    KBD = 2
 
 
 class WheelKeyType(IntEnum):
@@ -89,5 +95,5 @@ class InputPacket:
     dataclass carrying data to controller
     """
     event_type: ControlEventType
-    dev: InputDevType
+    dev: ClientMode
     val: int

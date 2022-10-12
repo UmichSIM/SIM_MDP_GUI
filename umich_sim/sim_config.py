@@ -5,24 +5,26 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 from hydra.conf import ConfigStore
-from umich_sim.wizard.inputs import InputDevType, WheelType
+from umich_sim.wizard.inputs import ClientMode, InputDevType, ClientMode
 
 
 # Configs
 @dataclass
 class WizardConfig:
-    control_mode: InputDevType = InputDevType.WHEEL
-    wheel_type: WheelType = MISSING
-    dev_path: Union[Path, str] = MISSING
+    client_mode: ClientMode = ClientMode.EGO
+    dev_type: InputDevType = InputDevType.KBD
+    dev_path: Union[Path, str] = ""
 
 
 @dataclass
 class Config:
+    debug: bool = True
     client_frame_rate: int = 60
     server_addr: str = "127.0.0.1"
     carla_port: int = 2000
     rpc_port: int = 2003  # rpc server port
     client_resolution: tuple = (1280, 720)
+    client_mode: ClientMode = ClientMode.EGO
     cam_recording: bool = False  # whether to record experiment
     cam_record_dir: Union[Path, str] = Path("./_record")
     car_filter: str = "vehicle.*"

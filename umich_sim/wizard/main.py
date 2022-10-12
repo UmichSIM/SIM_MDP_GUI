@@ -2,7 +2,7 @@
 import argparse
 import logging
 import pygame
-from umich_sim.wizard.inputs import InputDevType
+from umich_sim.wizard.inputs import ClientMode
 from umich_sim.wizard.controller import Controller
 from umich_sim.sim_backend.carla_modules import HUD, World
 import carla
@@ -78,9 +78,9 @@ def main():
     config.server_addr = args.host
     config.user_input_event = args.dev
     if args.wizard:
-        config.client_mode = InputDevType.WIZARD
+        config.client_mode = ClientMode.WIZARD
     elif args.user:
-        config.client_mode = InputDevType.WHEEL
+        config.client_mode = ClientMode.EGO
 
     args.width, args.height = [int(x) for x in args.res.split('x')]
 

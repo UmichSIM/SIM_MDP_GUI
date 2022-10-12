@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-from evdev import ecodes, InputDevice, ff
+from evdev import ecodes, ff
+import evdev
 import math
-import threading
-from abc import ABC
 
 from umich_sim.wizard.utils.map import LinearMap
 from umich_sim.wizard.utils.limits import *
-from umich_sim.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
+from .input_types import ClientMode, WheelKeyType, ControlEventType
+from .base_input_dev import InputDevice
 
 
-class BaseWheel(ABC):
+class BaseWheel(InputDevice):
     """
     Abstract wheel class to be inherited
     """
@@ -17,14 +17,16 @@ class BaseWheel(ABC):
     # settings
     steer_max: int = iinfo(uint16).max  # max possible value to steering wheel
     pedal_max: int = iinfo(uint8).max  # max possible value of pedals
+    has_ff: bool = True
 
-    def __init__(self,
-                 ev_path: str,
-                 dev_type: InputDevType = InputDevType.WHEEL):
+    def __init__(self, ev_path: str, client_mode: ClientMode):
         """
+        default initializer
         :param ev_path: path to evdev device
         :dev_type: device type, racing wheel or wizard
         """
+        super.__init__(client_mode)
+
         # static variables
         self.ev_key_map: dict = {}
         self.ev_abs_map: dict = {}
@@ -43,8 +45,6 @@ class BaseWheel(ABC):
         # FF id
         self._ff_spring_id = None
         self._ff_autocenter_val: int = 0
-        # stop thread
-        self._thread_terminating: bool = False
 
         # connect evdev device
         self._ev_connect(ev_path)
@@ -59,24 +59,24 @@ class BaseWheel(ABC):
         # self._setFFAutoCenter(49150)
         print("Racing wheel registered")
 
-    def SetSpeedFeedback(self):
+    def set_speed_feedback(self):
         '''
         Update the auto center force feedback using speed
         '''
-        from sim_backend.carla_modules import Vehicle
+        from umich_sim.sim_backend.carla_modules import Vehicle
         v = Vehicle.get_instance().get_velocity()
-        speed = (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
+        speed = (3.6 * math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2))
 
         # speed limit that influences the autocenter
-        S2W_THRESHOLD = 90
-        if (speed > S2W_THRESHOLD):
-            speed = S2W_THRESHOLD
+        s2_w_threshold = 90
+        if speed > s2_w_threshold:
+            speed = s2_w_threshold
         # autocenterCmd  \in [0,65535]
-        autocenterCmd: int = int(
-            abs(math.sin(speed / S2W_THRESHOLD)) * iinfo(uint16).max)
+        autocenter_cmd: int = int(
+            abs(math.sin(speed / s2_w_threshold)) * iinfo(uint16).max)
 
         # send autocenterCmd to the steeringwheel
-        self._setFFAutoCenter(autocenterCmd)
+        self._setFFAutoCenter(autocenter_cmd)
 
     def SetWheelPos(self, val: float):
         """
@@ -89,43 +89,35 @@ class BaseWheel(ABC):
                           saturation=iinfo(uint16).max,
                           coeff=iinfo(int16).max)
 
-    def start(self):
-        "start the thread"
-        self._thread.start()
-
-    def stop(self):
-        "stop the thread"
-        self._thread_terminating = True
-
     def events_handler(self) -> None:
-        '''
+        """
         Capture and handle events
-        '''
-        from sim_backend.wizard.controller import Controller
+        """
+        from umich_sim.wizard import Controller
         for event in self._ev.read_loop():
             # return if terminated
-            if self._thread_terminating: return
+            if self._thread_terminating:
+                return
             if event.type in self.ev_type_accepted:
                 # key based on raw code
                 key_type: WheelKeyType = self.ev_events[event.type].get(
                     event.code)
                 # controller event
-                event_type: ControlEventType = self._ctl_key_map.get(
-                    key_type, ControlEventType.NONE)
-                if event_type is not ControlEventType.NONE:
+
+                if event_type := self._ctl_key_map.get(key_type, None):
                     Controller.get_instance().register_event(
-                        event_type, self.dev_type, event.value)
+                        event_type, self.client_mode, event.value)
 
     def _ev_connect(self, ev_path: str):
         "Connect to evdev device based on config file"
-        self._ev: evdev.InputDevice = InputDevice(ev_path)
+        self._ev: evdev.InputDevice = evdev.InputDevice(ev_path)
 
     def _setFFAutoCenter(self, val: int):
         """
         Set the auto center force
         Input: val - uint16_t indicates the intensity
         """
-        assert (val >= 0 and val <= iinfo(uint16).max)
+        assert (0 <= val <= iinfo(uint16).max)
         self._ff_autocenter_val = val
         self._ev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
 

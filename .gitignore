@@ -1,5 +1,7 @@
 .vscode/*
 __pycache__/
+outputs/
+.idea/
 gui_interface/Intersection_1_cut.png
 data_collection/*
 .vs/*
