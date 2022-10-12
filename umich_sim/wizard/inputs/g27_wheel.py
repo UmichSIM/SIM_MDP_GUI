@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from .base_wheel import BaseWheel
-from . import InputDevType, WheelKeyType, ControlEventType
+from . import ClientMode, WheelKeyType, ControlEventType
 
 g27_key_map: dict = {
     WheelKeyType.LTOP: ControlEventType.CLOSE,
@@ -17,11 +17,9 @@ g27_key_map: dict = {
 
 class G27(BaseWheel):
     # register keymap
-    def __init__(self,
-                 ev_path: str,
-                 dev_type: InputDevType = InputDevType.EGO):
+    def __init__(self, ev_path: str, client_mode: ClientMode = ClientMode.EGO):
         # super class
-        super().__init__(dev_type)
+        super().__init__(ev_path, client_mode)
         self._ctl_key_map: dict = g27_key_map
         self.ev_key_map = {
             292: WheelKeyType.RSHIFT,
