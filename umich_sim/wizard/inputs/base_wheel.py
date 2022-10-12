@@ -2,14 +2,14 @@
 from evdev import ecodes, InputDevice, ff
 import math
 import threading
-from abc import ABC
 
 from umich_sim.wizard.utils.map import LinearMap
 from umich_sim.wizard.utils.limits import *
-from umich_sim.wizard.drivers import InputDevType, WheelKeyType, ControlEventType
+from .input_types import InputDevType, WheelKeyType, ControlEventType
+from .base_input_dev import InputDevice
 
 
-class BaseWheel(ABC):
+class BaseWheel(InputDevice):
     """
     Abstract wheel class to be inherited
     """
@@ -18,13 +18,13 @@ class BaseWheel(ABC):
     steer_max: int = iinfo(uint16).max  # max possible value to steering wheel
     pedal_max: int = iinfo(uint8).max  # max possible value of pedals
 
-    def __init__(self,
-                 ev_path: str,
-                 dev_type: InputDevType = InputDevType.WHEEL):
+    def __init__(self, ev_path: str, dev_type: InputDevType):
         """
         :param ev_path: path to evdev device
         :dev_type: device type, racing wheel or wizard
         """
+        super.__init__(dev_type)
+
         # static variables
         self.ev_key_map: dict = {}
         self.ev_abs_map: dict = {}
@@ -43,8 +43,6 @@ class BaseWheel(ABC):
         # FF id
         self._ff_spring_id = None
         self._ff_autocenter_val: int = 0
-        # stop thread
-        self._thread_terminating: bool = False
 
         # connect evdev device
         self._ev_connect(ev_path)
@@ -88,14 +86,6 @@ class BaseWheel(ABC):
         self._setFFSpring(pos=int(val * iinfo(int16).max),
                           saturation=iinfo(uint16).max,
                           coeff=iinfo(int16).max)
-
-    def start(self):
-        "start the thread"
-        self._thread.start()
-
-    def stop(self):
-        "stop the thread"
-        self._thread_terminating = True
 
     def events_handler(self) -> None:
         '''

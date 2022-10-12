@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from time import time
 import carla
-from sim_backend.wizard.inputs import InputDevType, InputPacket
+from sim_backend.wizard.inputs import InputDevType, InputPacket, InputDevice
 from sim_backend.wizard import config
 from sim_backend.wizard.rpc import RPC
-from sim_backend.wizard.config import WheelType
 from evdev import ecodes
 
 
@@ -47,8 +46,9 @@ class Vehicle:
         self._rpc: RPC = RPC.get_instance()
         # who is driving
         self.driver: InputDevType = self._rpc.get_driver()
-        self.joystick_wheel: WheelType = WheelType(config.client_mode,
-                                                   config.user_input_event)
+        # TODO: change this
+        self.joystick_wheel: InputDevice = WheelType(config.client_mode,
+                                                     config.user_input_event)
 
     @staticmethod
     def get_instance():
@@ -131,9 +131,31 @@ class Vehicle:
         "set the vehicle throttle value"
         self._local_ctl.throttle = self.joystick_wheel.PedalMap(data.val)
 
+    def change_throttle(self, val: float = 0.05):
+        """
+        change current throttle by val
+        :param val: value to change
+        """
+        self._local_ctl.throttle += val
+        if self._local_ctl.throttle > 1:
+            self._local_ctl.throttle = 1
+        if self._local_ctl.throttle < 0:
+            self._local_ctl.throttle = 0
+
     def set_steer(self, data: InputPacket):
         "set the vehicle steer value"
         self._local_ctl.steer = self.joystick_wheel.SteerMap(data.val)
+
+    def change_steer(self, val: float = 0.05):
+        """
+        change steer by value
+        :param val: value to change
+        """
+        self._local_ctl.steer += val
+        if self._local_ctl.steer > 1:
+            self._local_ctl.steer = 1
+        if self._local_ctl.steer < -1:
+            self._local_ctl.steer = -1
 
     def set_reverse(self, dev: InputDevType, val: bool):
         "Set the inverse mode of the vehicle"

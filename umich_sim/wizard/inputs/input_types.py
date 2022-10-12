@@ -24,10 +24,15 @@ class ControlEventType(IntEnum):
     # Racing wheel
     DEC_GEAR = auto()
     INC_GEAR = auto()
-    ACCELERATOR = auto()
+    GAS = auto()
     BRAKE = auto()
     STEER = auto()
     CLUTCH = auto()
+    # Keyboard specific
+    KB_GAS = auto()
+    KB_BRAKE = auto()
+    KB_LEFT = auto()
+    KB_RIGHT = auto()
     # Controls
     SWITCH_DRIVER = auto()
     CLOSE = auto()  # close the program
@@ -37,13 +42,11 @@ class ControlEventType(IntEnum):
 class InputDevType(IntEnum):
     """
     Enum indicating input device type
-        KEYBOARD: keyboard input for debug usage
-        WHEEL: Driver input
+        EGO: Driver input
         WIZARD: Wizard input as autopilot
     """
-    WHEEL = 0
+    EGO = 0
     WIZARD = 1
-    KBD = 2
 
 
 class WheelKeyType(IntEnum):

@@ -2,7 +2,7 @@
 from threading import Lock
 from queue import Queue
 from typing import Callable
-from umich_simsim_backend.carla_modules import World, HUD, Vehicle
+from umich_sim.sim_backend.carla_modules import World, HUD, Vehicle
 from umich_sim.wizard.rpc import RPC
 from umich_sim.wizard.inputs import ControlEventType, InputDevType, InputPacket
 import pygame
@@ -41,23 +41,26 @@ class Controller:
         # events handling
         self.__event_lock: Lock = Lock()
         self.__eventsq: Queue = Queue()
-        self.__event_handlers: list = [
-            onpush(self.__world.next_weather),  # change weather
-            onpush(self.__world.restart),  # restart world
-            onpush(self.__hud.toggle_info),  # toggle info
-            onpush(self.__toggle_cam),  # toggle camera
-            onpush(self.__toggle_sensor),  # toggle sensor
-            onpush(self.__hud.help.toggle),  # toggle help
-            lambda data: self.__vehicle.set_reverse(data.dev, True
-                                                    ),  # Decrease Gear
-            lambda data: self.__vehicle.set_reverse(data.dev, False
-                                                    ),  # Increate Gear
-            self.__vehicle.set_throttle,  # Accelerator
-            self.__vehicle.set_brake,  # Brake
-            self.__vehicle.set_steer,  # Steer
-            lambda data: None,  # Clutch
-            self.__vehicle.switch_driver,  # switch driver
-            lambda data: self.stop(),  # Close program
+        self.__event_handlers: dict = [
+            ControlEventType.CHANGE_WEATHER: onpush(self.__world.next_weather),
+            ControlEventType.RESTART_WORLD: onpush(self.__world.restart),
+            ControlEventType.TOGGLE_INFO: onpush(self.__hud.toggle_info),
+            ControlEventType.TOGGLE_CAMERA: onpush(self.__toggle_cam),
+            ControlEventType.TOGGLE_SENSOR: onpush(self.__toggle_sensor),
+            ControlEventType.TOGGLE_HELP: onpush(self.__hud.help.toggle),
+            ControlEventType.DEC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, True),
+            ControlEventType.INC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, False
+                                                    ),
+            ControlEventType.GAS: self.__vehicle.set_throttle,
+            ControlEventType.BRAKE: self.__vehicle.set_brake,
+            ControlEventType.STEER: self.__vehicle.set_steer,
+            ControlEventType.CLUTCH: lambda data: None,
+            ControlEventType.KB_GAS: lambda data: self.__vehicle.change_throttle(0.05)
+            ControlEventType.KB_BRAKE: lambda data: self.__vehicle.change_throttle(-0.05)
+            ControlEventType.KB_LEFT: lambda data: self.__vehicle.change_steer(-0.05)
+            ControlEventType.KB_RIGHT: lambda data: self.__vehicle.change_steer(0.05)
+            ControlEventType.SWITCH_DRIVER: self.__vehicle.switch_driver,
+            ControlEventType.CLOSE: lambda data: self.stop(),
         ]
         # start multithreading
         self.__vehicle.start()
@@ -109,6 +112,7 @@ class Controller:
         while not self.__eventsq.empty():
             with self.__event_lock:
                 pac: InputPacket = self.__eventsq.get_nowait()
+
             self.__event_handlers[pac.event_type](pac)
 
     def __toggle_cam(self):

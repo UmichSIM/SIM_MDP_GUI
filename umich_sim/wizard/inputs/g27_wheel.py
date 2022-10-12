@@ -11,7 +11,7 @@ g27_key_map: dict = {
     WheelKeyType.RSHIFT: ControlEventType.INC_GEAR,
     WheelKeyType.STEER: ControlEventType.STEER,
     WheelKeyType.BRAKE: ControlEventType.BRAKE,
-    WheelKeyType.ACC: ControlEventType.ACCELERATOR,
+    WheelKeyType.ACC: ControlEventType.GAS,
 }
 
 
@@ -19,7 +19,7 @@ class G27(BaseWheel):
     # register keymap
     def __init__(self,
                  ev_path: str,
-                 dev_type: InputDevType = InputDevType.WHEEL):
+                 dev_type: InputDevType = InputDevType.EGO):
         # super class
         super().__init__(dev_type)
         self._ctl_key_map: dict = g27_key_map
