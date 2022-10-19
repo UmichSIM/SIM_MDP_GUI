@@ -65,7 +65,7 @@ class BaseWheel(InputDevice):
         """
         from umich_sim.sim_backend.carla_modules import Vehicle
         v = Vehicle.get_instance().get_velocity()
-        speed = (3.6 * math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2))
+        speed = (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
 
         # speed limit that influences the autocenter
         s2_w_threshold = 90

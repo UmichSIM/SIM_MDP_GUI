@@ -114,7 +114,11 @@ class Vehicle:
                 # erase spring effect
                 self.joystick_wheel.erase_ff(ecodes.FF_SPRING)
                 # force feedback based on current states
+<<<<<<< HEAD
                 self.joystick_wheel.set_speed_feedback()
+=======
+                self.joystick_wheel.SetSpeedFeedback()
+>>>>>>> 24-changing-backend-structure
 
             # upload wheel position
             self._rpc.set_wheel(self._carla_ctl.steer)
@@ -159,6 +163,17 @@ class Vehicle:
         :param val: value to set
         """
         self._local_ctl.steer = val
+
+    def change_steer(self, val: float = 0.05):
+        """
+        change steer by value
+        :param val: value to change
+        """
+        self._local_ctl.steer += val
+        if self._local_ctl.steer > 1:
+            self._local_ctl.steer = 1
+        if self._local_ctl.steer < -1:
+            self._local_ctl.steer = -1
 
     def set_reverse(self, dev: ClientMode, val: bool):
         "Set the inverse mode of the vehicle"
