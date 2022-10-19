@@ -130,8 +130,12 @@ class Vehicle:
         "set the vehicle brake value"
         self._local_ctl.brake = self.joystick_wheel.PedalMap(data.val)
 
+    def kb_set_brake(self, val: float):
+        """set the vehicle brake value"""
+        self._local_ctl.brake = val
+
     def set_throttle(self, data: InputPacket):
-        "set the vehicle throttle value"
+        """set the vehicle throttle value"""
         self._local_ctl.throttle = self.joystick_wheel.PedalMap(data.val)
 
     def change_throttle(self, val: float = 0.05):
