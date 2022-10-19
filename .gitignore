@@ -2,6 +2,7 @@
 __pycache__/
 outputs/
 .idea/
+.fleet/
 gui_interface/Intersection_1_cut.png
 data_collection/*
 .vs/*

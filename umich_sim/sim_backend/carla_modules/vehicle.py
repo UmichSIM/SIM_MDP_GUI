@@ -114,7 +114,7 @@ class Vehicle:
                 # erase spring effect
                 self.joystick_wheel.erase_ff(ecodes.FF_SPRING)
                 # force feedback based on current states
-                self.joystick_wheel.SetSpeedFeedback()
+                self.joystick_wheel.set_speed_feedback()
 
             # upload wheel position
             self._rpc.set_wheel(self._carla_ctl.steer)

@@ -25,7 +25,7 @@ class BaseWheel(InputDevice):
         :param ev_path: path to evdev device
         :dev_type: device type, racing wheel or wizard
         """
-        super.__init__(client_mode)
+        super().__init__(client_mode)
 
         # static variables
         self.ev_key_map: dict = {}
