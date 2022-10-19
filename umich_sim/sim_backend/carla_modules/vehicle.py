@@ -149,16 +149,12 @@ class Vehicle:
         "set the vehicle steer value"
         self._local_ctl.steer = self.joystick_wheel.SteerMap(data.val)
 
-    def change_steer(self, val: float = 0.05):
+    def kb_set_steer(self, val: float = 0):
         """
-        change steer by value
-        :param val: value to change
+        set steer
+        :param val: value to set
         """
-        self._local_ctl.steer += val
-        if self._local_ctl.steer > 1:
-            self._local_ctl.steer = 1
-        if self._local_ctl.steer < -1:
-            self._local_ctl.steer = -1
+        self._local_ctl.steer = val
 
     def set_reverse(self, dev: ClientMode, val: bool):
         "Set the inverse mode of the vehicle"
