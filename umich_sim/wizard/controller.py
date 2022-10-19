@@ -42,25 +42,48 @@ class Controller:
         self.__event_lock: Lock = Lock()
         self.__eventsq: Queue = Queue()
         self.__event_handlers: dict = {
-            ControlEventType.CHANGE_WEATHER: onpush(self.__world.next_weather),
-            ControlEventType.RESTART_WORLD: onpush(self.__world.restart),
-            ControlEventType.TOGGLE_INFO: onpush(self.__hud.toggle_info),
-            ControlEventType.TOGGLE_CAMERA: onpush(self.__toggle_cam),
-            ControlEventType.TOGGLE_SENSOR: onpush(self.__toggle_sensor),
-            ControlEventType.TOGGLE_HELP: onpush(self.__hud.help.toggle),
-            ControlEventType.DEC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, True),
-            ControlEventType.INC_GEAR: lambda data: self.__vehicle.set_reverse(data.dev, False
-                                                                               ),
-            ControlEventType.GAS: self.__vehicle.set_throttle,
-            ControlEventType.BRAKE: self.__vehicle.set_brake,
-            ControlEventType.STEER: self.__vehicle.set_steer,
-            ControlEventType.CLUTCH: lambda data: None,
-            ControlEventType.KB_GAS: lambda data: self.__vehicle.change_throttle(1),
-            ControlEventType.KB_BRAKE: lambda data: self.__vehicle.change_throttle(-1),
-            ControlEventType.KB_LEFT: lambda data: self.__vehicle.change_steer(-0.05),
-            ControlEventType.KB_RIGHT: lambda data: self.__vehicle.change_steer(0.05),
-            ControlEventType.SWITCH_DRIVER: self.__vehicle.switch_driver,
-            ControlEventType.CLOSE: lambda data: self.stop(),
+            ControlEventType.CHANGE_WEATHER:
+            onpush(self.__world.next_weather),
+            ControlEventType.RESTART_WORLD:
+            onpush(self.__world.restart),
+            ControlEventType.TOGGLE_INFO:
+            onpush(self.__hud.toggle_info),
+            ControlEventType.TOGGLE_CAMERA:
+            onpush(self.__toggle_cam),
+            ControlEventType.TOGGLE_SENSOR:
+            onpush(self.__toggle_sensor),
+            ControlEventType.TOGGLE_HELP:
+            onpush(self.__hud.help.toggle),
+            ControlEventType.DEC_GEAR:
+            lambda data: self.__vehicle.set_reverse(data.dev, True),
+            ControlEventType.INC_GEAR:
+            lambda data: self.__vehicle.set_reverse(data.dev, False),
+            ControlEventType.GAS:
+            self.__vehicle.set_throttle,
+            ControlEventType.BRAKE:
+            self.__vehicle.set_brake,
+            ControlEventType.STEER:
+            self.__vehicle.set_steer,
+            ControlEventType.CLUTCH:
+            lambda data: None,
+            ControlEventType.KB_GAS:
+            lambda data: self.__vehicle.change_throttle(1),
+            ControlEventType.KB_RELEASE_GAS:
+            lambda data: self.__vehicle.change_throttle(-1),
+            ControlEventType.KB_BRAKE:
+            lambda data: self.__vehicle.kb_set_brake(1),
+            ControlEventType.KB_RELEASE_BRAKE:
+            lambda data: self.__vehicle.kb_set_brake(0),
+            ControlEventType.KB_LEFT:
+            lambda data: self.__vehicle.kb_set_steer(-1),
+            ControlEventType.KB_RIGHT:
+            lambda data: self.__vehicle.kb_set_steer(1),
+            ControlEventType.KB_CENTER_WHEEL:
+            lambda data: self.__vehicle.kb_set_steer(0),
+            ControlEventType.SWITCH_DRIVER:
+            self.__vehicle.switch_driver,
+            ControlEventType.CLOSE:
+            lambda data: self.stop(),
         }
         # start multithreading
         self.__vehicle.start()
@@ -71,9 +94,7 @@ class Controller:
             Controller.__instance = Controller()
         return Controller.__instance
 
-    def register_event(self,
-                       event_type: ControlEventType,
-                       dev: ClientMode,
+    def register_event(self, event_type: ControlEventType, dev: ClientMode,
                        val: int) -> None:
         """
         Register the input event into the event queue
