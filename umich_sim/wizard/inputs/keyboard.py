@@ -29,8 +29,8 @@ class KeyboardInput(InputDevice):
 
     def events_handler(self) -> None:
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event_key := KeyboardInput.KB_EVENT_MAP.get(event.key, None):
-                        Controller.get_instance().register_event(
-                            event_key, self.client_mode, 0)
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                if event_key := KeyboardInput.KB_EVENT_MAP.get(event.key, None):
+                    Controller.get_instance().register_event(
+                        event_key, self.client_mode, 0)

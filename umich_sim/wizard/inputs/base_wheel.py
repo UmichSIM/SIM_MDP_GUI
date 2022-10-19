@@ -60,9 +60,9 @@ class BaseWheel(InputDevice):
         print("Racing wheel registered")
 
     def set_speed_feedback(self):
-        '''
+        """
         Update the auto center force feedback using speed
-        '''
+        """
         from umich_sim.sim_backend.carla_modules import Vehicle
         v = Vehicle.get_instance().get_velocity()
         speed = (3.6 * math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2))
