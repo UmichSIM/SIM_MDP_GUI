@@ -25,7 +25,7 @@ class BaseWheel(InputDevice):
         :param ev_path: path to evdev device
         :dev_type: device type, racing wheel or wizard
         """
-        super.__init__(client_mode)
+        super().__init__(client_mode)
 
         # static variables
         self.ev_key_map: dict = {}
@@ -60,12 +60,12 @@ class BaseWheel(InputDevice):
         print("Racing wheel registered")
 
     def set_speed_feedback(self):
-        '''
+        """
         Update the auto center force feedback using speed
-        '''
+        """
         from umich_sim.sim_backend.carla_modules import Vehicle
         v = Vehicle.get_instance().get_velocity()
-        speed = (3.6 * math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2))
+        speed = (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
 
         # speed limit that influences the autocenter
         s2_w_threshold = 90

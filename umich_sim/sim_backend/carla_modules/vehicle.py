@@ -114,7 +114,11 @@ class Vehicle:
                 # erase spring effect
                 self.joystick_wheel.erase_ff(ecodes.FF_SPRING)
                 # force feedback based on current states
+<<<<<<< HEAD
+                self.joystick_wheel.set_speed_feedback()
+=======
                 self.joystick_wheel.SetSpeedFeedback()
+>>>>>>> 24-changing-backend-structure
 
             # upload wheel position
             self._rpc.set_wheel(self._carla_ctl.steer)
@@ -130,8 +134,12 @@ class Vehicle:
         "set the vehicle brake value"
         self._local_ctl.brake = self.joystick_wheel.PedalMap(data.val)
 
+    def kb_set_brake(self, val: float):
+        """set the vehicle brake value"""
+        self._local_ctl.brake = val
+
     def set_throttle(self, data: InputPacket):
-        "set the vehicle throttle value"
+        """set the vehicle throttle value"""
         self._local_ctl.throttle = self.joystick_wheel.PedalMap(data.val)
 
     def change_throttle(self, val: float = 0.05):
@@ -148,6 +156,13 @@ class Vehicle:
     def set_steer(self, data: InputPacket):
         "set the vehicle steer value"
         self._local_ctl.steer = self.joystick_wheel.SteerMap(data.val)
+
+    def kb_set_steer(self, val: float = 0):
+        """
+        set steer
+        :param val: value to set
+        """
+        self._local_ctl.steer = val
 
     def change_steer(self, val: float = 0.05):
         """

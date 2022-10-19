@@ -3,7 +3,7 @@ import carla
 import weakref
 import collections
 import math
-from .world import World
+from .world import World, get_actor_display_name
 from .hud import HUD
 from .vehicle import Vehicle
 # from wizard.helper import *
