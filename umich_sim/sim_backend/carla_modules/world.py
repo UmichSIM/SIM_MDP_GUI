@@ -24,13 +24,14 @@ class World(object):
     """
     __instance = None
 
-    def __init__(self, carla_world, hud, actor_filter):
+    def __init__(self, client: carla.Client, hud, actor_filter):
         # Singleton check
         if World.__instance is None:
             World.__instance = self
         else:
             raise Exception("Error: Reinitialization of World")
-        self.world = carla_world
+        self.client = client
+        self.world = client.get_world()
         self.hud = hud
         self.vehicle = None
         self.collision_sensor = None
