@@ -54,7 +54,7 @@ class World(object):
 
     def restart(self):
         from umich_sim.sim_backend.carla_modules import CollisionSensor, LaneInvasionSensor, GnssSensor, IMUSensor, \
-            CameraManager, Vehicle
+            CameraManager, EgoVehicle
         # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0
@@ -78,7 +78,7 @@ class World(object):
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(
                 spawn_points) if spawn_points else carla.Transform()
-            self.vehicle: Vehicle = Vehicle(blueprint, spawn_point)
+            self.vehicle: EgoVehicle = EgoVehicle(blueprint, spawn_point)
             self.register_death(self.vehicle)
         # Set up the sensors.
         self.collision_sensor = CollisionSensor()
@@ -88,7 +88,7 @@ class World(object):
         self.camera_manager = CameraManager()
         self.camera_manager.transform_index = cam_pos_index
         self.camera_manager.set_sensor(cam_index, notify=False)
-        actor_type = get_actor_display_name(self.vehicle.vehicle)
+        actor_type = get_actor_display_name(self.vehicle.carla_vehicle)
         self.hud.notification(actor_type)
 
     def next_weather(self, reverse=False):

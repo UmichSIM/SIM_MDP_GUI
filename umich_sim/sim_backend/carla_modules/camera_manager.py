@@ -8,7 +8,7 @@ import time
 import pygame
 from .world import World
 from .hud import HUD
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle
 
 
 class CameraManager:
@@ -19,7 +19,7 @@ class CameraManager:
     def __init__(self):
         self.sensor = None
         self.surface = None
-        self._parent = Vehicle.get_instance().vehicle
+        self._parent = EgoVehicle.get_instance().carla_vehicle
         self.hud = HUD.get_instance()
         # recording stuffs
         # TODO: recover this

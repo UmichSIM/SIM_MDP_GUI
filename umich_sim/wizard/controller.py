@@ -28,12 +28,12 @@ class Controller:
         else:
             raise Exception("Error: Reinitialization of Controller")
         # objects and references
-        from umich_sim.sim_backend.carla_modules import World, HUD, Vehicle
+        from umich_sim.sim_backend.carla_modules import World, HUD, EgoVehicle
         self.__world: World = World.get_instance()
         self.__world.restart()
         self.__hud: HUD = HUD.get_instance()
 
-        self.__vehicle: Vehicle = Vehicle.get_instance()
+        self.__vehicle: EgoVehicle = EgoVehicle.get_instance()
         # vars
         self.driver: ClientMode = ClientMode.EGO
         self.__stopping = False

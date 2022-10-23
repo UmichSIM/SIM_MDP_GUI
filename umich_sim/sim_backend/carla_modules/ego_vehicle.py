@@ -4,10 +4,11 @@ import carla
 from umich_sim.wizard.inputs import ClientMode, InputPacket, InputDevice, create_input_device
 from umich_sim.wizard.rpc import RPC
 from umich_sim.sim_config import ConfigPool, Config
+from .vehicle import Vehicle
 from evdev import ecodes
 
 
-class Vehicle:
+class EgoVehicle:
     """
     Vehicle class is a wrapper for carla vehicle apis and is combined
     with wizard switching functions. It also owns the drivers for the
@@ -23,8 +24,8 @@ class Vehicle:
         for more information on the input, refer to Carla API documents
         """
         # Singleton
-        if Vehicle.__instance is None:
-            Vehicle.__instance = self
+        if EgoVehicle.__instance is None:
+            EgoVehicle.__instance = self
         else:
             raise Exception("Error: Reinitialization of Vehicle.")
 
@@ -33,11 +34,11 @@ class Vehicle:
         config: Config = ConfigPool.get_config()
         # user mode, directly create vehicles
         if config.client_mode == ClientMode.EGO:
-            self.vehicle: carla.Vehicle = \
+            self.carla_vehicle: carla.Vehicle = \
                 world.world.try_spawn_actor(blueprint, spawn_point)
         else:  # wizard mode TODO: prompt to choose vehicle
             vehicles = world.world.get_actors().filter('vehicle.*')
-            self.vehicle: carla.Vehicle = vehicles[0]
+            self.carla_vehicle: carla.Vehicle = vehicles[0]
 
         # control info from agent racing wheel
         self._local_ctl: carla.VehicleControl = carla.VehicleControl()
@@ -54,9 +55,9 @@ class Vehicle:
     @staticmethod
     def get_instance():
         "get the instance of the singleton"
-        if Vehicle.__instance is None:
+        if EgoVehicle.__instance is None:
             raise Exception("Error: Class Vehicle not initialized")
-        return Vehicle.__instance
+        return EgoVehicle.__instance
 
     def start(self):
         self.joystick_wheel.start()
@@ -66,15 +67,15 @@ class Vehicle:
         destroy the vehicle
         TODO: change to destructor
         """
-        self.vehicle.destroy()
+        self.carla_vehicle.destroy()
         self.joystick_wheel.stop()
 
     # TODO: recover this
     def change_vehicle(self, blueprint, spawn_point):
         "Using carla api to change the current vehicle"
         from . import World
-        self.vehicle.destroy()
-        self.vehicle: carla.Vehicle = \
+        self.carla_vehicle.destroy()
+        self.carla_vehicle: carla.Vehicle = \
             World.get_instance().world.try_spawn_actor(blueprint, spawn_point)
 
     def switch_driver(self, data: InputPacket):
@@ -95,11 +96,11 @@ class Vehicle:
 
     def get_transform(self):
         "from carla Vehicle api"
-        return self.vehicle.get_transform()
+        return self.carla_vehicle.get_transform()
 
     def get_velocity(self):
         "from carla Vehicle api"
-        return self.vehicle.get_velocity()
+        return self.carla_vehicle.get_velocity()
 
     def update(self):
         """
@@ -108,7 +109,7 @@ class Vehicle:
         self.driver = self._rpc.get_driver()
         if self.driver == ConfigPool.get_config().client_mode:
             # update control
-            self.vehicle.apply_control(self._local_ctl)
+            self.carla_vehicle.apply_control(self._local_ctl)
             self._carla_ctl = self._local_ctl
             if self.joystick_wheel.support_ff():
                 # erase spring effect
@@ -119,7 +120,7 @@ class Vehicle:
             # upload wheel position
             self._rpc.set_wheel(self._carla_ctl.steer)
         else:
-            self._carla_ctl = self.vehicle.get_control()
+            self._carla_ctl = self.carla_vehicle.get_control()
             if self.joystick_wheel.support_ff():
                 # erase auto-center
                 self.joystick_wheel.erase_ff(ecodes.FF_AUTOCENTER)

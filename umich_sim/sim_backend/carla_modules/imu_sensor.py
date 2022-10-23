@@ -3,7 +3,7 @@ import carla
 import weakref
 import math
 from .world import World
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle
 
 
 class IMUSensor(object):
@@ -13,7 +13,7 @@ class IMUSensor(object):
 
     def __init__(self):
         self.sensor = None
-        self._parent = Vehicle.get_instance().vehicle
+        self._parent = EgoVehicle.get_instance().carla_vehicle
         self.accelerometer = (0.0, 0.0, 0.0)
         self.gyroscope = (0.0, 0.0, 0.0)
         self.compass = 0.0

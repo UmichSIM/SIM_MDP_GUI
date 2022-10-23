@@ -5,7 +5,7 @@ import collections
 import math
 from .world import World, get_actor_display_name
 from .hud import HUD
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle
 # from wizard.helper import *
 
 
@@ -17,7 +17,7 @@ class CollisionSensor:
     def __init__(self):
         self.sensor = None
         self.history = []
-        self._parent = Vehicle.get_instance().vehicle
+        self._parent = EgoVehicle.get_instance().carla_vehicle
         self.hud = HUD.get_instance()
         world = World.get_instance().world
         bp = world.get_blueprint_library().find('sensor.other.collision')

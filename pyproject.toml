@@ -27,6 +27,9 @@ hydra-core = "^1.2.0"
 pathlib = "^1.0.1"
 
 
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
