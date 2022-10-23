@@ -2,7 +2,7 @@
 import carla
 import weakref
 from .world import World
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle
 
 
 class GnssSensor(object):
@@ -12,7 +12,7 @@ class GnssSensor(object):
 
     def __init__(self):
         self.sensor = None
-        self._parent = Vehicle.get_instance().vehicle
+        self._parent = EgoVehicle.get_instance().carla_vehicle
         self.lat = 0.0
         self.lon = 0.0
         world = self._parent.get_world()

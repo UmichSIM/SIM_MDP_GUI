@@ -10,4 +10,4 @@ from .imu_sensor import IMUSensor
 from .lane_invasion_sensor import LaneInvasionSensor
 from .hud import HUD
 from .world import World
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle

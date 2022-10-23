@@ -3,7 +3,7 @@ import carla
 import weakref
 from .world import World
 from .hud import HUD
-from .vehicle import Vehicle
+from .ego_vehicle import EgoVehicle
 
 
 class LaneInvasionSensor(object):
@@ -13,7 +13,7 @@ class LaneInvasionSensor(object):
 
     def __init__(self):
         self.sensor = None
-        self._parent = Vehicle.get_instance().vehicle
+        self._parent = EgoVehicle.get_instance().carla_vehicle
         self.hud = HUD.get_instance()
         world = World.get_instance().world
         bp = world.get_blueprint_library().find('sensor.other.lane_invasion')

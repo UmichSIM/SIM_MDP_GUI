@@ -109,12 +109,12 @@ class HUD(object):
         self.simulation_time = timestamp.elapsed_seconds
 
     def tick(self, clock):
-        from . import World, Vehicle
+        from . import World, EgoVehicle
         world: World = World.get_instance()
         self._notifications.tick(world, clock)
         if not self._show_info:
             return
-        vehicle: Vehicle = Vehicle.get_instance()
+        vehicle: EgoVehicle = EgoVehicle.get_instance()
         t = vehicle.get_transform()
         v = vehicle.get_velocity()
         c = vehicle.get_control()
@@ -134,7 +134,7 @@ class HUD(object):
             'Client:  % 16.0f FPS' % clock.get_fps(),
             '',
             'Vehicle: % 20s' %
-            get_actor_display_name(world.vehicle.vehicle, truncate=20),
+            get_actor_display_name(world.vehicle.carla_vehicle, truncate=20),
             #'Map:     % 20s' % world.map.name,
             'Simulation time: % 12s' %
             datetime.timedelta(seconds=int(self.simulation_time)),
@@ -177,7 +177,7 @@ class HUD(object):
                                            (l.y - t.location.y)**2 +
                                            (l.z - t.location.z)**2)
             vehicles = [(distance(x.get_location()), x) for x in vehicles
-                        if x.id != vehicle.vehicle.id]
+                        if x.id != vehicle.carla_vehicle.id]
             for d, vehicle in sorted(vehicles):
                 if d > 200.0:
                     break
