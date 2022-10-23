@@ -17,7 +17,8 @@ def game_loop(config: Config) -> None:
     log_level = logging.DEBUG if config.debug else logging.INFO
     logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
 
-    logging.info('listening to server %s:%s', config.server_addr, config.carla_port)
+    logging.info('listening to server %s:%s', config.server_addr,
+                 config.carla_port)
     pygame.init()
     pygame.font.init()
     world = None
@@ -30,8 +31,8 @@ def game_loop(config: Config) -> None:
                                           pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         hud = HUD(*config.client_resolution)
-        world = World(client.get_world(), hud, config.car_filter)
-        controller = Controller.get_instance()
+        world: World = World(client, hud, config.car_filter)
+        controller: Controller = Controller.get_instance()
 
         clock = pygame.time.Clock()
         controller.run(clock, display)
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     cs = ConfigStore.instance()
     cs.store(group="wizard", name="base_wizard", node=WizardConfig)
     cs.store(name="base_config", node=Config)
-    test()
+    # test()
     try:
         game_loop()
     except KeyboardInterrupt:
