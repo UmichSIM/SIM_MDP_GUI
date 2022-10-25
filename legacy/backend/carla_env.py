@@ -120,8 +120,8 @@ class CARLA_ENV():
         
         
         vehicle = self.world.spawn_actor(bp,spawn_point)
-        self.vehicle_dict[vehicle.type_id + '_' + str(vehicle.id)] = vehicle
-        return vehicle.type_id + '_' + str(vehicle.id)
+        self.vehicle_dict[vehicle.vtype + '_' + str(vehicle.id)] = vehicle
+        return vehicle.vtype + '_' + str(vehicle.id)
 
     # Method in Vehicle Class - relocated on 2/16/22 to Vehicle.py
     def move_vehicle_location(self, uniquename, spawn_point):

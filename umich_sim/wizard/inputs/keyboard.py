@@ -2,7 +2,7 @@
 from .base_input_dev import InputDevice
 from .input_types import ClientMode, ControlEventType
 import pygame
-from umich_sim.wizard import Controller
+from umich_sim.wizard import Wizard
 
 
 class KeyboardInput(InputDevice):
@@ -47,5 +47,5 @@ class KeyboardInput(InputDevice):
             if event.type in KeyboardInput.KB_EVENT_MAP:
                 if event_key := KeyboardInput. \
                         KB_EVENT_MAP[event.type].get(event.key, None):
-                    Controller.get_instance().register_event(
+                    Wizard.get_instance().register_event(
                         event_key, self.client_mode, 0)

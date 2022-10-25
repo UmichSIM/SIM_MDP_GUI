@@ -3,4 +3,4 @@
 Wizard of Oz module for interfacing with racing wheel
 """
 
-from .controller import Controller
+from .wizard import Wizard

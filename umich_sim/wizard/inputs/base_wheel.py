@@ -93,7 +93,7 @@ class BaseWheel(InputDevice):
         """
         Capture and handle events
         """
-        from umich_sim.wizard import Controller
+        from umich_sim.wizard import Wizard
         for event in self._ev.read_loop():
             # return if terminated
             if self._thread_terminating:
@@ -105,7 +105,7 @@ class BaseWheel(InputDevice):
                 # controller event
 
                 if event_type := self._ctl_key_map.get(key_type, None):
-                    Controller.get_instance().register_event(
+                    Wizard.get_instance().register_event(
                         event_type, self.client_mode, event.value)
 
     def _ev_connect(self, ev_path: str):

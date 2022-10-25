@@ -49,7 +49,7 @@ def get_traffic_lights(actor_list):
     # get all the available traffic lights
     traffic_light_list = []
     for actor in actor_list:
-        if 'traffic_light' in actor.type_id:
+        if 'traffic_light' in actor.vtype:
             traffic_light_list.append(actor)
     return traffic_light_list
 

@@ -2,20 +2,9 @@
 import re
 import carla
 import random
-
-
-def find_weather_presets():
-    rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
-    name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
-    presets = [
-        x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)
-    ]
-    return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
-
-
-def get_actor_display_name(actor, truncate=250):
-    name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
-    return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
+from .module_helper import find_weather_presets, get_actor_display_name
+from .hud import HUD
+from umich_sim.wizard.inputs import ClientMode
 
 
 class World(object):
@@ -30,9 +19,9 @@ class World(object):
             World.__instance = self
         else:
             raise Exception("Error: Reinitialization of World")
-        self.client = client
-        self.world = client.get_world()
-        self.hud = hud
+        self.client: carla.Client = client
+        self.world: carla.World = client.get_world()
+        self.hud: HUD = hud
         self.vehicle = None
         self.collision_sensor = None
         self.lane_invasion_sensor = None
@@ -45,6 +34,12 @@ class World(object):
         # list of actors to be destroyed
         self.__destroy_actors: list = []
         self.world.on_tick(hud.on_world_tick)
+
+        # default weather
+        weather = carla.WeatherParameters(cloudiness=10.0,
+                                          precipitation=0.0,
+                                          sun_altitude_angle=90.0)
+        self.world.set_weather(weather)
 
     @staticmethod
     def get_instance():
@@ -67,6 +62,7 @@ class World(object):
                 blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
         # Spawn the vehicle.
+        from umich_sim.sim_config import ConfigPool, Config
         if self.vehicle is not None:
             spawn_point = self.vehicle.get_transform()
             spawn_point.location.z += 2.0
@@ -74,11 +70,14 @@ class World(object):
             spawn_point.rotation.pitch = 0.0
             self.destroy()
             self.vehicle.change_vehicle(blueprint, spawn_point)
-        while self.vehicle is None:
-            spawn_points = self.world.get_map().get_spawn_points()
-            spawn_point = random.choice(
-                spawn_points) if spawn_points else carla.Transform()
-            self.vehicle: EgoVehicle = EgoVehicle(blueprint, spawn_point)
+        if self.vehicle is None:
+            if ConfigPool.get_config().gui_mode:
+                self.vehicle: EgoVehicle = EgoVehicle.get_instance()
+            else:
+                spawn_points = self.world.get_map().get_spawn_points()
+                spawn_point = random.choice(
+                    spawn_points) if spawn_points else carla.Transform()
+                self.vehicle: EgoVehicle = EgoVehicle(blueprint, spawn_point)
             self.register_death(self.vehicle)
         # Set up the sensors.
         self.collision_sensor = CollisionSensor()

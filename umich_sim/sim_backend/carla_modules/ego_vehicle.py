@@ -4,6 +4,7 @@ import carla
 from umich_sim.wizard.inputs import ClientMode, InputPacket, InputDevice, create_input_device
 from umich_sim.wizard.rpc import RPC
 from umich_sim.sim_config import ConfigPool, Config
+from umich_sim.sim_backend.helpers import VehicleType
 from .vehicle import Vehicle
 from evdev import ecodes
 
@@ -16,7 +17,7 @@ class EgoVehicle:
     """
     __instance = None
 
-    def __init__(self, blueprint, spawn_point):
+    def __init__(self, blueprint=None, spawn_point=None):
         """
         Inputs:
             blueprint: the model for the vehicle to use
@@ -33,10 +34,12 @@ class EgoVehicle:
         world = World.get_instance()
         config: Config = ConfigPool.get_config()
         # user mode, directly create vehicles
-        if config.client_mode == ClientMode.EGO:
+        if config.gui_mode:
+            self.carla_vehicle = None
+        elif config.client_mode == ClientMode.EGO:
             self.carla_vehicle: carla.Vehicle = \
                 world.world.try_spawn_actor(blueprint, spawn_point)
-        else:  # wizard mode TODO: prompt to choose vehicle
+        elif config.client_mode == ClientMode.WIZARD:
             vehicles = world.world.get_actors().filter('vehicle.*')
             self.carla_vehicle: carla.Vehicle = vehicles[0]
 
@@ -49,15 +52,24 @@ class EgoVehicle:
         # who is driving
         self.driver: ClientMode = self._rpc.get_driver()
         # TODO: change this
-        self.joystick_wheel: InputDevice = create_input_device(config.wizard.dev_type, config.wizard.client_mode,
-                                                               config.wizard.dev_path)
+        self.joystick_wheel: InputDevice = create_input_device(
+            config.wizard.dev_type, config.wizard.client_mode,
+            config.wizard.dev_path)
+
+        self.type_id: VehicleType = VehicleType.EGO_FULL_MANUAL
 
     @staticmethod
     def get_instance():
         "get the instance of the singleton"
         if EgoVehicle.__instance is None:
-            raise Exception("Error: Class Vehicle not initialized")
+            return EgoVehicle()
         return EgoVehicle.__instance
+
+    def set_vehicle(self, vehicle: carla.Vehicle):
+        """
+        set vehicle from outside
+        """
+        self.carla_vehicle = vehicle
 
     def start(self):
         self.joystick_wheel.start()
@@ -90,19 +102,15 @@ class EgoVehicle:
             self.driver = ClientMode.WIZARD
         self._rpc.set_driver(self.driver)
 
-        # should reinit the control TODO: why?
-        # self._ctl = carla.VehicleControl()
-        # self.vehicle.apply_control(self._ctl)
-
-    def get_transform(self):
-        "from carla Vehicle api"
+    def get_transform(self) -> carla.Transform:
+        """from carla Vehicle api"""
         return self.carla_vehicle.get_transform()
 
-    def get_velocity(self):
-        "from carla Vehicle api"
+    def get_velocity(self) -> carla.Vector3D:
+        """from carla Vehicle api"""
         return self.carla_vehicle.get_velocity()
 
-    def update(self):
+    def update(self) -> None:
         """
         Update the vehicle status
         """
