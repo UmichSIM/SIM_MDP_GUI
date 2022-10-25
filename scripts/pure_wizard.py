@@ -7,7 +7,7 @@ import carla
 import logging
 from umich_sim.sim_backend.carla_modules import HUD, World
 from umich_sim.sim_config import ConfigPool, Config, WizardConfig
-from umich_sim.wizard import Controller
+from umich_sim.wizard import Wizard
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
@@ -32,7 +32,7 @@ def game_loop(config: Config) -> None:
 
         hud = HUD(*config.client_resolution)
         world: World = World(client, hud, config.car_filter)
-        controller: Controller = Controller.get_instance()
+        controller: Wizard = Wizard.get_instance()
 
         clock = pygame.time.Clock()
         controller.run(clock, display)

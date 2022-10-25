@@ -9,7 +9,7 @@ class InputDevice(metaclass=ABCMeta):
     base class for general input device
     """
     # device attributes
-    has_ff: bool = False # force feedback
+    has_ff: bool = False  # force feedback
 
     def __init__(self, client_mode: ClientMode):
         # thread

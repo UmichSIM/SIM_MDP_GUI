@@ -25,6 +25,7 @@ class Config:
     rpc_port: int = 2003  # rpc server port
     client_resolution: tuple = (1280, 720)
     client_mode: ClientMode = ClientMode.EGO
+    gui_mode: bool = False
     cam_recording: bool = False  # whether to record experiment
     cam_record_dir: Union[Path, str] = Path("./_record")
     car_filter: str = "vehicle.*"

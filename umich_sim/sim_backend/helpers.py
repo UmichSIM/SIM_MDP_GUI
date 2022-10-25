@@ -27,9 +27,10 @@ RED = carla.Color(255, 0, 0)
 
 
 # Enumerated class specifying the different types of Vehicles
-# TODO: rename to VehicleState
 class VehicleType(IntEnum):
     EGO = 0
+    EGO_MANUAL_STEER = auto()
+    EGO_FULL_MANUAL = auto()
     LEAD = auto()
     FOLLOWER = auto()
     GENERIC = auto()
@@ -37,10 +38,16 @@ class VehicleType(IntEnum):
 
 # Enumerated class specifying the different directions in the World
 class WorldDirection(IntEnum):
-    FORWARD = 1
-    BACKWARD = 2
-    LEFT = 3
-    RIGHT = 4
+    FORWARD = 0
+    BACKWARD = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+
+# TODO: REMOVE THIS SHIT
+class ExperimentType(IntEnum):
+    INTERSECTION = 0
+    FREEWAY = auto()
 
 
 def config_world(world: carla.World,
@@ -82,19 +89,21 @@ def logging_setup(directory_name: str = "logs") -> None:
                         level=logging.DEBUG)
 
 
-def to_numpy_vector(carla_vector: Union[carla.Vector3D, carla.Vector2D]) -> np.array:
+def to_numpy_vector(carla_vector: Union[carla.Vector3D, carla.Vector2D],
+                    dims=3) -> np.array:
     """
     Converts a carla.Vector3d into a numpy.array with length three or two
 
     :param carla_vector: the carla.Vector3d to convert
     :return: a numpy.array representing the Carla vector
     """
-    if (type(carla_vector) is carla.Vector3D):
+    # if (type(carla_vector) is carla.Vector3D):
+    if dims == 3:
         return np.array([carla_vector.x, carla_vector.y, carla_vector.z])
-    elif (type(carla_vector) is carla.Vector2D):
+    # elif (type(carla_vector) is carla.Vector2D):
+    elif dims == 2:
         return np.array([carla_vector.x, carla_vector.y])
-    raise Exception(
-        "Invalid type is passed in")
+    raise Exception("Invalid type is passed in")
 
 
 def rotate_vector(vector: np.array, degrees: float) -> np.array:
