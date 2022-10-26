@@ -22,13 +22,13 @@ matplotlib = "^3.6.0"
 control = "^0.9.2"
 openpyxl = "^3.0.10"
 msgpack-rpc-python = "^0.4.1"
-evdev = "^1.6.0"
 hydra-core = "^1.2.0"
 pathlib = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
+evdev = "^1.6.0"
 
 [build-system]
 requires = ["poetry-core"]
