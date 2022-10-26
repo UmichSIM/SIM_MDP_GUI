@@ -6,7 +6,6 @@ from umich_sim.wizard.rpc import RPC
 from umich_sim.sim_config import ConfigPool, Config
 from umich_sim.sim_backend.helpers import VehicleType
 from .vehicle import Vehicle
-from evdev import ecodes
 
 
 class EgoVehicle:
@@ -121,7 +120,7 @@ class EgoVehicle:
             self._carla_ctl = self._local_ctl
             if self.joystick_wheel.support_ff():
                 # erase spring effect
-                self.joystick_wheel.erase_ff(ecodes.FF_SPRING)
+                self.joystick_wheel.erase_ff_spring()
                 # force feedback based on current states
                 self.joystick_wheel.set_speed_feedback()
 
@@ -131,7 +130,7 @@ class EgoVehicle:
             self._carla_ctl = self.carla_vehicle.get_control()
             if self.joystick_wheel.support_ff():
                 # erase auto-center
-                self.joystick_wheel.erase_ff(ecodes.FF_AUTOCENTER)
+                self.joystick_wheel.erase_ff_autocenter()
                 # force follow
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
 

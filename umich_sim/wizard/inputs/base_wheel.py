@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-from evdev import ecodes, ff
-import evdev
 import math
 
 from umich_sim.wizard.utils.map import LinearMap
 from umich_sim.wizard.utils.limits import *
 from .input_types import ClientMode, WheelKeyType, ControlEventType
 from .base_input_dev import InputDevice
-
+from evdev import ecodes, ff
+import evdev
 
 class BaseWheel(InputDevice):
     """
@@ -173,6 +172,12 @@ class BaseWheel(InputDevice):
         elif ff_type == ecodes.FF_AUTOCENTER:
             if self._ff_autocenter_val != 0:
                 self._setFFAutoCenter(0)
+
+    def erase_ff_spring(self):
+        self.erase_ff(ecodes.FF_SPRING)
+
+    def erase_ff_autocenter(self):
+        self.erase_ff(ecodes.FF_AUTOCENTER)
 
     @classmethod
     def SteerMap(cls, val: int):

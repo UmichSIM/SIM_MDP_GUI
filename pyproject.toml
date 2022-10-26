@@ -28,6 +28,8 @@ pathlib = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
+
+[tool.poetry.group.linux.dependencies]
 evdev = "^1.6.0"
 
 [build-system]
