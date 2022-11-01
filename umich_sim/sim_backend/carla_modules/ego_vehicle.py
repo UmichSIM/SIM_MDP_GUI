@@ -2,7 +2,6 @@
 from time import time
 import carla
 from umich_sim.wizard.inputs import ClientMode, InputPacket, InputDevice, create_input_device
-from umich_sim.wizard.rpc import RPC
 from umich_sim.sim_config import ConfigPool, Config
 from umich_sim.sim_backend.helpers import VehicleType
 from .vehicle import Vehicle
@@ -47,9 +46,14 @@ class EgoVehicle:
         # control info from carla server
         self._carla_ctl: carla.VehicleControl = carla.VehicleControl()
         # rpc server
-        self._rpc: RPC = RPC.get_instance()
-        # who is driving
-        self.driver: ClientMode = self._rpc.get_driver()
+        self.enable_rpc = config.wizard.enable_rpc
+        if self.enable_rpc:
+            from umich_sim.wizard.rpc import RPC
+            self._rpc: RPC = RPC.get_instance()
+            # who is driving
+            self.driver: ClientMode = self._rpc.get_driver()
+        else:
+            self.driver: ClientMode = ClientMode.EGO
         # TODO: change this
         self.joystick_wheel: InputDevice = create_input_device(
             config.wizard.dev_type, config.wizard.client_mode,
@@ -89,11 +93,11 @@ class EgoVehicle:
         self.carla_vehicle: carla.Vehicle = \
             World.get_instance().world.try_spawn_actor(blueprint, spawn_point)
 
-    def switch_driver(self, data: InputPacket):
+    def switch_driver(self):
         "Switch the current driver, wizard should be enabled"
         assert (data.dev == ClientMode.WIZARD or data.dev == ClientMode.EGO)
-        # react on push
-        if data.val != 1: return
+        if not self.enable_rpc:
+            return
         # change user
         if self.driver == ClientMode.WIZARD:
             self.driver = ClientMode.EGO
@@ -113,7 +117,8 @@ class EgoVehicle:
         """
         Update the vehicle status
         """
-        self.driver = self._rpc.get_driver()
+        if self.enable_rpc:
+            self.driver = self._rpc.get_driver()
         if self.driver == ConfigPool.get_config().client_mode:
             # update control
             self.carla_vehicle.apply_control(self._local_ctl)
@@ -125,7 +130,8 @@ class EgoVehicle:
                 self.joystick_wheel.set_speed_feedback()
 
             # upload wheel position
-            self._rpc.set_wheel(self._carla_ctl.steer)
+            if self.enable_rpc:
+                self._rpc.set_wheel(self._carla_ctl.steer)
         else:
             self._carla_ctl = self.carla_vehicle.get_control()
             if self.joystick_wheel.support_ff():
@@ -135,7 +141,7 @@ class EgoVehicle:
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
 
     def set_brake(self, data: InputPacket):
-        "set the vehicle brake value"
+        """set the vehicle brake value"""
         self._local_ctl.brake = self.joystick_wheel.PedalMap(data.val)
 
     def kb_set_brake(self, val: float):
@@ -180,15 +186,15 @@ class EgoVehicle:
             self._local_ctl.steer = -1
 
     def set_reverse(self, dev: ClientMode, val: bool):
-        "Set the inverse mode of the vehicle"
+        """Set the inverse mode of the vehicle"""
         self._local_ctl.reverse = val
 
     def get_control(self):
-        "From carla api"
+        """From carla api"""
         return self._carla_ctl
 
     def get_driver_name(self) -> str:
-        "Get the current driver as string"
+        """Get the current driver as string"""
         if self.driver == ClientMode.EGO:
             return "Human"
         else:

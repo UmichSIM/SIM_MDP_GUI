@@ -3,6 +3,7 @@
 from .input_types import *
 from .base_input_dev import InputDevice
 from typing import Optional
+import sys
 
 
 def create_input_device(dev_type: InputDevType,
@@ -14,10 +15,16 @@ def create_input_device(dev_type: InputDevType,
     :param client_mode: client mode (wizard or host)
     :param dev_path: optional argument passed to joystick devices
     """
+    from .keyboard import KeyboardInput
+    if sys.platform != "linux":
+        if dev_type == InputDevType.KBD:
+            return KeyboardInput(client_mode)
+        else:
+            raise Exception("Racing wheel not supported on current platform")
+
     from .g27_wheel import G27
     from .g29_wheel import G29
     from .g920_wheel import G920
-    from .keyboard import KeyboardInput
     wheel_map: dict = {
         InputDevType.G29: G29,
         InputDevType.G920: G920,

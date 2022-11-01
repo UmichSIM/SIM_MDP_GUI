@@ -17,8 +17,9 @@ class LaneInvasionSensor(object):
         self.hud = HUD.get_instance()
         world = World.get_instance().world
         bp = world.get_blueprint_library().find('sensor.other.lane_invasion')
-        is_modifiable = bp.get_attribute("sensor_tick") #.is_modifiable()
-        print("sensor tick modifiable: ", is_modifiable)
+
+        # is_modifiable = bp.get_attribute("sensor_tick") #.is_modifiable()
+        # print("sensor tick modifiable: ", is_modifiable)
         # bp.set_attribute("sensor_tick", 0.1)
 
 

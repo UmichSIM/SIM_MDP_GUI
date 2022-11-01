@@ -14,6 +14,7 @@ class WizardConfig:
     client_mode: ClientMode = ClientMode.EGO
     dev_type: InputDevType = InputDevType.KBD
     dev_path: Union[Path, str] = ""
+    enable_rpc: bool = False
 
 
 @dataclass

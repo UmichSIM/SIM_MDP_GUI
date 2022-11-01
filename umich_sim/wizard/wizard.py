@@ -83,7 +83,7 @@ class Wizard:
             ControlEventType.KB_CENTER_WHEEL:
             lambda data: self.__vehicle.kb_set_steer(0),
             ControlEventType.SWITCH_DRIVER:
-            self.__vehicle.switch_driver,
+            onpush(self.__vehicle.switch_driver),
             ControlEventType.CLOSE:
             lambda data: self.stop(),
         }
