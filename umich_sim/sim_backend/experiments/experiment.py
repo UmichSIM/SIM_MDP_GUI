@@ -83,7 +83,7 @@ class Experiment(metaclass=ABCMeta):
             client.set_timeout(2.0)
 
             hud = HUD(*config.client_resolution)
-            world: World = World(client, hud, config.car_filter)
+            world: World = World(client, hud, config.car_filter, self.MAP)
             Wizard.get_instance()
 
             self.spectator = world.world.get_spectator()
@@ -106,8 +106,9 @@ class Experiment(metaclass=ABCMeta):
                                        id] = waypoint.get_junction()
 
             self.server_initialized = True
-        except:
-            raise RuntimeError("Failed to connect to Carla Server")
+        finally:
+            pass
+            # print("aba")
 
     @abstractmethod
     def initialize_experiment(self, configuration: Dict[str, str]) -> None:

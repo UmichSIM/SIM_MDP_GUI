@@ -4,6 +4,7 @@ import carla
 import random
 from .module_helper import find_weather_presets, get_actor_display_name
 from .hud import HUD
+from typing import Optional, List, Tuple, Dict, Any, Union
 from umich_sim.wizard.inputs import ClientMode
 
 
@@ -13,14 +14,18 @@ class World(object):
     """
     __instance = None
 
-    def __init__(self, client: carla.Client, hud, actor_filter):
+    def __init__(self, client: carla.Client, hud, actor_filter,
+                 map_name: Optional[str] = None):
         # Singleton check
         if World.__instance is None:
             World.__instance = self
         else:
             raise Exception("Error: Reinitialization of World")
         self.client: carla.Client = client
-        self.world: carla.World = client.get_world()
+        if map_name is not None:
+            self.world: carla.World = client.load_world(map_name)
+        else:
+            self.world: carla.World = client.get_world()
         self.hud: HUD = hud
         self.vehicle = None
         self.collision_sensor = None
