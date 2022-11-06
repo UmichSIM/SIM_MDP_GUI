@@ -248,7 +248,7 @@ class VehicleController:
         # adjust its throttle
         if current_vehicle.target_location is not None:
             current_distance = np.sum(
-                to_numpy_vector(current_vehicle.target_location, dims=2) -
+                to_numpy_vector(current_vehicle.target_location, dims=3) -
                 current_vehicle.get_location_vector())
             if current_distance <= current_vehicle.breaking_distance:
                 stop_throttle = VehicleController._throttle_target_location(

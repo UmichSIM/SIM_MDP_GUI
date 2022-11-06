@@ -15,6 +15,7 @@ from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle,
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
 from umich_sim.sim_backend.vehicle_control import (VehicleController,
                                                    FreewayController,
+                                                   IntersectionController,
                                                    EgoController)
 from umich_sim.sim_backend.sections import Section
 from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType,
@@ -103,7 +104,7 @@ class Experiment(metaclass=ABCMeta):
                 if waypoint.is_junction:
                     if waypoint.get_junction().id not in self.junctions:
                         self.junctions[waypoint.get_junction().
-                                       id] = waypoint.get_junction()
+                        id] = waypoint.get_junction()
 
             self.server_initialized = True
         finally:
@@ -227,12 +228,13 @@ class Experiment(metaclass=ABCMeta):
                 for vehicle in self.vehicle_list:
                     if self.experiment_type == ExperimentType.FREEWAY:
                         FreewayController.update_control(vehicle)
+                    elif self.experiment_type == ExperimentType.INTERSECTION:
+                        IntersectionController.update_control(vehicle)
 
                 # Update the UI elements
                 hud.tick(clock)
                 world.render(display)
                 pygame.display.flip()
-
         finally:
             world.destroy()
             pygame.quit()
@@ -319,7 +321,7 @@ class Experiment(metaclass=ABCMeta):
             spawn_point = self.spawn_points[
                 vehicle_configuration["spawn_point"]]
             if "spawn_offset" in vehicle_configuration and vehicle_configuration[
-                    "spawn_offset"] != 0.0:
+                "spawn_offset"] != 0.0:
                 spawn_point = project_forward(
                     spawn_point, vehicle_configuration["spawn_offset"])
 
