@@ -10,8 +10,9 @@ Summary: The IntersectionExperiment class is a class that derives from the base 
 # Local Imports
 from .experiment import Experiment
 from umich_sim.sim_backend.sections import Intersection
+from umich_sim.sim_backend.vehicle_control import intersection_control
 from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType, project_forward, smooth_path)
-from umich_sim.sim_backend.carla_modules import World
+from umich_sim.sim_backend.carla_modules import World, Vehicle
 from umich_sim.sim_config import ConfigPool, Config
 
 # Library Imports
@@ -55,3 +56,6 @@ class IntersectionExperiment(Experiment):
         if ConfigPool.get_config().debug:
             for vehicle in [self.ego_vehicle] + self.vehicle_list:
                 vehicle.draw_waypoints()
+
+    def update_control(self, vehicle: Vehicle) -> None:
+        intersection_control(vehicle)

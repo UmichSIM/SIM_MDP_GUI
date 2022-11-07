@@ -8,6 +8,8 @@ Summary: The FreewayExperiment class is a class that derives from the base Exper
 
 # Local Imports
 from umich_sim.sim_backend.helpers import VehicleType, ExperimentType
+from umich_sim.sim_backend.vehicle_control import freeway_control
+from umich_sim.sim_backend.carla_modules import Vehicle
 from .experiment import Experiment
 from umich_sim.sim_backend.sections import FreewaySection
 
@@ -62,3 +64,6 @@ class FreewayExperiment(Experiment):
         if configuration["debug"]:
             for vehicle in [self.ego_vehicle] + self.vehicle_list:
                 vehicle.draw_waypoints()
+
+    def update_control(self, vehicle: Vehicle) -> None:
+        freeway_control(vehicle)
