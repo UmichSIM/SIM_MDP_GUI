@@ -118,6 +118,10 @@ class Wizard:
             clock.tick_busy_loop(ConfigPool.get_config().client_frame_rate)
             self.tick(clock)
             self.__world.render(display)
+
+            # Do you call the event queue every tick? If not pygame may become unresponsive.
+            # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
+            pygame.event.pump()
             pygame.display.flip()
 
     def tick(self, clock):

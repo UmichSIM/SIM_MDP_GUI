@@ -234,6 +234,9 @@ class Experiment(metaclass=ABCMeta):
                 # Update the UI elements
                 hud.tick(clock)
                 world.render(display)
+                # Do you call the event queue every tick? If not pygame may become unresponsive.
+                # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
+                pygame.event.pump()
                 pygame.display.flip()
         finally:
             world.destroy()
