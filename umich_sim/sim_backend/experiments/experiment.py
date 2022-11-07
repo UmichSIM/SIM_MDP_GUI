@@ -10,13 +10,9 @@ Summary: The Experiment class is a base class that describes the high level inte
 """
 
 # Local Imports
-from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle,
-                                                 DefaultSettings)
+from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle)
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
-from umich_sim.sim_backend.vehicle_control import (VehicleController,
-                                                   FreewayController,
-                                                   IntersectionController,
-                                                   EgoController)
+from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoController)
 from umich_sim.sim_backend.sections import Section
 from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType,
                                            smooth_path, project_forward)
@@ -226,10 +222,7 @@ class Experiment(metaclass=ABCMeta):
 
                 # Apply control to every other Vehicle
                 for vehicle in self.vehicle_list:
-                    if self.experiment_type == ExperimentType.FREEWAY:
-                        FreewayController.update_control(vehicle)
-                    elif self.experiment_type == ExperimentType.INTERSECTION:
-                        IntersectionController.update_control(vehicle)
+                    self.update_control(vehicle)
 
                 # Update the UI elements
                 hud.tick(clock)
@@ -241,6 +234,14 @@ class Experiment(metaclass=ABCMeta):
         finally:
             world.destroy()
             pygame.quit()
+
+    @abstractmethod
+    def update_control(self, vehicle: Vehicle) -> None:
+        """
+        update control based on specific experiment type
+        :param vehicle: the vehicle to update control
+        """
+        pass
 
     def clean_up_experiment(self) -> None:
         """
