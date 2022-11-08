@@ -6,6 +6,15 @@ GUI tool to help human-vehicle interaction researchers design and conduct traffi
 
 ## Team Members
 
+### Fall Team
+
+[Andrew Forche](https://github.com/](https://github.com/atforche)
+[Maggie Chen]
+[Austin Liu]
+[Ashley Jeong]
+
+## Previous Team Members
+
 ### Summer Team (created Version 0.00 in summer 2020)
 
 - [Grant Barry](https://github.com/grantbarry29/Carla-GUI)
@@ -21,8 +30,6 @@ GUI tool to help human-vehicle interaction researchers design and conduct traffi
 - [Yifei He]
 - [Nihar Joshi](https://github.com/nihar-joshi)
 - [Jihyeong Ko](https://github.com/jhyeongk)
-
-
 
 ## Project Purpose
 
