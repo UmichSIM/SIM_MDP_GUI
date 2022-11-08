@@ -8,7 +8,7 @@ GUI tool to help human-vehicle interaction researchers design and conduct traffi
 
 ### Fall Team
 
-- [Andrew Forche](https://github.com/](https://github.com/atforche)
+- [Andrew Forche](https://github.com/atforche)
 - [Maggie Chen]
 - [Austin Liu]
 - [Ashley Jeong]
