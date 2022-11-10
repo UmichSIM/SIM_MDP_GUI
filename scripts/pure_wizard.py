@@ -40,10 +40,23 @@ def game_loop(config: Config) -> None:
         controller: Wizard = Wizard.get_instance()
 
         clock = pygame.time.Clock()
-        controller.run(clock, display)
+
+        while True:
+            if controller.is_stopping():
+                break
+
+            clock.tick_busy_loop(config.client_frame_rate)
+            controller.tick()
+            hud.tick(clock)
+            world.render(display)
+
+            # Do you call the event queue every tick? If not pygame may become unresponsive.
+            # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
+            pygame.event.pump()
+            pygame.display.flip()
 
     finally:
-        logger.info("\nCancelled by user. Bye!")
+        logger.info("Cancelled by user. Bye!")
         if world is not None:
             world.destroy()
         pygame.quit()

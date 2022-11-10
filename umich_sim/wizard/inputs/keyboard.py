@@ -63,4 +63,3 @@ class KeyboardInput(InputDevice):
                         KB_EVENT_MAP[event.type].get(event.key, None):
                     Wizard.get_instance().register_event(
                         event_key, self.client_mode, 1)
-                    logger.debug(f"key {event_key}")

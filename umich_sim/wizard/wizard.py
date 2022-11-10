@@ -132,34 +132,9 @@ class Wizard:
         with self.__event_lock:
             self.__events_queue.put_nowait(InputPacket(event_type, dev, val))
 
-    def run(self, clock, display):
+    def tick(self):
         """
-        run the program main loop
-        TODO: clean this
-        """
-        while True:
-            if self.__stopping:
-                return
-            clock.tick_busy_loop(ConfigPool.get_config().client_frame_rate)
-            self.tick(clock)
-            self.__world.render(display)
-
-            # Do you call the event queue every tick? If not pygame may become unresponsive.
-            # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
-            pygame.event.pump()
-            pygame.display.flip()
-
-    def tick(self, clock):
-        """
-        Update all the stuffs in the main loop
-        """
-        self.handle_events()
-        self.__vehicle.update()
-        self.__hud.tick(clock)
-
-    def tick_backend(self):
-        """
-        tick function used within backend
+        tick wizard controller
         """
         self.handle_events()
         self.__vehicle.update()
@@ -171,21 +146,22 @@ class Wizard:
         while not self.__events_queue.empty():
             with self.__event_lock:
                 pac: InputPacket = self.__events_queue.get_nowait()
-                try:
-                    self.__event_handlers[pac.event_type](pac)
-                except:
-                    logger.error("Error handling events")
-
-    def __toggle_cam(self):
-        "Toggle camera perspective"
-        self.__world.camera_manager.toggle_camera()
-
-    def __toggle_sensor(self):
-        "Toggle sensor used"
-        self.__world.camera_manager.next_sensor()
+                self.__event_handlers[pac.event_type](pac)
 
     def stop(self):
         """
         Stop the program by setting stopping flag
         """
         self.__stopping = True
+
+    def is_stopping(self) -> bool:
+        """see if the program is stopping"""
+        return self.__stopping
+
+    def __toggle_cam(self):
+        """Toggle camera perspective"""
+        self.__world.camera_manager.toggle_camera()
+
+    def __toggle_sensor(self):
+        """Toggle sensor used"""
+        self.__world.camera_manager.next_sensor()
