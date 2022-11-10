@@ -9,6 +9,15 @@ from umich_sim.base_logger import logger
 class KeyboardInput(InputDevice):
     """
     keyboard input device type, use pygame api to get keyboard event
+
+    W            : throttle
+    S            : brake
+    A/D          : steer left/right
+    Q            : toggle reverse
+    TAB          : toggle camera
+    F1           : toggle HUD
+    H/?          : toggle help
+    ESC          : quit
     """
     KB_EVENT_MAP: dict = {
         pygame.KEYDOWN: {
