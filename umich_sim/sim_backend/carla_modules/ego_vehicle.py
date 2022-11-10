@@ -45,9 +45,10 @@ class EgoVehicle:
         self._local_ctl: carla.VehicleControl = carla.VehicleControl()
         # control info from carla server
         self._carla_ctl: carla.VehicleControl = carla.VehicleControl()
-        # rpc server
-        self.enable_rpc = config.wizard.enable_rpc
-        if self.enable_rpc:
+
+        # whether to enable wizard
+        self.enable_wizard = config.wizard.enable_wizard
+        if self.enable_wizard:
             from umich_sim.wizard.rpc import RPC
             self._rpc: RPC = RPC.get_instance()
             # who is driving
@@ -96,7 +97,7 @@ class EgoVehicle:
     def switch_driver(self):
         "Switch the current driver, wizard should be enabled"
         assert (data.dev == ClientMode.WIZARD or data.dev == ClientMode.EGO)
-        if not self.enable_rpc:
+        if not self.enable_wizard:
             return
         # change user
         if self.driver == ClientMode.WIZARD:
@@ -117,7 +118,7 @@ class EgoVehicle:
         """
         Update the vehicle status
         """
-        if self.enable_rpc:
+        if self.enable_wizard:
             self.driver = self._rpc.get_driver()
         if self.driver == ConfigPool.get_config().client_mode:
             # update control
@@ -130,7 +131,7 @@ class EgoVehicle:
                 self.joystick_wheel.set_speed_feedback()
 
             # upload wheel position
-            if self.enable_rpc:
+            if self.enable_wizard:
                 self._rpc.set_wheel(self._carla_ctl.steer)
         else:
             self._carla_ctl = self.carla_vehicle.get_control()
