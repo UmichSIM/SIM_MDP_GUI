@@ -5,6 +5,7 @@ from typing import Callable
 from umich_sim.sim_config import ConfigPool
 from umich_sim.wizard.inputs import ControlEventType, ClientMode, InputPacket
 import pygame
+from umich_sim.base_logger import logger
 
 
 def onpush(func: Callable) -> Callable:
@@ -46,44 +47,67 @@ class Wizard:
         self.__event_handlers: dict = {
             ControlEventType.CHANGE_WEATHER:
             onpush(self.__world.next_weather),
+
             ControlEventType.RESTART_WORLD:
             onpush(self.__world.restart),
+
             ControlEventType.TOGGLE_INFO:
             onpush(self.__hud.toggle_info),
+
             ControlEventType.TOGGLE_CAMERA:
             onpush(self.__toggle_cam),
+
             ControlEventType.TOGGLE_SENSOR:
             onpush(self.__toggle_sensor),
+
             ControlEventType.TOGGLE_HELP:
             onpush(self.__hud.help.toggle),
+
             ControlEventType.DEC_GEAR:
             lambda data: self.__vehicle.set_reverse(data.dev, True),
+
             ControlEventType.INC_GEAR:
             lambda data: self.__vehicle.set_reverse(data.dev, False),
+
             ControlEventType.GAS:
             self.__vehicle.set_throttle,
+
             ControlEventType.BRAKE:
             self.__vehicle.set_brake,
+
             ControlEventType.STEER:
             self.__vehicle.set_steer,
+
             ControlEventType.CLUTCH:
             lambda data: None,
+
             ControlEventType.KB_GAS:
             lambda data: self.__vehicle.change_throttle(1),
+
             ControlEventType.KB_RELEASE_GAS:
             lambda data: self.__vehicle.change_throttle(-1),
+
             ControlEventType.KB_BRAKE:
             lambda data: self.__vehicle.kb_set_brake(1),
+
             ControlEventType.KB_RELEASE_BRAKE:
             lambda data: self.__vehicle.kb_set_brake(0),
+
             ControlEventType.KB_LEFT:
             lambda data: self.__vehicle.kb_set_steer(-1),
+
             ControlEventType.KB_RIGHT:
             lambda data: self.__vehicle.kb_set_steer(1),
+
             ControlEventType.KB_CENTER_WHEEL:
             lambda data: self.__vehicle.kb_set_steer(0),
+
+            ControlEventType.KB_TOGGLE_REVERSE:
+            lambda data: self.__vehicle.toggle_reverse(),
+
             ControlEventType.SWITCH_DRIVER:
             onpush(self.__vehicle.switch_driver),
+
             ControlEventType.CLOSE:
             lambda data: self.stop(),
         }
@@ -146,8 +170,10 @@ class Wizard:
         while not self.__events_queue.empty():
             with self.__event_lock:
                 pac: InputPacket = self.__events_queue.get_nowait()
-
-            self.__event_handlers[pac.event_type](pac)
+                try:
+                    self.__event_handlers[pac.event_type](pac)
+                except:
+                    logger.error("Error handling events")
 
     def __toggle_cam(self):
         "Toggle camera perspective"
