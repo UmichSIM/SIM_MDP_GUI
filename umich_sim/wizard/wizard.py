@@ -82,34 +82,25 @@ class Wizard:
                 lambda data: None,
 
             ControlEventType.KB_GAS:
-                lambda data: self.__vehicle.change_throttle(1),
-
-            ControlEventType.KB_RELEASE_GAS:
-                lambda data: self.__vehicle.change_throttle(-1),
+                lambda data: self.__vehicle.change_throttle(1 if data.val else -1),
 
             ControlEventType.KB_BRAKE:
-                lambda data: self.__vehicle.kb_set_brake(1),
-
-            ControlEventType.KB_RELEASE_BRAKE:
-                lambda data: self.__vehicle.kb_set_brake(0),
+                lambda data: self.__vehicle.kb_set_brake(data.val),
 
             ControlEventType.KB_LEFT:
-                lambda data: self.__vehicle.kb_set_steer(-1),
+                lambda data: self.__vehicle.kb_set_steer(-1 if data.val else 0),
 
             ControlEventType.KB_RIGHT:
-                lambda data: self.__vehicle.kb_set_steer(1),
-
-            ControlEventType.KB_CENTER_WHEEL:
-                lambda data: self.__vehicle.kb_set_steer(0),
+                lambda data: self.__vehicle.kb_set_steer(1 if data.val else 0),
 
             ControlEventType.KB_TOGGLE_REVERSE:
-                lambda data: self.__vehicle.toggle_reverse(),
+                onpush(self.__vehicle.toggle_reverse),
 
             ControlEventType.SWITCH_DRIVER:
                 onpush(self.__vehicle.switch_driver),
 
             ControlEventType.CLOSE:
-                lambda data: self.stop(),
+                onpush(self.stop),
         }
         # start multithreading
         self.__vehicle.start()
