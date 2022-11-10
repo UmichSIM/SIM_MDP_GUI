@@ -39,6 +39,7 @@ class ControlEventType(IntEnum):
     KB_LEFT = auto()
     KB_RIGHT = auto()
     KB_CENTER_WHEEL = auto()
+    KB_TOGGLE_REVERSE = auto()
     # Controls
     SWITCH_DRIVER = auto()
     CLOSE = auto()  # close the program

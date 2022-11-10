@@ -189,6 +189,10 @@ class EgoVehicle:
         """Set the inverse mode of the vehicle"""
         self._local_ctl.reverse = val
 
+    def toggle_reverse(self):
+        """Toggle the reverse mode of the vehicle"""
+        self._local_ctl.reverse = not self._local_ctl.reverse
+
     def get_control(self):
         """From carla api"""
         return self._carla_ctl
