@@ -54,6 +54,9 @@ class KeyboardInput(InputDevice):
 
     def events_handler(self) -> None:
         while True:
+            # return if terminated
+            if self._thread_terminating:
+                return
             event = pygame.event.wait()
             if event.type in KeyboardInput.KB_EVENT_MAP:
                 if event_key := KeyboardInput. \
