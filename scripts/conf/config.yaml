@@ -1,0 +1,5 @@
+defaults:
+  - base_config
+  - _self_
+
+client_resolution: [1920, 1080]
