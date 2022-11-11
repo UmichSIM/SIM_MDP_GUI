@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sim-mdp-gui"
-version = "0.1.0"
+version = "1.0.0"
 description = "GUI tool to help human-vehicle interaction researchers design and conduct traffic experiments"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
