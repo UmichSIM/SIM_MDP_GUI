@@ -2,7 +2,9 @@
 """
 Mappings to change data to appropriate type
 """
-def LinearMap(val:int, _max:int)->float:
+
+
+def LinearMap(val: int, _max: int) -> float:
     """
     map the input linearly to [-1,1]
     Inputs:
@@ -10,5 +12,5 @@ def LinearMap(val:int, _max:int)->float:
         _max: max possible value
     return: val/_max as float
     """
-    assert(abs(val)<=_max)
-    return val/_max
+    assert abs(val) <= _max
+    return val / _max
