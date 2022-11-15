@@ -6,6 +6,7 @@ import hydra
 from hydra.conf import ConfigStore
 from omegaconf import OmegaConf
 from umich_sim.sim_config import ConfigPool, Config, WizardConfig
+import pygame
 
 # Sample configuration dictionary
 # Notes: the vehicle with ID 0 must always be the ego vehicle,
@@ -47,6 +48,7 @@ def main(config: Config) -> None:
 
     # Create a new Experiment and initialize the server
     experiment = FreewayExperiment(True)
+    # Initialize the Pygame display
     experiment.init()
 
     # Set up the experiment
