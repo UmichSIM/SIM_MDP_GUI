@@ -68,6 +68,8 @@ class EgoVehicle:
         self.mapp = World.get_instance().world.get_map()
         self.is_rumbling: bool = False
         self.rumble_lane_type = {carla.LaneMarkingType.SolidSolid}
+        ### Sound Effect
+        ### TODO: move this part to HUD module
         mixer.init() #Initialzing pyamge mixer
         mixer.music.load('umich_sim/sim_backend/media/rs_cut.mp3') #Loading Music File
 
@@ -235,29 +237,29 @@ class EgoVehicle:
             self.joystick_wheel.stop_rumble()
 
     def rumble_strip_update(self):
-        '''
+        """
         Update whether to rumble according to the distance from four wheels to the center of the lane
-        '''
+        """
 
         def distance_to_segment_2d(point, seg_start, seg_end):
-            '''
+            """
             Calculate the distance from point to a segment defined by "seg_start" and "seg_end"
             Note: only works for 2D
-            '''
+            """
             point.z = 0
             cross_product = (point.x-seg_start.x)*(seg_end.y-seg_start.y) - (point.y-seg_start.y) * (seg_end.x - seg_start.x)
             distance = abs(cross_product) / seg_start.distance_2d(seg_end)
             return distance
         
         def is_on_lane(distance, lane_width, low=0.43, high=0.55):
-            '''
+            """
             Define whether the wheel lies in the range of the lane
             Input:
                 distance: distance between the wheel and the center of the lane
                 lane_width: width of the lane
                 low: the inner edge of the lane, in percentage of the lane width
                 high: the outer edge of the lane, in percentage of the lane width
-            '''
+            """
             return (distance / lane_width > low) and (distance / lane_width < high)
 
 

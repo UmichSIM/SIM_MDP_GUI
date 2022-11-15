@@ -2,6 +2,7 @@
 from .base_wheel import BaseWheel
 from . import ClientMode, WheelKeyType, ControlEventType
 from evdev import ecodes, ff
+# TODO: test on windows
 
 g920_key_map: dict = {
     # WheelKeyType.XBOX: ControlEventType.RESTART_WORLD, # TODO: recover this
