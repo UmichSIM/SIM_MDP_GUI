@@ -247,7 +247,8 @@ class EgoVehicle:
             Note: only works for 2D
             """
             point.z = 0
-            cross_product = (point.x-seg_start.x)*(seg_end.y-seg_start.y) - (point.y-seg_start.y) * (seg_end.x - seg_start.x)
+            cross_product = (point.x - seg_start.x) * (seg_end.y - seg_start.y) \
+                          - (point.y - seg_start.y) * (seg_end.x - seg_start.x)
             distance = abs(cross_product) / seg_start.distance_2d(seg_end)
             return distance
         
