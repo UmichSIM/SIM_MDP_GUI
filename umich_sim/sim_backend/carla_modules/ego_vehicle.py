@@ -8,6 +8,7 @@ from .vehicle import Vehicle
 from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
                                            to_numpy_vector, rotate_vector,
                                            ORANGE, RED)
+from pygame import mixer
 
 class EgoVehicle:
     """
@@ -67,6 +68,8 @@ class EgoVehicle:
         self.mapp = World.get_instance().world.get_map()
         self.is_rumbling: bool = False
         self.rumble_lane_type = {carla.LaneMarkingType.SolidSolid}
+        mixer.init() #Initialzing pyamge mixer
+        mixer.music.load('umich_sim/sim_backend/media/rs_cut.mp3') #Loading Music File
 
     @staticmethod
     def get_instance():
@@ -221,11 +224,13 @@ class EgoVehicle:
 
     def start_rumble(self):
         print("[INFO] Start rumbling...")
+        mixer.music.play(loops=-1) #Playing Music with Pygame
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.start_rumble()
 
     def stop_rumble(self):
         print("[INFO] Stop rumbling")
+        mixer.music.stop()
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.stop_rumble()
 
