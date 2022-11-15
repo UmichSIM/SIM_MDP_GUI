@@ -24,10 +24,13 @@ openpyxl = "^3.0.10"
 msgpack-rpc-python = "^0.4.1"
 hydra-core = "^1.2.0"
 pathlib = "^1.0.1"
+sphinxcontrib-apidoc = "^0.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
+Sphinx = "^5.3.0"
+furo = "^2022.9.29"
 
 [tool.poetry.group.linux.dependencies]
 evdev = "^1.6.0"
