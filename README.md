@@ -31,12 +31,32 @@ poetry install
 
 Umich Driving Simulator GUI Team
 
+### Instructor
+- [Prof. Paul A. Green](https://ioe.engin.umich.edu/people/paul-a-green/)
 
+### Team Members
 
+#### Fall Team
 
+- [Andrew Forche](https://github.com/atforche)
+- [Maggie Chen]
+- [Austin Liu]
+- [Ashley Jeong]
 
+### Previous Team Members
 
+#### Summer Team (created Version 0.00 in summer 2020)
 
+- [Grant Barry](https://github.com/grantbarry29/Carla-GUI)
+- [Shiji Liu](https://github.com/CenturyLiu)
+- [Weixin Feng(Targy)](https://github.com/Targy/Carla-GUI)
 
+#### Fall Team
 
-
+- [Zhiyang Chen](https://github.com/jeffchen006/Carla-GUI)
+- [Brandon Sapp]  
+- [Raeed Rasul]
+- [Yi Wu] 
+- [Yifei He]
+- [Nihar Joshi](https://github.com/nihar-joshi)
+- [Jihyeong Ko](https://github.com/jhyeongk)

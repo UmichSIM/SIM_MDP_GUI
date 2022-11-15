@@ -34,11 +34,9 @@ class ControlEventType(IntEnum):
     # Keyboard specific
     KB_GAS = auto()
     KB_BRAKE = auto()
-    KB_RELEASE_GAS = auto()
-    KB_RELEASE_BRAKE = auto()
     KB_LEFT = auto()
     KB_RIGHT = auto()
-    KB_CENTER_WHEEL = auto()
+    KB_TOGGLE_REVERSE = auto()
     # Controls
     SWITCH_DRIVER = auto()
     CLOSE = auto()  # close the program

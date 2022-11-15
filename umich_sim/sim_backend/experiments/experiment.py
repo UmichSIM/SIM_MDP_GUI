@@ -39,6 +39,7 @@ class Experiment(metaclass=ABCMeta):
     def __init__(self, headless: bool):
 
         # Indicates whether the experiment is being run with a GUI or standalone
+        self.wizard = None
         self.server_initialized: bool = False
         self.headless = headless
 
@@ -81,7 +82,7 @@ class Experiment(metaclass=ABCMeta):
 
             hud = HUD(*config.client_resolution)
             world: World = World(client, hud, config.car_filter, self.MAP)
-            Wizard.get_instance()
+            self.wizard = Wizard.get_instance()
 
             self.spectator = world.world.get_spectator()
             self.spectator.set_transform(
@@ -197,13 +198,13 @@ class Experiment(metaclass=ABCMeta):
             # Loop continuously
             clock = pygame.time.Clock()
             while True:
+                # check if program need to stop
+                if self.wizard.is_stopping():
+                    break
+
                 # Tick the clock
                 clock.tick(config.client_frame_rate)
                 # clock.tick_busy_loop(config.client_frame_rate) # use more cpu for accuracy
-
-                # Tick the Carla Simulation
-                # self.world.tick() # no need for async mode
-                # pygame.event.pump()
 
                 # Update the state of each of the experiment sections (mainly applicable to intersection and
                 # traffic lights)

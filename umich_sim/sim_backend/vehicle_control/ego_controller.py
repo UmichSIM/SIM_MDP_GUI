@@ -47,4 +47,4 @@ class EgoController:
             return
 
         if current_vehicle.type_id == VehicleType.EGO_FULL_MANUAL:
-            Wizard.get_instance().tick_backend()
+            Wizard.get_instance().tick()

@@ -2,4 +2,4 @@ defaults:
   - base_config
   - _self_
 
-client_resolution: [2560, 1440]
+client_resolution: [1920, 1080]
