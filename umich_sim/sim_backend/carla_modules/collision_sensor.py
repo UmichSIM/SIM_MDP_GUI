@@ -7,7 +7,7 @@ from .world import World, get_actor_display_name
 from .hud import HUD
 from .ego_vehicle import EgoVehicle
 # from wizard.helper import *
-
+from datetime import datetime, timedelta
 
 class CollisionSensor:
     """
@@ -31,6 +31,10 @@ class CollisionSensor:
         self.sensor.listen(
             lambda event: CollisionSensor._on_collision(weak_self, event))
 
+        ### Force feedback
+        self.ff_time_interval = timedelta(seconds=1.0) # time interval for the forcefeedback, in seconds
+        self.last_collision_ts = datetime.now()
+
     def get_collision_history(self):
         history = collections.defaultdict(int)
         for frame, intensity in self.history:
@@ -49,3 +53,9 @@ class CollisionSensor:
         self.history.append((event.frame, intensity))
         if len(self.history) > 4000:
             self.history.pop(0)
+        
+        ### Force feedback
+        curr_time = datetime.now()
+        if curr_time - self.last_collision_ts >= self.ff_time_interval:
+            EgoVehicle.get_instance().set_collision()
+            self.last_collision_ts = curr_time
