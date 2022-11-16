@@ -18,8 +18,8 @@
     <rect>
      <x>500</x>
      <y>30</y>
-     <width>191</width>
-     <height>71</height>
+     <width>251</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="font">
@@ -28,7 +28,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Intersection</string>
+    <string>Edit Intersection</string>
    </property>
   </widget>
   <widget class="QWidget" name="verticalLayoutWidget">
@@ -205,19 +205,6 @@
     <string>Back</string>
    </property>
   </widget>
-  <widget class="QLabel" name="intersectionMap_img">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>110</y>
-     <width>651</width>
-     <height>641</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/map/intersection copy.jpg&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="lane_1_bttn">
    <property name="geometry">
     <rect>
@@ -247,7 +234,7 @@
    <property name="geometry">
     <rect>
      <x>1000</x>
-     <y>560</y>
+     <y>550</y>
      <width>40</width>
      <height>40</height>
     </rect>
@@ -272,7 +259,7 @@
    <property name="geometry">
     <rect>
      <x>770</x>
-     <y>560</y>
+     <y>550</y>
      <width>40</width>
      <height>40</height>
     </rect>
@@ -296,7 +283,7 @@
   <widget class="QPushButton" name="lane_4_bttn">
    <property name="geometry">
     <rect>
-     <x>760</x>
+     <x>770</x>
      <y>330</y>
      <width>40</width>
      <height>40</height>
@@ -318,9 +305,30 @@
     <string>4</string>
    </property>
   </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>160</y>
+     <width>501</width>
+     <height>611</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/intersection/images/intersection.jpg&quot; width=&quot;500&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <zorder>label</zorder>
+  <zorder>intersection_title</zorder>
+  <zorder>verticalLayoutWidget</zorder>
+  <zorder>pushButton</zorder>
+  <zorder>lane_1_bttn</zorder>
+  <zorder>lane_2_bttn</zorder>
+  <zorder>lane_3_bttn</zorder>
+  <zorder>lane_4_bttn</zorder>
  </widget>
  <resources>
-  <include location="intersection.qrc"/>
+  <include location="static_images.qrc"/>
  </resources>
  <connections/>
 </ui>

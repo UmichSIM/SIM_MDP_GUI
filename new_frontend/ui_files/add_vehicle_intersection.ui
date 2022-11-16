@@ -216,7 +216,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/oop/intersection copy.jpg&quot; width=500/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/intersection/images/intersection.jpg&quot;width=500/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
   <widget class="QLabel" name="spawnVehicle_title">
@@ -240,6 +240,7 @@
  </widget>
  <resources>
   <include location="oop.qrc"/>
+  <include location="static_images.qrc"/>
  </resources>
  <connections/>
 </ui>
