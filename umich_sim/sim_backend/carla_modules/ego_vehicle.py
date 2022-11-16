@@ -10,7 +10,7 @@ from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
                                            ORANGE, RED)
 from pygame import mixer
 
-class EgoVehicle:
+class EgoVehicle(Vehicle):
     """
     Vehicle class is a wrapper for carla vehicle apis and is combined
     with wizard switching functions. It also owns the drivers for the
@@ -18,7 +18,9 @@ class EgoVehicle:
     """
     __instance = None
 
-    def __init__(self, blueprint=None, spawn_point=None):
+    def __init__(self,
+                 blueprint=None,
+                 spawn_point=None):
         """
         Inputs:
             blueprint: the model for the vehicle to use
@@ -36,13 +38,17 @@ class EgoVehicle:
         config: Config = ConfigPool.get_config()
         # user mode, directly create vehicles
         if config.gui_mode:
-            self.carla_vehicle = None
+            carla_vehicle = None
         elif config.client_mode == ClientMode.EGO:
-            self.carla_vehicle: carla.Vehicle = \
+            carla_vehicle: carla.Vehicle = \
                 world.world.try_spawn_actor(blueprint, spawn_point)
         elif config.client_mode == ClientMode.WIZARD:
             vehicles = world.world.get_actors().filter('vehicle.*')
-            self.carla_vehicle: carla.Vehicle = vehicles[0]
+            carla_vehicle: carla.Vehicle = vehicles[0]
+        else:
+            raise Exception("Error: Invalid client mode.")
+
+        super().__init__(carla_vehicle, "Ego Vehicle", VehicleType.EGO)
 
         # control info from agent racing wheel
         self._local_ctl: carla.VehicleControl = carla.VehicleControl()
@@ -58,6 +64,7 @@ class EgoVehicle:
             self.driver: ClientMode = self._rpc.get_driver()
         else:
             self.driver: ClientMode = ClientMode.EGO
+
         # TODO: change this
         self.joystick_wheel: InputDevice = create_input_device(
             config.wizard.dev_type, config.wizard.client_mode,
@@ -84,6 +91,7 @@ class EgoVehicle:
     def set_vehicle(self, vehicle: carla.Vehicle):
         """
         set vehicle from outside
+        :param vehicle: carla vehicle to set
         """
         self.carla_vehicle = vehicle
 
@@ -108,7 +116,6 @@ class EgoVehicle:
 
     def switch_driver(self):
         "Switch the current driver, wizard should be enabled"
-        assert (data.dev == ClientMode.WIZARD or data.dev == ClientMode.EGO)
         if not self.enable_wizard:
             return
         # change user
@@ -174,8 +181,7 @@ class EgoVehicle:
         self._local_ctl.throttle = self.joystick_wheel.PedalMap(data.val)
 
     def change_throttle(self, val: float = 0.05):
-        """
-        change current throttle by val
+        """change current throttle by val
         :param val: value to change
         """
         self._local_ctl.throttle += val
@@ -185,12 +191,11 @@ class EgoVehicle:
             self._local_ctl.throttle = 0
 
     def set_steer(self, data: InputPacket):
-        "set the vehicle steer value"
+        """set the vehicle steer value"""
         self._local_ctl.steer = self.joystick_wheel.SteerMap(data.val)
 
     def kb_set_steer(self, val: float = 0):
-        """
-        set steer
+        """set steer
         :param val: value to set
         """
         self._local_ctl.steer = val
