@@ -41,6 +41,6 @@ class LaneInvasionSensor(object):
         if not self:
             return
         lane_types = set(x.type for x in event.crossed_lane_markings)
-        print(time.time(), "lane invasion: ", lane_types)
+        # print(time.time(), "lane invasion: ", lane_types)
         text = ['%r' % str(x).split()[-1] for x in lane_types]
         self.hud.notification('Crossed line %s' % ' and '.join(text))
