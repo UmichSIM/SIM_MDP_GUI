@@ -10,6 +10,7 @@ from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
                                            ORANGE, RED)
 from pygame import mixer
 
+
 class EgoVehicle(Vehicle):
     """
     Vehicle class is a wrapper for carla vehicle apis and is combined
@@ -18,9 +19,7 @@ class EgoVehicle(Vehicle):
     """
     __instance = None
 
-    def __init__(self,
-                 blueprint=None,
-                 spawn_point=None):
+    def __init__(self, blueprint=None, spawn_point=None):
         """
         Inputs:
             blueprint: the model for the vehicle to use
@@ -72,14 +71,16 @@ class EgoVehicle(Vehicle):
 
         self.type_id: VehicleType = VehicleType.EGO_FULL_MANUAL
 
-        ### Rumble Strips
+        # Rumble Strips
         self.mapp = World.get_instance().world.get_map()
         self.is_rumbling: bool = False
-        self.rumble_lane_type = {carla.LaneMarkingType.SolidSolid}
-        ### Sound Effect
-        ### TODO: move this part to HUD module
-        mixer.init() #Initialzing pyamge mixer
-        mixer.music.load('umich_sim/sim_backend/media/rs_cut.mp3') #Loading Music File
+        self.rumble_lane_type = {carla.LaneMarkingType.Solid}
+
+        # Sound Effect
+        # TODO: move this part to HUD module
+        mixer.init()  # Initialzing pyamge mixer
+        mixer.music.load(
+            'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
 
     @staticmethod
     def get_instance():
@@ -115,7 +116,7 @@ class EgoVehicle(Vehicle):
             World.get_instance().world.try_spawn_actor(blueprint, spawn_point)
 
     def switch_driver(self):
-        "Switch the current driver, wizard should be enabled"
+        """Switch the current driver, wizard should be enabled"""
         if not self.enable_wizard:
             return
         # change user
@@ -159,7 +160,7 @@ class EgoVehicle(Vehicle):
                 self.joystick_wheel.erase_ff_autocenter()
                 # force follow
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
-    
+
         if_rumble = self.rumble_strip_update()
         if self.is_rumbling and not if_rumble:
             self.stop_rumble()
@@ -236,7 +237,7 @@ class EgoVehicle(Vehicle):
 
     def start_rumble(self):
         print("[INFO] Start rumbling...")
-        mixer.music.play(loops=-1) #Playing Music with Pygame
+        mixer.music.play(loops=-1)  # Playing Music with Pygame
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.start_rumble()
 
@@ -258,10 +259,10 @@ class EgoVehicle(Vehicle):
             """
             point.z = 0
             cross_product = (point.x - seg_start.x) * (seg_end.y - seg_start.y) \
-                          - (point.y - seg_start.y) * (seg_end.x - seg_start.x)
+                            - (point.y - seg_start.y) * (seg_end.x - seg_start.x)
             distance = abs(cross_product) / seg_start.distance_2d(seg_end)
             return distance
-        
+
         def is_on_lane(distance, lane_width, low=0.43, high=0.55):
             """
             Define whether the wheel lies in the range of the lane
@@ -271,26 +272,33 @@ class EgoVehicle(Vehicle):
                 low: the inner edge of the lane, in percentage of the lane width
                 high: the outer edge of the lane, in percentage of the lane width
             """
-            return (distance / lane_width > low) and (distance / lane_width < high)
-
+            return (distance / lane_width > low) and (distance / lane_width <
+                                                      high)
 
         ### Return false if the velocity is zero
         if self.carla_vehicle.get_velocity().length() == 0:
             return False
-        
+
         ### get the closest waypoint (a point in the center of the lane)
         ### carla.Location, see https://carla.readthedocs.io/en/latest/python_api/#carla.Location
         vehicle_location = self.carla_vehicle.get_location()
-        waypoint: carla.Location = self.mapp.get_waypoint(vehicle_location, project_to_road=True, lane_type=(carla.LaneType.Driving | carla.LaneType.Sidewalk))
+        waypoint: carla.Location = self.mapp.get_waypoint(
+            vehicle_location,
+            project_to_road=True,
+            lane_type=(carla.LaneType.Driving | carla.LaneType.Sidewalk))
         waypoint_loc = waypoint.transform.location
-        next_waypoint_loc = waypoint.next(0.5)[0].transform.location  # next waypoint
+        next_waypoint_loc = waypoint.next(
+            0.5)[0].transform.location  # next waypoint
         lane_width = waypoint.lane_width
 
         ### get the location of wheels, in the order of front left, front right, back left, back right
         ### convert from cm to m since the vehicle position is in meters
         wheels = self.carla_vehicle.get_physics_control().wheels
         wheels_loc: carla.Vector3D = [x.position / 100 for x in wheels]
-        wheels_dist = [distance_to_segment_2d(x,waypoint_loc,next_waypoint_loc) for x in wheels_loc]
+        wheels_dist = [
+            distance_to_segment_2d(x, waypoint_loc, next_waypoint_loc)
+            for x in wheels_loc
+        ]
 
         ### Determine if the vehicle goes the wrong way
         lane_direction = next_waypoint_loc - waypoint_loc
@@ -302,7 +310,8 @@ class EgoVehicle(Vehicle):
         for idx, distance in enumerate(wheels_dist):
             # print(idx, distance / lane_width)
             ### invade right lane
-            if is_on_lane(distance, lane_width) and ((idx % 2 and not is_reverse) or (idx % 2==0 and is_reverse)):
+            if is_on_lane(distance, lane_width) and (
+                (idx % 2 and not is_reverse) or (idx % 2 == 0 and is_reverse)):
                 # print("right", distance, waypoint.right_lane_marking.type)
                 if waypoint.right_lane_marking.type in self.rumble_lane_type:
                     if_rumble = True
@@ -311,7 +320,6 @@ class EgoVehicle(Vehicle):
                 # print("left", distance, waypoint.left_lane_marking.type)
                 if waypoint.left_lane_marking.type in self.rumble_lane_type:
                     if_rumble = True
-        
 
         ### DEBUG: visualize wheel locations and the closest waypoint
         # from . import World
