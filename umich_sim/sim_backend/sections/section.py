@@ -9,6 +9,7 @@ Summary: The Section class provides the base functionality that exists in both t
 
 # Local Imports
 from umich_sim.sim_backend.carla_modules import Vehicle
+from abc import ABCMeta, abstractmethod
 
 # Library Imports
 import carla
@@ -16,7 +17,7 @@ import numpy as np
 from typing import List
 
 
-class Section:
+class Section(metaclass=ABCMeta):
 
     # Static ID variable used as a last number to assign Section IDs
     id = 0
@@ -33,6 +34,7 @@ class Section:
         # Section that follows sequentially after this one (this is set by the Experiment::add_section method)
         self.next_section = None
 
+    @abstractmethod
     def get_initial_waypoint(self, vehicle: Vehicle) -> carla.Waypoint:
         """
         Gets the waypoint at the start of the Section.
@@ -46,6 +48,7 @@ class Section:
         """
         pass
 
+    @abstractmethod
     def get_thru_waypoints(self, carla_map: carla.Map, current_vehicle: Vehicle, direction: str) -> List[carla.Waypoint]:
         """
         Determines the waypoints that correspond with a particular maneuver through the Section.
@@ -63,6 +66,7 @@ class Section:
         """
         pass
 
+    @abstractmethod
     def _distance_between(self, current_location: carla.Location) -> float:
         """
         Calculates the distance between the current vehicle and the Section.
@@ -76,6 +80,7 @@ class Section:
         """
         pass
 
+    @abstractmethod
     def tick(self) -> None:
         """
         Updates the section with each tick of the world.
@@ -86,3 +91,4 @@ class Section:
 
         :return:
         """
+        pass

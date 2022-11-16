@@ -36,6 +36,7 @@ class Vehicle:
         super().__init__()
 
         # Stores the Carla Vehicle object associated with this particular vehicle
+        # TODO: This should be private
         self.carla_vehicle: carla.Vehicle = carla_vehicle
 
         # The type of this Vehicle

@@ -10,7 +10,7 @@ Summary: The Experiment class is a base class that describes the high level inte
 """
 
 # Local Imports
-from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle)
+from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle, EgoVehicle, )
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
 from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoController)
 from umich_sim.sim_backend.sections import Section
@@ -39,6 +39,7 @@ class Experiment(metaclass=ABCMeta):
     def __init__(self, headless: bool):
 
         # Indicates whether the experiment is being run with a GUI or standalone
+        self.display = None
         self.wizard = None
         self.server_initialized: bool = False
         self.headless = headless
@@ -76,6 +77,9 @@ class Experiment(metaclass=ABCMeta):
         config: Config = ConfigPool.get_config()
         pygame.init()
         pygame.font.init()
+
+        self.display = pygame.display.set_mode(config.client_resolution,
+                                               pygame.HWSURFACE | pygame.DOUBLEBUF)
         try:
             client = carla.Client(config.server_addr, config.carla_port)
             client.set_timeout(2.0)
@@ -183,12 +187,6 @@ class Experiment(metaclass=ABCMeta):
         """
 
         config: Config = ConfigPool.get_config()
-        # Initialize Pygame to handle user input
-        pygame.init()
-
-        # Initialize the Pygame display
-        display = pygame.display.set_mode(config.client_resolution,
-                                          pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         world: World = World.get_instance()
         hud: HUD = HUD.get_instance()
@@ -227,7 +225,7 @@ class Experiment(metaclass=ABCMeta):
 
                 # Update the UI elements
                 hud.tick(clock)
-                world.render(display)
+                world.render(self.display)
                 # Do you call the event queue every tick? If not pygame may become unresponsive.
                 # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
                 pygame.event.pump()
@@ -292,12 +290,14 @@ class Experiment(metaclass=ABCMeta):
             # Create a new ego vehicle in the Simulation
             new_carla_vehicle = world.world.spawn_actor(
                 blueprint, spawn_location)
-            new_vehicle = Vehicle(new_carla_vehicle, "Ego", type_id)
-            self.ego_vehicle = new_vehicle
+            self.ego_vehicle = EgoVehicle.get_instance()
+            self.ego_vehicle.set_vehicle(new_carla_vehicle)
 
             # Set the camera to be located at the Ego vehicle
             self.spectator.set_transform(
-                new_vehicle.carla_vehicle.get_transform())
+                self.ego_vehicle.carla_vehicle.get_transform())
+
+            return self.ego_vehicle
 
         else:
             # Create a new non-ego vehicle in the Simulation
@@ -307,7 +307,7 @@ class Experiment(metaclass=ABCMeta):
                                   VehicleType.GENERIC)
             self.vehicle_list.append(new_vehicle)
 
-        return new_vehicle
+            return new_vehicle
 
     def add_vehicles_from_configuration(self, configuration: Dict[int,
                                                                   Dict[int,
@@ -337,10 +337,6 @@ class Experiment(metaclass=ABCMeta):
             vehicle = self.add_vehicle(spawn_point,
                                        ego=is_ego,
                                        type_id=vehicle_configuration["type"])
-            if is_ego:
-                from umich_sim.sim_backend.carla_modules import EgoVehicle
-                EgoVehicle.get_instance().set_vehicle(vehicle.carla_vehicle)
-                self.ego_vehicle = vehicle
 
             # Set which sections the vehicle will be active at
             starting_section = min(vehicle_configuration["sections"].keys())
