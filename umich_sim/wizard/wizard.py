@@ -95,6 +95,12 @@ class Wizard:
 
             ControlEventType.KB_TOGGLE_REVERSE:
                 onpush(self.__vehicle.toggle_reverse),
+            
+            ControlEventType.KB_LEFT_BLINKER:
+                onpush(self.__vehicle.toggle_left_blinker),
+            
+            ControlEventType.KB_RIGHT_BLINKER:
+                onpush(self.__vehicle.toggle_right_blinker),
 
             ControlEventType.SWITCH_DRIVER:
                 onpush(self.__vehicle.switch_driver),

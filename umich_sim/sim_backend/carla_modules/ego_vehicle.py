@@ -81,6 +81,9 @@ class EgoVehicle(Vehicle):
         mixer.init()  # Initialzing pyamge mixer
         mixer.music.load(
             'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
+        
+        # Vehicle Light State
+        self._light = world.get_vehicles_light_states()[self.id]
 
     @staticmethod
     def get_instance():
@@ -219,6 +222,8 @@ class EgoVehicle(Vehicle):
     def toggle_reverse(self):
         """Toggle the reverse mode of the vehicle"""
         self._local_ctl.reverse = not self._local_ctl.reverse
+        self._light ^= carla.VehicleLightState.Reverse
+        self.carla_vehicle.set_light_state(self._light)
 
     def get_control(self):
         """From carla api"""
@@ -230,6 +235,19 @@ class EgoVehicle(Vehicle):
             return "Human"
         else:
             return "Wizard"
+
+    def toggle_left_blinker(self):
+        """Toggle the left blinker of the vehicle"""
+        self._light ^= carla.VehicleLightState.LeftBlinker
+        self.carla_vehicle.set_light_state(self._light)
+    
+    def toggle_right_blinker(self):
+        """Toggle the right blinker of the vehicle"""
+        self._light ^= carla.VehicleLightState.RightBlinker
+        self.carla_vehicle.set_light_state(self._light)
+
+
+    # Force feedback
 
     def set_collision(self):
         if self.joystick_wheel.support_ff():

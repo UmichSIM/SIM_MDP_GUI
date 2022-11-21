@@ -14,6 +14,7 @@ class KeyboardInput(InputDevice):
     S            : brake
     A/D          : steer left/right
     Q            : toggle reverse
+    Z/X          : toggle right/left blinker
     TAB          : toggle camera
     F1           : toggle HUD
     H/?          : toggle help
@@ -32,6 +33,9 @@ class KeyboardInput(InputDevice):
         pygame.K_RIGHT: ControlEventType.KB_RIGHT,
         # reverse
         pygame.K_q: ControlEventType.KB_TOGGLE_REVERSE,
+        # right/left blinker
+        pygame.K_z: ControlEventType.KB_LEFT_BLINKER,
+        pygame.K_x: ControlEventType.KB_RIGHT_BLINKER,
         # info panel
         pygame.K_F1: ControlEventType.TOGGLE_INFO,
         # camera
