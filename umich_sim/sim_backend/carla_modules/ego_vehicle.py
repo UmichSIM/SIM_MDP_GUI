@@ -5,10 +5,12 @@ from umich_sim.wizard.inputs import ClientMode, InputPacket, InputDevice, create
 from umich_sim.sim_config import ConfigPool, Config
 # from umich_sim.sim_backend.helpers import VehicleType
 from .vehicle import Vehicle
+from .hud import HUD
 from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
                                            to_numpy_vector, rotate_vector,
                                            ORANGE, RED)
 from pygame import mixer
+from datetime import datetime, timedelta
 
 
 class EgoVehicle(Vehicle):
@@ -76,14 +78,26 @@ class EgoVehicle(Vehicle):
         self.is_rumbling: bool = False
         self.rumble_lane_type = {carla.LaneMarkingType.Solid}
 
+        # LDW System
+        self._is_ldw_on = False
+        self._last_ldw_ts = datetime.now()
+        self._ldw_time_interval = timedelta(seconds=3) # time interval between two triggered warning, in seconds
+        self.ldw_lane_type = {carla.LaneMarkingType.Solid,
+                              carla.LaneMarkingType.Broken,
+                              carla.LaneMarkingType.SolidSolid,
+                              carla.LaneMarkingType.SolidBroken,
+                              carla.LaneMarkingType.BrokenSolid,
+                              carla.LaneMarkingType.BrokenBroken}
+
         # Sound Effect
         # TODO: move this part to HUD module
         mixer.init()  # Initialzing pyamge mixer
-        mixer.music.load(
+        mixer.pre_init(44100, 16, 2, 4096)
+        self._sound_rs = mixer.Sound(
             'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
+        self._sound_ldw = mixer.Sound(
+            'umich_sim/sim_backend/media/warning_2.mp3')  # Loading Music File TODO
         
-        # Vehicle Light State
-        self._light = world.get_vehicles_light_states()[self.id]
 
     @staticmethod
     def get_instance():
@@ -164,13 +178,16 @@ class EgoVehicle(Vehicle):
                 # force follow
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
 
-        if_rumble = self.rumble_strip_update()
+        if_rumble, if_ldw = self.lane_effect_update()
         if self.is_rumbling and not if_rumble:
             self.stop_rumble()
             self.is_rumbling = False
         elif not self.is_rumbling and if_rumble:
             self.start_rumble()
             self.is_rumbling = True
+        
+        self.ldw_handler(if_ldw)
+
 
     def set_brake(self, data: InputPacket):
         """set the vehicle brake value"""
@@ -223,7 +240,7 @@ class EgoVehicle(Vehicle):
         """Toggle the reverse mode of the vehicle"""
         self._local_ctl.reverse = not self._local_ctl.reverse
         self._light ^= carla.VehicleLightState.Reverse
-        self.carla_vehicle.set_light_state(self._light)
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
 
     def get_control(self):
         """From carla api"""
@@ -235,16 +252,25 @@ class EgoVehicle(Vehicle):
             return "Human"
         else:
             return "Wizard"
-
-    def toggle_left_blinker(self):
-        """Toggle the left blinker of the vehicle"""
-        self._light ^= carla.VehicleLightState.LeftBlinker
-        self.carla_vehicle.set_light_state(self._light)
     
-    def toggle_right_blinker(self):
-        """Toggle the right blinker of the vehicle"""
-        self._light ^= carla.VehicleLightState.RightBlinker
-        self.carla_vehicle.set_light_state(self._light)
+    def toggle_ldw(self):
+        """Toggle the lane departure warning system"""
+        self._is_ldw_on = not self._is_ldw_on
+        hud = HUD.get_instance()
+        if self._is_ldw_on:
+            hud.notification('Lane Departure Warning On')
+        else:
+            hud.notification('Lane Departure Warning Off')
+    
+    def ldw_handler(self, if_ldw):
+        if if_ldw and self._is_ldw_on and not self._is_left_blinking and not self._is_right_blinking:
+            curr_time = datetime.now()
+            if curr_time - self._last_ldw_ts >= self._ldw_time_interval:
+                hud = HUD.get_instance()
+                hud.notification('Warning: Lane Departure!')
+                print("warn", curr_time)
+                self._sound_ldw.play(loops=0)  # loops=0 for playing once
+                self._last_ldw_ts = curr_time
 
 
     # Force feedback
@@ -255,19 +281,23 @@ class EgoVehicle(Vehicle):
 
     def start_rumble(self):
         print("[INFO] Start rumbling...")
-        mixer.music.play(loops=-1)  # Playing Music with Pygame
+        self._sound_rs.play(loops=-1)  # Playing Music with Pygame
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.start_rumble()
 
     def stop_rumble(self):
         print("[INFO] Stop rumbling")
-        mixer.music.stop()
+        self._sound_rs.stop()
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.stop_rumble()
 
-    def rumble_strip_update(self):
+    def lane_effect_update(self):
         """
-        Update whether to rumble according to the distance from four wheels to the center of the lane
+        1. Calculate the distance from four wheels to the center of the lane
+        2. Update rumbling and lane-departure-warning status
+        Return:
+            if_rumble: True if rumbling is needed
+            if_ldw: True if ldw is needed
         """
 
         def distance_to_segment_2d(point, seg_start, seg_end):
@@ -295,7 +325,7 @@ class EgoVehicle(Vehicle):
 
         ### Return false if the velocity is zero
         if self.carla_vehicle.get_velocity().length() == 0:
-            return False
+            return False, False
 
         ### get the closest waypoint (a point in the center of the lane)
         ### carla.Location, see https://carla.readthedocs.io/en/latest/python_api/#carla.Location
@@ -325,6 +355,7 @@ class EgoVehicle(Vehicle):
 
         ### Determine overlap with lane
         if_rumble: bool = False
+        if_ldw: bool = False
         for idx, distance in enumerate(wheels_dist):
             # print(idx, distance / lane_width)
             ### invade right lane
@@ -333,11 +364,15 @@ class EgoVehicle(Vehicle):
                 # print("right", distance, waypoint.right_lane_marking.type)
                 if waypoint.right_lane_marking.type in self.rumble_lane_type:
                     if_rumble = True
+                if waypoint.right_lane_marking.type in self.ldw_lane_type:
+                    if_ldw = True
             ### invade left lane
             elif is_on_lane(distance, lane_width):
                 # print("left", distance, waypoint.left_lane_marking.type)
                 if waypoint.left_lane_marking.type in self.rumble_lane_type:
                     if_rumble = True
+                if waypoint.left_lane_marking.type in self.ldw_lane_type:
+                    if_ldw = True
 
         ### DEBUG: visualize wheel locations and the closest waypoint
         # from . import World
@@ -347,4 +382,4 @@ class EgoVehicle(Vehicle):
         # for i in wheels_loc:
         #     world.debug.draw_point(i, size=0.15, color=RED, life_time=0.5)
 
-        return if_rumble
+        return if_rumble, if_ldw

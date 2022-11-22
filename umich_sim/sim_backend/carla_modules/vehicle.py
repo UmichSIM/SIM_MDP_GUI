@@ -102,6 +102,11 @@ class Vehicle:
         # Whether the current Vehicle is active or not (an inactive vehicle will not move)
         self.active: bool = True
 
+        # Vehicle Light State
+        self._light = World.get_instance().world.get_vehicles_light_states()[self.carla_vehicle.id]
+        self._is_left_blinking = False
+        self._is_right_blinking = False
+
     def has_path(self):
         """
         Getter for whether the Vehicle has an initialized path to follow.
@@ -368,3 +373,16 @@ class Vehicle:
             if self.id == 0 and self.current_section is not None:
                 for vehicle in self.current_section.initial_vehicles:
                     vehicle.active = True
+
+
+    def toggle_left_blinker(self):
+        """Toggle the left blinker of the vehicle"""
+        self._is_left_blinking = not self._is_left_blinking
+        self._light ^= carla.VehicleLightState.LeftBlinker
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
+    
+    def toggle_right_blinker(self):
+        """Toggle the right blinker of the vehicle"""
+        self._is_right_blinking = not self._is_right_blinking
+        self._light ^= carla.VehicleLightState.RightBlinker
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))

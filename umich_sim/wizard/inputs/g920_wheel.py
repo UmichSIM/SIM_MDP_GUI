@@ -17,6 +17,8 @@ g920_key_map: dict = {
     ControlEventType.LEFT_BLINKER,
     WheelKeyType.RSB:
     ControlEventType.RIGHT_BLINKER,
+    WheelKeyType.Y:
+    ControlEventType.TOGGLE_LDW,
     WheelKeyType.A:
     ControlEventType.SWITCH_DRIVER,
     WheelKeyType.B:
