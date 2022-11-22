@@ -62,6 +62,9 @@ class Wizard:
 
             ControlEventType.TOGGLE_HELP:
                 onpush(self.__hud.help.toggle),
+            
+            ControlEventType.TOGGLE_LDW:
+                onpush(self.__vehicle.toggle_ldw),
 
             ControlEventType.DEC_GEAR:
                 lambda data: self.__vehicle.set_reverse(data.dev, True),
@@ -95,6 +98,12 @@ class Wizard:
 
             ControlEventType.KB_TOGGLE_REVERSE:
                 onpush(self.__vehicle.toggle_reverse),
+            
+            ControlEventType.LEFT_BLINKER:
+                onpush(self.__vehicle.toggle_left_blinker),
+            
+            ControlEventType.RIGHT_BLINKER:
+                onpush(self.__vehicle.toggle_right_blinker),
 
             ControlEventType.SWITCH_DRIVER:
                 onpush(self.__vehicle.switch_driver),
