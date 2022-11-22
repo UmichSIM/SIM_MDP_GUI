@@ -654,7 +654,6 @@
   <zorder>verticalLayoutWidget</zorder>
  </widget>
  <resources>
-  <include location="images.qrc"/>
   <include location="static_images.qrc"/>
  </resources>
  <connections/>
