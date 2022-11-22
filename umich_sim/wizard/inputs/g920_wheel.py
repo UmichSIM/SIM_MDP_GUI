@@ -14,8 +14,12 @@ g920_key_map: dict = {
     ControlEventType.CLOSE,
     # WheelKeyType.LSB: ControlEventType.TOGGLE_SENSOR,
     WheelKeyType.LSB:
-    ControlEventType.SWITCH_DRIVER,
+    ControlEventType.LEFT_BLINKER,
     WheelKeyType.RSB:
+    ControlEventType.RIGHT_BLINKER,
+    WheelKeyType.A:
+    ControlEventType.SWITCH_DRIVER,
+    WheelKeyType.B:
     ControlEventType.TOGGLE_CAMERA,
     WheelKeyType.LSHIFT:
     ControlEventType.DEC_GEAR,

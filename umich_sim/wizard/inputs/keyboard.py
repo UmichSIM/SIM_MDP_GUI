@@ -34,8 +34,8 @@ class KeyboardInput(InputDevice):
         # reverse
         pygame.K_q: ControlEventType.KB_TOGGLE_REVERSE,
         # right/left blinker
-        pygame.K_z: ControlEventType.KB_LEFT_BLINKER,
-        pygame.K_x: ControlEventType.KB_RIGHT_BLINKER,
+        pygame.K_z: ControlEventType.LEFT_BLINKER,
+        pygame.K_x: ControlEventType.RIGHT_BLINKER,
         # info panel
         pygame.K_F1: ControlEventType.TOGGLE_INFO,
         # camera
