@@ -96,8 +96,7 @@ class EgoVehicle(Vehicle):
         self._sound_rs = mixer.Sound(
             'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
         self._sound_ldw = mixer.Sound(
-            'umich_sim/sim_backend/media/warning_2.mp3')  # Loading Music File TODO
-        
+            'umich_sim/sim_backend/media/warning_2.mp3')  # Loading Music File
 
     @staticmethod
     def get_instance():
@@ -177,7 +176,22 @@ class EgoVehicle(Vehicle):
                 self.joystick_wheel.erase_ff_autocenter()
                 # force follow
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
+        
+        # Update brake & reverse light
+        curr_light = self._light
+        if self._carla_ctl.brake:
+            curr_light |= carla.VehicleLightState.Brake
+        else:
+            curr_light &= ~carla.VehicleLightState.Brake
+        if self._carla_ctl.reverse:
+            curr_light |= carla.VehicleLightState.Reverse
+        else:
+            curr_light &= ~carla.VehicleLightState.Reverse
+        if curr_light != self._light: # Change the light state only if necessary
+            self._light = curr_light
+            self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
 
+        # Update rumbling effect and ldw
         if_rumble, if_ldw = self.lane_effect_update()
         if self.is_rumbling and not if_rumble:
             self.stop_rumble()
@@ -185,7 +199,6 @@ class EgoVehicle(Vehicle):
         elif not self.is_rumbling and if_rumble:
             self.start_rumble()
             self.is_rumbling = True
-        
         self.ldw_handler(if_ldw)
 
 
@@ -239,8 +252,8 @@ class EgoVehicle(Vehicle):
     def toggle_reverse(self):
         """Toggle the reverse mode of the vehicle"""
         self._local_ctl.reverse = not self._local_ctl.reverse
-        self._light ^= carla.VehicleLightState.Reverse
-        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
+        # self._light ^= carla.VehicleLightState.Reverse
+        # self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
 
     def get_control(self):
         """From carla api"""

@@ -103,7 +103,7 @@ class Vehicle:
         self.active: bool = True
 
         # Vehicle Light State
-        self._light = World.get_instance().world.get_vehicles_light_states()[self.carla_vehicle.id]
+        self._light = self.carla_vehicle.get_light_state()
         self._is_left_blinking = False
         self._is_right_blinking = False
 
@@ -134,6 +134,21 @@ class Vehicle:
         :return: None
         """
         self.carla_vehicle.apply_control(new_control)
+
+        # Update brake & reverse light
+        curr_light = self._light
+        if new_control.brake:
+            curr_light |= carla.VehicleLightState.Brake
+        else:
+            curr_light &= ~carla.VehicleLightState.Brake
+        if new_control.reverse:
+            curr_light |= carla.VehicleLightState.Reverse
+        else:
+            curr_light &= ~carla.VehicleLightState.Reverse
+        
+        if curr_light != self._light: # Change the light state only if necessary
+            self._light = curr_light
+            self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
 
     def get_vehicle_size(self) -> carla.Vector3D:
         """
