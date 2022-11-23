@@ -103,9 +103,14 @@ class Vehicle:
         self.active: bool = True
 
         # Vehicle Light State
-        self._light = self.carla_vehicle.get_light_state()
-        self._is_left_blinking = False
-        self._is_right_blinking = False
+        if self.carla_vehicle is not None:
+            self._light = self.carla_vehicle.get_light_state()
+            self._is_left_blinking = False
+            self._is_right_blinking = False
+        else:
+            self._light = None
+            self._is_left_blinking = None
+            self._is_right_blinking = None
 
     def has_path(self):
         """
@@ -145,10 +150,11 @@ class Vehicle:
             curr_light |= carla.VehicleLightState.Reverse
         else:
             curr_light &= ~carla.VehicleLightState.Reverse
-        
-        if curr_light != self._light: # Change the light state only if necessary
+
+        if curr_light != self._light:  # Change the light state only if necessary
             self._light = curr_light
-            self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
+            self.carla_vehicle.set_light_state(
+                carla.VehicleLightState(self._light))
 
     def get_vehicle_size(self) -> carla.Vector3D:
         """
@@ -389,15 +395,16 @@ class Vehicle:
                 for vehicle in self.current_section.initial_vehicles:
                     vehicle.active = True
 
-
     def toggle_left_blinker(self):
         """Toggle the left blinker of the vehicle"""
         self._is_left_blinking = not self._is_left_blinking
         self._light ^= carla.VehicleLightState.LeftBlinker
-        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
-    
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(
+            self._light))
+
     def toggle_right_blinker(self):
         """Toggle the right blinker of the vehicle"""
         self._is_right_blinking = not self._is_right_blinking
         self._light ^= carla.VehicleLightState.RightBlinker
-        self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(
+            self._light))

@@ -81,13 +81,16 @@ class EgoVehicle(Vehicle):
         # LDW System
         self._is_ldw_on = False
         self._last_ldw_ts = datetime.now()
-        self._ldw_time_interval = timedelta(seconds=3) # time interval between two triggered warning, in seconds
-        self.ldw_lane_type = {carla.LaneMarkingType.Solid,
-                              carla.LaneMarkingType.Broken,
-                              carla.LaneMarkingType.SolidSolid,
-                              carla.LaneMarkingType.SolidBroken,
-                              carla.LaneMarkingType.BrokenSolid,
-                              carla.LaneMarkingType.BrokenBroken}
+        self._ldw_time_interval = timedelta(
+            seconds=3
+        )  # time interval between two triggered warning, in seconds
+        self.ldw_lane_type = {
+            carla.LaneMarkingType.Solid, carla.LaneMarkingType.Broken,
+            carla.LaneMarkingType.SolidSolid,
+            carla.LaneMarkingType.SolidBroken,
+            carla.LaneMarkingType.BrokenSolid,
+            carla.LaneMarkingType.BrokenBroken
+        }
 
         # Sound Effect
         # TODO: move this part to HUD module
@@ -111,6 +114,9 @@ class EgoVehicle(Vehicle):
         :param vehicle: carla vehicle to set
         """
         self.carla_vehicle = vehicle
+        self._light = self.carla_vehicle.get_light_state()
+        self._is_left_blinking = False
+        self._is_right_blinking = False
 
     def start(self):
         self.joystick_wheel.start()
@@ -176,7 +182,7 @@ class EgoVehicle(Vehicle):
                 self.joystick_wheel.erase_ff_autocenter()
                 # force follow
                 self.joystick_wheel.SetWheelPos(self._rpc.get_wheel())
-        
+
         # Update brake & reverse light
         curr_light = self._light
         if self._carla_ctl.brake:
@@ -187,9 +193,10 @@ class EgoVehicle(Vehicle):
             curr_light |= carla.VehicleLightState.Reverse
         else:
             curr_light &= ~carla.VehicleLightState.Reverse
-        if curr_light != self._light: # Change the light state only if necessary
+        if curr_light != self._light:  # Change the light state only if necessary
             self._light = curr_light
-            self.carla_vehicle.set_light_state(carla.VehicleLightState(self._light))
+            self.carla_vehicle.set_light_state(
+                carla.VehicleLightState(self._light))
 
         # Update rumbling effect and ldw
         if_rumble, if_ldw = self.lane_effect_update()
@@ -200,7 +207,6 @@ class EgoVehicle(Vehicle):
             self.start_rumble()
             self.is_rumbling = True
         self.ldw_handler(if_ldw)
-
 
     def set_brake(self, data: InputPacket):
         """set the vehicle brake value"""
@@ -265,7 +271,7 @@ class EgoVehicle(Vehicle):
             return "Human"
         else:
             return "Wizard"
-    
+
     def toggle_ldw(self):
         """Toggle the lane departure warning system"""
         self._is_ldw_on = not self._is_ldw_on
@@ -274,7 +280,7 @@ class EgoVehicle(Vehicle):
             hud.notification('Lane Departure Warning On')
         else:
             hud.notification('Lane Departure Warning Off')
-    
+
     def ldw_handler(self, if_ldw):
         if if_ldw and self._is_ldw_on and not self._is_left_blinking and not self._is_right_blinking:
             curr_time = datetime.now()
@@ -284,7 +290,6 @@ class EgoVehicle(Vehicle):
                 print("warn", curr_time)
                 self._sound_ldw.play(loops=0)  # loops=0 for playing once
                 self._last_ldw_ts = curr_time
-
 
     # Force feedback
 
