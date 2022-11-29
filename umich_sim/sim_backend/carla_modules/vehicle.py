@@ -36,6 +36,7 @@ class Vehicle:
         super().__init__()
 
         # Stores the Carla Vehicle object associated with this particular vehicle
+        # TODO: This should be private
         self.carla_vehicle: carla.Vehicle = carla_vehicle
 
         # The type of this Vehicle
@@ -101,6 +102,16 @@ class Vehicle:
         # Whether the current Vehicle is active or not (an inactive vehicle will not move)
         self.active: bool = True
 
+        # Vehicle Light State
+        if self.carla_vehicle is not None:
+            self._light = self.carla_vehicle.get_light_state()
+            self._is_left_blinking = False
+            self._is_right_blinking = False
+        else:
+            self._light = None
+            self._is_left_blinking = None
+            self._is_right_blinking = None
+
     def has_path(self):
         """
         Getter for whether the Vehicle has an initialized path to follow.
@@ -128,6 +139,22 @@ class Vehicle:
         :return: None
         """
         self.carla_vehicle.apply_control(new_control)
+
+        # Update brake & reverse light
+        curr_light = self._light
+        if new_control.brake:
+            curr_light |= carla.VehicleLightState.Brake
+        else:
+            curr_light &= ~carla.VehicleLightState.Brake
+        if new_control.reverse:
+            curr_light |= carla.VehicleLightState.Reverse
+        else:
+            curr_light &= ~carla.VehicleLightState.Reverse
+
+        if curr_light != self._light:  # Change the light state only if necessary
+            self._light = curr_light
+            self.carla_vehicle.set_light_state(
+                carla.VehicleLightState(self._light))
 
     def get_vehicle_size(self) -> carla.Vector3D:
         """
@@ -367,3 +394,17 @@ class Vehicle:
             if self.id == 0 and self.current_section is not None:
                 for vehicle in self.current_section.initial_vehicles:
                     vehicle.active = True
+
+    def toggle_left_blinker(self):
+        """Toggle the left blinker of the vehicle"""
+        self._is_left_blinking = not self._is_left_blinking
+        self._light ^= carla.VehicleLightState.LeftBlinker
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(
+            self._light))
+
+    def toggle_right_blinker(self):
+        """Toggle the right blinker of the vehicle"""
+        self._is_right_blinking = not self._is_right_blinking
+        self._light ^= carla.VehicleLightState.RightBlinker
+        self.carla_vehicle.set_light_state(carla.VehicleLightState(
+            self._light))

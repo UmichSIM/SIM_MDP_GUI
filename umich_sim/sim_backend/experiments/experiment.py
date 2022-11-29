@@ -10,9 +10,15 @@ Summary: The Experiment class is a base class that describes the high level inte
 """
 
 # Local Imports
-from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle)
+from umich_sim.sim_backend.carla_modules import (
+    HUD,
+    World,
+    Vehicle,
+    EgoVehicle,
+)
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
-from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoController)
+from umich_sim.sim_backend.vehicle_control import (VehicleController,
+                                                   EgoController)
 from umich_sim.sim_backend.sections import Section
 from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType,
                                            smooth_path, project_forward)
@@ -39,6 +45,7 @@ class Experiment(metaclass=ABCMeta):
     def __init__(self, headless: bool):
 
         # Indicates whether the experiment is being run with a GUI or standalone
+        self.display = None
         self.wizard = None
         self.server_initialized: bool = False
         self.headless = headless
@@ -76,14 +83,18 @@ class Experiment(metaclass=ABCMeta):
         config: Config = ConfigPool.get_config()
         pygame.init()
         pygame.font.init()
+
+        self.display = pygame.display.set_mode(
+            config.client_resolution, pygame.HWSURFACE | pygame.DOUBLEBUF)
         try:
             client = carla.Client(config.server_addr, config.carla_port)
-            
+
             client.set_timeout(5.0)
             self.tm = client.get_trafficmanager()  # create a TM object
-            self.tm.global_percentage_speed_difference(10.0)  # set the global speed limitation
-            self.tm_port = self.tm.get_port()  # get the port of tm. we need add vehicle to tm by this port
-            
+            self.tm.global_percentage_speed_difference(
+                10.0)  # set the global speed limitation
+            self.tm_port = self.tm.get_port(
+            )  # get the port of tm. we need add vehicle to tm by this port
 
             hud = HUD(*config.client_resolution)
             world: World = World(client, hud, config.car_filter, self.MAP)
@@ -106,7 +117,7 @@ class Experiment(metaclass=ABCMeta):
                 if waypoint.is_junction:
                     if waypoint.get_junction().id not in self.junctions:
                         self.junctions[waypoint.get_junction().
-                        id] = waypoint.get_junction()
+                                       id] = waypoint.get_junction()
 
             self.server_initialized = True
         finally:
@@ -188,24 +199,18 @@ class Experiment(metaclass=ABCMeta):
         """
 
         config: Config = ConfigPool.get_config()
-        # Initialize Pygame to handle user input
-        pygame.init()
-
-        # Initialize the Pygame display
-        display = pygame.display.set_mode(config.client_resolution,
-                                          pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         world: World = World.get_instance()
         hud: HUD = HUD.get_instance()
         world.restart()
-        
+
         # Update the speed of vehicle in traffic manager
         for vehicle in self.vehicle_list:
-            vehicle.carla_vehicle.set_autopilot(True,self.tm_port)
+            vehicle.carla_vehicle.set_autopilot(True, self.tm_port)
             self.tm.ignore_lights_percentage(vehicle.carla_vehicle, 0)
             #self.tm.distance_to_leading_vehicle(vehicle.carla_vehicle, 20)
             #self.tm.vehicle_percentage_speed_difference(vehicle.carla_vehicle, -20)
-            
+
             physics_control = vehicle.carla_vehicle.get_physics_control()
             physics_control.mass = 100000
             vehicle.carla_vehicle.apply_physics_control(physics_control)
@@ -232,10 +237,6 @@ class Experiment(metaclass=ABCMeta):
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
                     vehicle.update_other_vehicle_locations(self.vehicle_list)
 
-
-
-
-
                 # Apply control to the Ego Vehicle
                 if self.ego_vehicle is not None:
                     # Lambda used to avoid passing all the arguments into the update_control function
@@ -245,10 +246,10 @@ class Experiment(metaclass=ABCMeta):
                 # Apply control to every other Vehicle
                 for vehicle in self.vehicle_list:
                     self.update_control(vehicle)
-                
+
                 # Update the UI elements
                 hud.tick(clock)
-                world.render(display)
+                world.render(self.display)
                 # Do you call the event queue every tick? If not pygame may become unresponsive.
                 # See: https://www.pygame.org/docs/ref/event.html#pygame.event.pump
                 pygame.event.pump()
@@ -314,12 +315,14 @@ class Experiment(metaclass=ABCMeta):
             # Create a new ego vehicle in the Simulation
             new_carla_vehicle = world.world.spawn_actor(
                 blueprint, spawn_location)
-            new_vehicle = Vehicle(new_carla_vehicle, "Ego", type_id)
-            self.ego_vehicle = new_vehicle
+            self.ego_vehicle = EgoVehicle.get_instance()
+            self.ego_vehicle.set_vehicle(new_carla_vehicle)
 
             # Set the camera to be located at the Ego vehicle
             self.spectator.set_transform(
-                new_vehicle.carla_vehicle.get_transform())
+                self.ego_vehicle.carla_vehicle.get_transform())
+
+            return self.ego_vehicle
 
         else:
             # Create a new non-ego vehicle in the Simulation
@@ -329,7 +332,7 @@ class Experiment(metaclass=ABCMeta):
                                   VehicleType.GENERIC)
             self.vehicle_list.append(new_vehicle)
 
-        return new_vehicle
+            return new_vehicle
 
     def add_vehicles_from_configuration(self, configuration: Dict[int,
                                                                   Dict[int,
@@ -348,7 +351,7 @@ class Experiment(metaclass=ABCMeta):
             spawn_point = self.spawn_points[
                 vehicle_configuration["spawn_point"]]
             if "spawn_offset" in vehicle_configuration and vehicle_configuration[
-                "spawn_offset"] != 0.0:
+                    "spawn_offset"] != 0.0:
                 spawn_point = project_forward(
                     spawn_point, vehicle_configuration["spawn_offset"])
 
@@ -356,10 +359,11 @@ class Experiment(metaclass=ABCMeta):
             is_ego = vehicle_configuration["type"] in (
                 VehicleType.EGO, VehicleType.EGO_FULL_MANUAL,
                 VehicleType.EGO_FULL_MANUAL, VehicleType.EGO_MANUAL_STEER)
-            vehicle = self.add_vehicle(spawn_point,
-                                       ego=is_ego,
-                                       type_id=vehicle_configuration["type"],
-                                       blueprint_id = vehicle_configuration["vehicle"])
+            vehicle = self.add_vehicle(
+                spawn_point,
+                ego=is_ego,
+                type_id=vehicle_configuration["type"],
+                blueprint_id=vehicle_configuration["vehicle"])
             if is_ego:
                 from umich_sim.sim_backend.carla_modules import EgoVehicle
                 EgoVehicle.get_instance().set_vehicle(vehicle.carla_vehicle)

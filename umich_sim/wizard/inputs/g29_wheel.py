@@ -12,8 +12,12 @@ g29_key_map: dict = {
     ControlEventType.CLOSE,
     # WheelKeyType.LSB: ControlEventType.TOGGLE_SENSOR,
     WheelKeyType.L3:
-    ControlEventType.SWITCH_DRIVER,
+    ControlEventType.LEFT_BLINKER,
     WheelKeyType.R3:
+    ControlEventType.RIGHT_BLINKER,
+    WheelKeyType.L2:
+    ControlEventType.SWITCH_DRIVER,
+    WheelKeyType.R2:
     ControlEventType.TOGGLE_CAMERA,
     WheelKeyType.LSHIFT:
     ControlEventType.DEC_GEAR,

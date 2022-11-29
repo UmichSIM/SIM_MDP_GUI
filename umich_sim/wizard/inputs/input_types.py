@@ -24,6 +24,7 @@ class ControlEventType(IntEnum):
     TOGGLE_CAMERA = auto()
     TOGGLE_SENSOR = auto()
     TOGGLE_HELP = auto()
+    TOGGLE_LDW = auto()  # lane departure warning
     # Racing wheel
     DEC_GEAR = auto()
     INC_GEAR = auto()
@@ -37,6 +38,9 @@ class ControlEventType(IntEnum):
     KB_LEFT = auto()
     KB_RIGHT = auto()
     KB_TOGGLE_REVERSE = auto()
+    # VehicleLight
+    LEFT_BLINKER = auto()
+    RIGHT_BLINKER = auto()
     # Controls
     SWITCH_DRIVER = auto()
     CLOSE = auto()  # close the program
