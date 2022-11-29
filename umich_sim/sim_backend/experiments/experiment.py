@@ -78,7 +78,12 @@ class Experiment(metaclass=ABCMeta):
         pygame.font.init()
         try:
             client = carla.Client(config.server_addr, config.carla_port)
-            client.set_timeout(2.0)
+            
+            client.set_timeout(5.0)
+            self.tm = client.get_trafficmanager()  # create a TM object
+            self.tm.global_percentage_speed_difference(10.0)  # set the global speed limitation
+            self.tm_port = self.tm.get_port()  # get the port of tm. we need add vehicle to tm by this port
+            
 
             hud = HUD(*config.client_resolution)
             world: World = World(client, hud, config.car_filter, self.MAP)
@@ -193,7 +198,19 @@ class Experiment(metaclass=ABCMeta):
         world: World = World.get_instance()
         hud: HUD = HUD.get_instance()
         world.restart()
-
+        
+        # Update the speed of vehicle in traffic manager
+        for vehicle in self.vehicle_list:
+            vehicle.carla_vehicle.set_autopilot(True,self.tm_port)
+            self.tm.ignore_lights_percentage(vehicle.carla_vehicle, 0)
+            #self.tm.distance_to_leading_vehicle(vehicle.carla_vehicle, 20)
+            #self.tm.vehicle_percentage_speed_difference(vehicle.carla_vehicle, -20)
+            
+            physics_control = vehicle.carla_vehicle.get_physics_control()
+            physics_control.mass = 100000
+            vehicle.carla_vehicle.apply_physics_control(physics_control)
+            self.tm.set_global_distance_to_leading_vehicle(50)
+            self.tm.global_percentage_speed_difference(-200)
         try:
             # Loop continuously
             clock = pygame.time.Clock()
@@ -215,6 +232,10 @@ class Experiment(metaclass=ABCMeta):
                 for vehicle in self.vehicle_list + [self.ego_vehicle]:
                     vehicle.update_other_vehicle_locations(self.vehicle_list)
 
+
+
+
+
                 # Apply control to the Ego Vehicle
                 if self.ego_vehicle is not None:
                     # Lambda used to avoid passing all the arguments into the update_control function
@@ -224,7 +245,7 @@ class Experiment(metaclass=ABCMeta):
                 # Apply control to every other Vehicle
                 for vehicle in self.vehicle_list:
                     self.update_control(vehicle)
-
+                
                 # Update the UI elements
                 hud.tick(clock)
                 world.render(display)
@@ -242,6 +263,7 @@ class Experiment(metaclass=ABCMeta):
         update control based on specific experiment type
         :param vehicle: the vehicle to update control
         """
+        #vehicle.apply_control(throttle = .4, brake = 0)
         pass
 
     def clean_up_experiment(self) -> None:
@@ -336,7 +358,8 @@ class Experiment(metaclass=ABCMeta):
                 VehicleType.EGO_FULL_MANUAL, VehicleType.EGO_MANUAL_STEER)
             vehicle = self.add_vehicle(spawn_point,
                                        ego=is_ego,
-                                       type_id=vehicle_configuration["type"])
+                                       type_id=vehicle_configuration["type"],
+                                       blueprint_id = vehicle_configuration["vehicle"])
             if is_ego:
                 from umich_sim.sim_backend.carla_modules import EgoVehicle
                 EgoVehicle.get_instance().set_vehicle(vehicle.carla_vehicle)
