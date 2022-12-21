@@ -7,7 +7,13 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from AddVehicles import Ui_Widget as Ui_Vehicle
+from PyQt6.QtWidgets import QWidget, QApplication, QMainWindow, QStackedWidget, QHBoxLayout
 
+class addvehicle(QWidget,Ui_Vehicle):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
 
 class Ui_Widget(object):
     def setupUi(self, Widget):
@@ -65,6 +71,8 @@ class Ui_Widget(object):
         self.retranslateUi(Widget)
         QtCore.QMetaObject.connectSlotsByName(Widget)
 
+        self.slotsandsignals()
+
     def retranslateUi(self, Widget):
         _translate = QtCore.QCoreApplication.translate
         Widget.setWindowTitle(_translate("Widget", "Widget"))
@@ -74,4 +82,14 @@ class Ui_Widget(object):
         self.add_vehicles_btn.setText(_translate("Widget", "Add Vehicles"))
         self.import_settings_btn.setText(_translate("Widget", "Import Settings"))
         self.settings_spin.setItemText(0, _translate("Widget", "Custom (Default)"))
+
+
+
+
+    def slotsandsignals(self):
+        self.vehicle = addvehicle()
+        
+        #Connect add vehicle
+        self.add_vehicles_btn.clicked.connect(lambda: self.vehicle.show())
+        self.vehicle.backBtn.clicked.connect(lambda: self.vehicle.hide())
 
