@@ -74,3 +74,4 @@ class Ui_Widget(object):
         self.add_vehicles_btn.setText(_translate("Widget", "Add Vehicles"))
         self.import_settings_btn.setText(_translate("Widget", "Import Settings"))
         self.settings_spin.setItemText(0, _translate("Widget", "Custom (Default)"))
+

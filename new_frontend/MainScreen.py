@@ -94,3 +94,13 @@ class Ui_MainScreen(object):
         self.UmichSubTitle_txt.setText(_translate("MainScreen", "University of Michigan - UMTRI - Version 1.0"))
         self.Fway_bttn.setText(_translate("MainScreen", "Freeway Experiment"))
         self.Instcn_bttn.setText(_translate("MainScreen", "Intersection Experiment"))
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_MainScreen()
+    ui.setupUi(Form)
+    Form.show()
+
+    sys.exit(app.exec())

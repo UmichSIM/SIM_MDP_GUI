@@ -121,5 +121,7 @@ class Ui_Form(object):
         self.trafficLight_txt.setText(_translate("Form", "Right Lane"))
         self.addRight_bttn.setText(_translate("Form", "Add Vehicle"))
         self.back_bttn.setText(_translate("Form", "Back"))
-        self.intersection_img.setText(_translate("Form", "<html><head/><body><p><img src=\":/oop/intersection copy.jpg\" width=500/></p></body></html>"))
+        self.intersection_img.setText(_translate("Form", "<html><head/><body><p><img src=\":/images/intersection.jpg\" width=500/></p></body></html>"))
         self.spawnVehicle_title.setText(_translate("Form", "Spawn Vehicle"))
+
+

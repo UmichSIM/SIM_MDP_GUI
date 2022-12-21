@@ -246,7 +246,6 @@ class Ui_FullDisplay(object):
         self.DoubleRightArrow.raise_()
         self.SingleLeftArrow.raise_()
         self.verticalLayoutWidget.raise_()
-
         self.retranslateUi(FullDisplay)
         QtCore.QMetaObject.connectSlotsByName(FullDisplay)
 

@@ -143,3 +143,5 @@ class Ui_Widget(object):
         self.intersectionLane_6_bttn.setText(_translate("Widget", "6"))
         self.label_2.setText(_translate("Widget", "<html><head/><body><p><img src=\":/lane/Intersection 1_cut.png\"/><img src=\":/lane/Intersection 1_cut.png\"/><img src=\":/lane/Intersection 1_cut.png\"/><img src=\":/lane/Intersection 1_cut.png\"/><img src=\":/lane/Intersection 1_cut.png\"/><img src=\":/lane/Intersection 1_cut.png\"/></p></body></html>"))
         self.mainIntersectionTitle_txt.setText(_translate("Widget", "General Intersection Settings"))
+
+

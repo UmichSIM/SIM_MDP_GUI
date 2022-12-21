@@ -1,0 +1,18 @@
+debug: true
+client_frame_rate: 60
+server_addr: 35.3.141.212
+carla_port: 2000
+rpc_port: 2003
+client_resolution:
+- 2560
+- 1440
+client_mode: EGO
+gui_mode: false
+cam_recording: false
+cam_record_dir: !!python/object/apply:pathlib.WindowsPath
+- _record
+car_filter: vehicle.*
+wizard:
+  client_mode: EGO
+  dev_type: KBD
+  dev_path: ''
