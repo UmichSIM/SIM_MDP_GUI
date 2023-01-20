@@ -12,7 +12,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.9"
-carla = "^0.9.13"
+carla = "0.9.13"
 pygame = "^2.1.2"
 simple-pid = "^1.0.1"
 PyQt5 = "^5.15.7"
