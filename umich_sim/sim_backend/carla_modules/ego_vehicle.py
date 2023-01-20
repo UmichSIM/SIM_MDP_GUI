@@ -94,12 +94,14 @@ class EgoVehicle(Vehicle):
 
         # Sound Effect
         # TODO: move this part to HUD module
-        mixer.init()  # Initialzing pyamge mixer
-        mixer.pre_init(44100, 16, 2, 4096)
-        self._sound_rs = mixer.Sound(
-            'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
-        self._sound_ldw = mixer.Sound(
-            'umich_sim/sim_backend/media/warning_2.mp3')  # Loading Music File
+        if config.enable_sound:
+            mixer.init()  # Initialzing pyamge mixer
+            mixer.pre_init(44100, 16, 2, 4096)
+            self._sound_rs = mixer.Sound(
+                'umich_sim/sim_backend/media/rs_cut.mp3')  # Loading Music File
+            self._sound_ldw = mixer.Sound(
+                'umich_sim/sim_backend/media/warning_2.mp3'
+            )  # Loading Music File
 
     @staticmethod
     def get_instance():
@@ -299,15 +301,17 @@ class EgoVehicle(Vehicle):
 
     def start_rumble(self):
         print("[INFO] Start rumbling...")
-        self._sound_rs.play(loops=-1)  # Playing Music with Pygame
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.start_rumble()
+        if ConfigPool.get_config().enable_sound:
+            self._sound_rs.play()
 
     def stop_rumble(self):
         print("[INFO] Stop rumbling")
-        self._sound_rs.stop()
         if self.joystick_wheel.support_ff():
             self.joystick_wheel.stop_rumble()
+        if ConfigPool.get_config().enable_sound:
+            self._sound_rs.stop()
 
     def lane_effect_update(self):
         """

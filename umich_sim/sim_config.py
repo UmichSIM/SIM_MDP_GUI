@@ -20,6 +20,7 @@ class WizardConfig:
 @dataclass
 class Config:
     debug: bool = True
+    enable_sound: bool = False
     client_frame_rate: int = 60
     server_addr: str = "127.0.0.1"
     carla_port: int = 2000
