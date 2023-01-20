@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'single_intersection.ui'
+# Form implementation generated from reading ui file 'singleIntersection.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.0
 #
@@ -8,13 +8,14 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+from PyQt6.QtWidgets import QWidget, QApplication, QMainWindow, QStackedWidget, QHBoxLayout
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(1400, 800)
         self.intersection_title = QtWidgets.QLabel(Form)
-        self.intersection_title.setGeometry(QtCore.QRect(500, 30, 191, 71))
+        self.intersection_title.setGeometry(QtCore.QRect(500, 30, 251, 61))
         font = QtGui.QFont()
         font.setPointSize(35)
         self.intersection_title.setFont(font)
@@ -93,37 +94,44 @@ class Ui_Form(object):
         font.setPointSize(20)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
-        self.intersectionMap_img = QtWidgets.QLabel(Form)
-        self.intersectionMap_img.setGeometry(QtCore.QRect(580, 110, 651, 641))
-        self.intersectionMap_img.setObjectName("intersectionMap_img")
         self.lane_1_bttn = QtWidgets.QPushButton(Form)
         self.lane_1_bttn.setGeometry(QtCore.QRect(1000, 330, 40, 40))
         self.lane_1_bttn.setMinimumSize(QtCore.QSize(40, 40))
         self.lane_1_bttn.setMaximumSize(QtCore.QSize(40, 40))
         self.lane_1_bttn.setObjectName("lane_1_bttn")
         self.lane_2_bttn = QtWidgets.QPushButton(Form)
-        self.lane_2_bttn.setGeometry(QtCore.QRect(1000, 560, 40, 40))
+        self.lane_2_bttn.setGeometry(QtCore.QRect(1000, 550, 40, 40))
         self.lane_2_bttn.setMinimumSize(QtCore.QSize(40, 40))
         self.lane_2_bttn.setMaximumSize(QtCore.QSize(40, 40))
         self.lane_2_bttn.setObjectName("lane_2_bttn")
         self.lane_3_bttn = QtWidgets.QPushButton(Form)
-        self.lane_3_bttn.setGeometry(QtCore.QRect(770, 560, 40, 40))
+        self.lane_3_bttn.setGeometry(QtCore.QRect(770, 550, 40, 40))
         self.lane_3_bttn.setMinimumSize(QtCore.QSize(40, 40))
         self.lane_3_bttn.setMaximumSize(QtCore.QSize(40, 40))
         self.lane_3_bttn.setObjectName("lane_3_bttn")
         self.lane_4_bttn = QtWidgets.QPushButton(Form)
-        self.lane_4_bttn.setGeometry(QtCore.QRect(760, 330, 40, 40))
+        self.lane_4_bttn.setGeometry(QtCore.QRect(770, 330, 40, 40))
         self.lane_4_bttn.setMinimumSize(QtCore.QSize(40, 40))
         self.lane_4_bttn.setMaximumSize(QtCore.QSize(40, 40))
         self.lane_4_bttn.setObjectName("lane_4_bttn")
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setGeometry(QtCore.QRect(650, 160, 501, 611))
+        self.label.setObjectName("label")
+        self.label.raise_()
+        self.intersection_title.raise_()
+        self.verticalLayoutWidget.raise_()
+        self.pushButton.raise_()
+        self.lane_1_bttn.raise_()
+        self.lane_2_bttn.raise_()
+        self.lane_3_bttn.raise_()
+        self.lane_4_bttn.raise_()
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
-
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.intersection_title.setText(_translate("Form", "Intersection"))
+        self.intersection_title.setText(_translate("Form", "Edit Intersection"))
         self.intersectionId_txt.setText(_translate("Form", "Intersection ID"))
         self.importSetting_txt.setText(_translate("Form", "Import Setting"))
         self.vehicles_txt.setText(_translate("Form", "Vehicles"))
@@ -131,8 +139,10 @@ class Ui_Form(object):
         self.trafficLight_txt.setText(_translate("Form", "Traffic Light"))
         self.trafficLight_bttn.setText(_translate("Form", "Setting"))
         self.pushButton.setText(_translate("Form", "Back"))
-        self.intersectionMap_img.setText(_translate("Form", "<html><head/><body><p><img src=\":/map/intersection copy.jpg\"/></p></body></html>"))
         self.lane_1_bttn.setText(_translate("Form", "1"))
         self.lane_2_bttn.setText(_translate("Form", "2"))
         self.lane_3_bttn.setText(_translate("Form", "3"))
         self.lane_4_bttn.setText(_translate("Form", "4"))
+        self.label.setText(_translate("Form", "<html><head/><body><p><img src=\":/intersection/images/intersection.jpg\" width=\"500\"/></p></body></html>"))
+
+

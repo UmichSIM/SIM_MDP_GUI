@@ -115,6 +115,7 @@ class Ui_TrafficLightSettings(object):
         self.retranslateUi(TrafficLightSettings)
         QtCore.QMetaObject.connectSlotsByName(TrafficLightSettings)
 
+
     def retranslateUi(self, TrafficLightSettings):
         _translate = QtCore.QCoreApplication.translate
         TrafficLightSettings.setWindowTitle(_translate("TrafficLightSettings", "Form"))
@@ -129,3 +130,5 @@ class Ui_TrafficLightSettings(object):
         self.Light4_txt.setText(_translate("TrafficLightSettings", "Light 4"))
         self.Light4Settings_bttn.setText(_translate("TrafficLightSettings", "Settings"))
         self.Intersection_img.setText(_translate("TrafficLightSettings", "<html><head/><body><p><img src=\":/intersection/images/intersection.jpg\" width=500 /></p></body></html>"))
+
+
