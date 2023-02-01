@@ -59,8 +59,9 @@ class World(object):
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0
         # Get a random blueprint.
-        blueprint = random.choice(self.world.get_blueprint_library().filter(
-            self.__actor_filter))
+        #blueprint = random.choice(self.world.get_blueprint_library().filter(
+            #self.__actor_filter))
+        blueprint = self.world.get_blueprint_library().filter(self.__actor_filter)[0]
         blueprint.set_attribute('role_name', 'hero')
         if blueprint.has_attribute('color'):
             color = random.choice(
