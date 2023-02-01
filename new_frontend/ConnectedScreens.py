@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import sys
+from Config import freeway_dict, intersection_dict
 
 #Main windows
 from MainScreen import Ui_MainScreen
@@ -75,6 +76,9 @@ class Traffic(QWidget,Ui_Traffic):
         self.show()
         
 class MainApp(QWidget):
+    def print_debug(self):
+        print("allow collision was clicked")
+
     def __init__(self, parent=None):
 
         # Init Screens
@@ -108,6 +112,8 @@ class MainApp(QWidget):
 
         #Edit Freeway
         self.fmain.Fway_1_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway1))
+        # if self.fmain.Fway_1_bttn.clicked:
+        #     print(self.fmain.NumFwaySections_spinbx)
         self.editFreeway1.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
         self.fmain.Fway_2_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway2))
         self.editFreeway2.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
@@ -117,8 +123,18 @@ class MainApp(QWidget):
         self.editFreeway4.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
         self.fmain.Fway_5_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway5))
         self.editFreeway5.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
+        self.fmain.AllowCollisions_chkbx.toggled.connect(self.print_debug)
 
+        """if self.fmain.AllowCollisions_chkbx.isChecked() == True:
+            self.print_debug()
+        elif self.fmain.AllowCollisions_chkbx.isChecked() == False:
+            self.print_debug()"""
+        """
+        if self.fmain.AllowCollisions_chkbx.isChecked() == True:
+            self.print_debug
+        """
 
+       
         #Intersection
         self.mainScreen.Instcn_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
         self.mainIntersection.back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainScreen))
