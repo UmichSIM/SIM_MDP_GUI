@@ -5,20 +5,20 @@ import sys
 from Config import freeway_dict, intersection_dict
 
 #Main windows
-from MainScreen import Ui_MainScreen
-from FMain import Ui_FullDisplay
-from MainIntersection import Ui_Widget as Ui_Intersection
+from generated_ui.MainScreen import Ui_MainScreen
+from generated_ui.FMain import Ui_FullDisplay
+from generated_ui.MainIntersection import Ui_Widget as Ui_Intersection
 
 
 #Freeway (FMain is Main Freeway) 
-from EditFreeway import Ui_Widget as Ui_EditFreeway
+from generated_ui.EditFreeway import Ui_Widget as Ui_EditFreeway
 
 #Intersection 
-from EditSingleVehicleIntsctn import Ui_EditSingleVehicleInsctn as Ui_IntersectionSpawnVehicle
-from SingleIntersection import Ui_Form as Ui_SingleIntersection
-from TrafficLightSettings import Ui_TrafficLightSettings
-from AddVehicleIntersection import Ui_Form as Ui_AddVehicleSettings
-from TrafficLightSettings import Ui_TrafficLightSettings as Ui_Traffic
+from generated_ui.EditSingleVehicleIntsctn import Ui_EditSingleVehicleInsctn as Ui_IntersectionSpawnVehicle
+from generated_ui.SingleIntersection import Ui_Form as Ui_SingleIntersection
+from generated_ui.TrafficLightSettings import Ui_TrafficLightSettings
+from generated_ui.AddVehicleIntersection import Ui_Form as Ui_AddVehicleSettings
+from generated_ui.TrafficLightSettings import Ui_TrafficLightSettings as Ui_Traffic
 
 
 #Other 
@@ -39,13 +39,25 @@ class mainIntersection(QMainWindow,Ui_Intersection):
 
 
 class fmain(QMainWindow,Ui_FullDisplay):
+    def allow_collisions(self):
+        #Sets the freeway min_speed setting to 20
+        freeway_dict['allow_collision'] = self.AllowCollisions_chkbx.isChecked()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
         self.show()
+        self.AllowCollisions_chkbx.stateChanged.connect(lambda: self.allow_collisions())
+
 
 
 class editFreeway(QMainWindow,Ui_EditFreeway):
+    def set(self, laneNum):
+        subjectLaneVehicle = freeway_dict['lane'+str(laneNum)]["subject_lane_vehicle"]
+        leftLaneVehicle = freeway_dict['lane'+str(laneNum)]['left_lane_vehicle']
+
+        print('Lane Number:', laneNum)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -76,21 +88,20 @@ class Traffic(QWidget,Ui_Traffic):
         self.show()
         
 class MainApp(QWidget):
-    def print_debug(self):
-        print("allow collision was clicked")
+    def changeFreewayLanes(self, laneNum):
+        self.stack.setCurrentWidget(self.editFreeway)
+        self.editFreeway.set(laneNum)
+        return
 
     def __init__(self, parent=None):
-
+        super().__init__(parent)
+        
         # Init Screens
         self.mainScreen = mainScreen()
         self.mainIntersection = mainIntersection()
         self.fmain = fmain()
 
-        self.editFreeway1 = editFreeway()
-        self.editFreeway2 = editFreeway()
-        self.editFreeway3 = editFreeway()
-        self.editFreeway4 = editFreeway()
-        self.editFreeway5 = editFreeway()
+        self.editFreeway = editFreeway()
 
         self.editIntersection1 = editIntersection()
         self.editIntersection2 = editIntersection()
@@ -111,30 +122,17 @@ class MainApp(QWidget):
         self.fmain.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainScreen))
 
         #Edit Freeway
-        self.fmain.Fway_1_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway1))
-        # if self.fmain.Fway_1_bttn.clicked:
-        #     print(self.fmain.NumFwaySections_spinbx)
-        self.editFreeway1.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
-        self.fmain.Fway_2_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway2))
-        self.editFreeway2.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
-        self.fmain.Fway_3_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway3))
-        self.editFreeway3.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
-        self.fmain.Fway_4_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway4))
-        self.editFreeway4.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
-        self.fmain.Fway_5_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editFreeway5))
-        self.editFreeway5.general_settings_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
-        self.fmain.AllowCollisions_chkbx.toggled.connect(self.print_debug)
+        self.fmain.Fway_1_bttn.clicked.connect(lambda: self.changeFreewayLanes(1))
+        self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
+        self.fmain.Fway_2_bttn.clicked.connect(lambda: self.changeFreewayLanes(2))
+        self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
+        self.fmain.Fway_3_bttn.clicked.connect(lambda: self.changeFreewayLanes(3))
+        self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
+        self.fmain.Fway_4_bttn.clicked.connect(lambda: self.changeFreewayLanes(4))
+        self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
+        self.fmain.Fway_5_bttn.clicked.connect(lambda: self.changeFreewayLanes(5))
+        self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
 
-        """if self.fmain.AllowCollisions_chkbx.isChecked() == True:
-            self.print_debug()
-        elif self.fmain.AllowCollisions_chkbx.isChecked() == False:
-            self.print_debug()"""
-        """
-        if self.fmain.AllowCollisions_chkbx.isChecked() == True:
-            self.print_debug
-        """
-
-       
         #Intersection
         self.mainScreen.Instcn_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
         self.mainIntersection.back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainScreen))
@@ -164,11 +162,7 @@ class MainApp(QWidget):
         self.stack.addWidget(self.mainScreen)
         self.stack.addWidget(self.mainIntersection)
         self.stack.addWidget(self.fmain)
-        self.stack.addWidget(self.editFreeway1)
-        self.stack.addWidget(self.editFreeway2)
-        self.stack.addWidget(self.editFreeway3)
-        self.stack.addWidget(self.editFreeway4)
-        self.stack.addWidget(self.editFreeway5)
+        self.stack.addWidget(self.editFreeway)
         self.stack.addWidget(self.editIntersection1)
         self.stack.addWidget(self.editIntersection2)
         self.stack.addWidget(self.editIntersection3)
@@ -185,6 +179,7 @@ class MainApp(QWidget):
         self.stack.show()
 
 if __name__ == "__main__":
+    print('Start')
     app = QApplication(sys.argv)
     x = MainApp()
     sys.exit(app.exec())
