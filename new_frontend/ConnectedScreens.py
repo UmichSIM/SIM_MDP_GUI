@@ -64,6 +64,18 @@ class editFreeway(QMainWindow,Ui_EditFreeway):
         self.show()
         
 class editIntersection(QMainWindow, Ui_SingleIntersection):
+    def set(self, intersectionNum):
+        subject_lane_vehicle = intersection_dict['intersection' + str(intersectionNum)]['subject_lane_vehicles']
+        ahead_lane_vehicle = intersection_dict['intersection' + str(intersectionNum)]['ahead_lane_vehicles']
+        right_lane_vehicle = intersection_dict['intersection' + str(intersectionNum)]['right_lane_vehicles']
+        left_lane_vehicle = intersection_dict['intersection' + str(intersectionNum)]['left_lane_vehicles']
+        traffic_light1 = intersection_dict['intersection' + str(intersectionNum)]['traffic_light1']
+        traffic_light2 = intersection_dict['intersection' + str(intersectionNum)]['traffic_light2']
+        traffic_light3 = intersection_dict['intersection' + str(intersectionNum)]['traffic_light3']
+        traffic_light4 = intersection_dict['intersection' + str(intersectionNum)]['traffic_light4']
+
+        print('intersection number: ', intersectionNum)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -93,6 +105,10 @@ class MainApp(QWidget):
         self.editFreeway.set(laneNum)
         return
 
+    def changeIntersections(self, intersectionNum):
+        self.self.stack.setCurrentWidget(self.editIntersection)
+        self.editIntersection.set(intersectionNum)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -103,10 +119,7 @@ class MainApp(QWidget):
 
         self.editFreeway = editFreeway()
 
-        self.editIntersection1 = editIntersection()
-        self.editIntersection2 = editIntersection()
-        self.editIntersection3 = editIntersection()
-        self.editIntersection4 = editIntersection()
+        self.editIntersection = editIntersection()
 
         self.Traffic1 = Traffic()
         self.Traffic2 = Traffic()
@@ -138,13 +151,13 @@ class MainApp(QWidget):
         self.mainIntersection.back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainScreen))
 
         #Edit Intersection
-        self.mainIntersection.intersectionLane_1_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editIntersection1))
+        self.mainIntersection.intersectionLane_1_bttn.clicked.connect(lambda: self.changeIntersections(1))
         self.editIntersection1.pushButton.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
-        self.mainIntersection.intersectionLane_2_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editIntersection2))
+        self.mainIntersection.intersectionLane_2_bttn.clicked.connect(lambda: self.changeIntersections(2))
         self.editIntersection2.pushButton.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
-        self.mainIntersection.intersectionLane_3_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editIntersection3))
+        self.mainIntersection.intersectionLane_3_bttn.clicked.connect(lambda: self.changeIntersections(3))
         self.editIntersection3.pushButton.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
-        self.mainIntersection.intersectionLane_4_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.editIntersection4))
+        self.mainIntersection.intersectionLane_4_bttn.clicked.connect(lambda: self.changeIntersections(4))
         self.editIntersection4.pushButton.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
         
         #Traffic
