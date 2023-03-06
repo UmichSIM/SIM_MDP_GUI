@@ -10,8 +10,9 @@ import os
 import carla
 import datetime
 import math
+import csv
+import time
 from .module_helper import get_actor_display_name
-
 
 class FadingText(object):
 
@@ -91,6 +92,18 @@ class HUD(object):
             HUD.__instance = self
         else:
             raise Exception("Error: Reinitialization of HUD")
+        
+        with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
+            print("[INFO] Initial Ouput")
+            w = csv.writer(f)
+            
+            timestamp = time.time()
+            value = datetime.datetime.fromtimestamp(timestamp)
+            date_str = value.strftime('%Y-%m-%d %H:%M:%S')
+            
+            w.writerow([])
+            w.writerow([f"DATE: {date_str}"])
+            w.writerow(["Time", "Ego Position X", "Ego Position Y"])
 
     @staticmethod
     def get_instance():
@@ -152,6 +165,16 @@ class HUD(object):
         # # f.write(str(round(world.imu_sensor.accelerometer[0], 2)))
         # f.write('\n')
         # f.close()
+        
+        with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
+            w = csv.writer(f)
+            timestamp = time.time()
+            value = datetime.datetime.fromtimestamp(timestamp)
+            date_str = value.strftime('%Y-%m-%d %H:%M:%S')
+            w.writerow([date_str, t.location.x, t.location.y])
+
+
+
         if isinstance(c, carla.VehicleControl):
             self._info_text += [('Throttle:', c.throttle, 0.0, 1.0),
                                 ('Steer:', c.steer, -1.0, 1.0),

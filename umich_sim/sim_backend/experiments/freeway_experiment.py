@@ -26,6 +26,7 @@ class FreewayExperiment(Experiment):
     MAP = "Town04"
 
     def __init__(self, headless: bool) -> None:
+        print("Init!")
         super(FreewayExperiment, self).__init__(headless)
         self.experiment_type = ExperimentType.FREEWAY
 
@@ -39,7 +40,7 @@ class FreewayExperiment(Experiment):
         :param configuration: a Dictionary containing the user defined settings for the experiment
         :return: None
         """
-
+        print("Initialize Experiment")
         # Add the managed sections to the Experiment
         first_section = FreewaySection([
             self.map.get_waypoint(x.location)
@@ -66,4 +67,5 @@ class FreewayExperiment(Experiment):
                 vehicle.draw_waypoints()
 
     def update_control(self, vehicle: Vehicle) -> None:
+        print("Update Control")
         freeway_control(vehicle)
