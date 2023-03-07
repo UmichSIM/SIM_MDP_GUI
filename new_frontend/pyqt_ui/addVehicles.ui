@@ -159,7 +159,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_4">
+  <widget class="QLabel" name="ego_label">
    <property name="geometry">
     <rect>
      <x>1060</x>
@@ -198,10 +198,10 @@
   <zorder>horizontalLayoutWidget_2</zorder>
   <zorder>back_bttn</zorder>
   <zorder>title</zorder>
-  <zorder>label_4</zorder>
+  <zorder>ego_label</zorder>
  </widget>
  <resources>
-  <include location="static_images.qrc"/>
+  <include location="staticImages.qrc"/>
  </resources>
  <connections/>
 </ui>

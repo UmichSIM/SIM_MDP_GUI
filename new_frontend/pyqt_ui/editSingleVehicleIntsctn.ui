@@ -673,7 +673,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="static_images.qrc"/>
+  <include location="staticImages.qrc"/>
  </resources>
  <connections/>
 </ui>

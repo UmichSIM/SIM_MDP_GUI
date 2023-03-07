@@ -239,8 +239,8 @@
   </widget>
  </widget>
  <resources>
-  <include location="oop.qrc"/>
-  <include location="static_images.qrc"/>
+  <include location="staticImages.qrc"/>
+  <include location="staticImages.qrc"/>
  </resources>
  <connections/>
 </ui>

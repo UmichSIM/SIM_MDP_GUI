@@ -12,15 +12,11 @@ pyuic6 input.ui -o output.py
 
 ### TODO:   
 1. Figure out how to get the images back 
-2. Make sure all of the buttons are properly names in a meaningful way 
-3. Regenerate screens and convert to python files 
-4. DONE -- Figure out how to use config so we can reuse screens 
-5. DONE -- Devise a way to send information to backend
-    - We decided to do global structures (dictionary) for 4 & 5 
-6. DONE(kinda) -- Find a way to allow unlimited number of freeway sections in Config.py
-7. Fix previously repeated screens to share 1 instans.
-8. Add remaining screens.
-9. Have widgets load values currently in config.py when changing screens.
-10. Split the different screen classes in ConnectedScreens to different files.
-11. Save and Load Config.py to and from a saved file.
+2. DONE for Intersection -- Make sure all of the buttons are properly names in a meaningful way 
+3. DONE(kinda) -- Find a way to allow unlimited number of freeway sections in Config.py
+4. Add and connect remaining screens.
+5. Have widgets load values currently in config.py when changing screens. -- (do we need this??????)
+6. Split the different screen classes in ConnectedScreens to different files.
+7. Save and Load Config.py to and from a saved file. (optional...)
+8. IN PROGRESS -- Update Config file when values change for all checkboxes, spinboxes, dropbox, etc..
 ### 

@@ -8,7 +8,6 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from PyQt6.QtWidgets import QWidget, QApplication, QMainWindow, QStackedWidget, QHBoxLayout
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -87,13 +86,13 @@ class Ui_Form(object):
         self.trafficLight_bttn.setObjectName("trafficLight_bttn")
         self.horizontalLayout_6.addWidget(self.trafficLight_bttn)
         self.verticalLayout.addLayout(self.horizontalLayout_6)
-        self.pushButton = QtWidgets.QPushButton(Form)
-        self.pushButton.setGeometry(QtCore.QRect(40, 100, 100, 50))
-        self.pushButton.setMinimumSize(QtCore.QSize(100, 50))
+        self.back_bttn = QtWidgets.QPushButton(Form)
+        self.back_bttn.setGeometry(QtCore.QRect(40, 100, 100, 50))
+        self.back_bttn.setMinimumSize(QtCore.QSize(100, 50))
         font = QtGui.QFont()
         font.setPointSize(20)
-        self.pushButton.setFont(font)
-        self.pushButton.setObjectName("pushButton")
+        self.back_bttn.setFont(font)
+        self.back_bttn.setObjectName("back_bttn")
         self.lane_1_bttn = QtWidgets.QPushButton(Form)
         self.lane_1_bttn.setGeometry(QtCore.QRect(1000, 330, 40, 40))
         self.lane_1_bttn.setMinimumSize(QtCore.QSize(40, 40))
@@ -120,7 +119,7 @@ class Ui_Form(object):
         self.label.raise_()
         self.intersection_title.raise_()
         self.verticalLayoutWidget.raise_()
-        self.pushButton.raise_()
+        self.back_bttn.raise_()
         self.lane_1_bttn.raise_()
         self.lane_2_bttn.raise_()
         self.lane_3_bttn.raise_()
@@ -128,6 +127,7 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
@@ -138,11 +138,9 @@ class Ui_Form(object):
         self.vehicles_bttn.setText(_translate("Form", "Setting"))
         self.trafficLight_txt.setText(_translate("Form", "Traffic Light"))
         self.trafficLight_bttn.setText(_translate("Form", "Setting"))
-        self.pushButton.setText(_translate("Form", "Back"))
+        self.back_bttn.setText(_translate("Form", "Back"))
         self.lane_1_bttn.setText(_translate("Form", "1"))
         self.lane_2_bttn.setText(_translate("Form", "2"))
         self.lane_3_bttn.setText(_translate("Form", "3"))
         self.lane_4_bttn.setText(_translate("Form", "4"))
         self.label.setText(_translate("Form", "<html><head/><body><p><img src=\":/intersection/images/intersection.jpg\" width=\"500\"/></p></body></html>"))
-
-

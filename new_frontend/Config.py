@@ -28,7 +28,7 @@ freeway_dict = {
 }
 
 intersection_dict = {
-    "allow_collision": False,
+    "allow_collision": 0, # Qt:CheckState enum
     "num_freeway_section": 1,
     "max_speed": 0.0,
     "safety_distance": 0.0,
@@ -37,60 +37,60 @@ intersection_dict = {
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     },
     "intersection2": {
         "subject_lane_vehicles": [],
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     },
     "intersection3": {
         "subject_lane_vehicles": [],
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     },
     "intersection4": {
         "subject_lane_vehicles": [],
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     },
     "intersection5": {
         "subject_lane_vehicles": [],
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     },
     "intersection6": {
         "subject_lane_vehicles": [],
         "left_lane_vehicles": [],
         "ahead_lane_vehicles": [],
         "right_lane_vehicles": [],
-        "traffic_light1": [],
-        "traffic_light2": [],
-        "traffic_light3": [],
-        "traffic_light4": [],
+        "traffic_light1": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light2": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light3": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
+        "traffic_light4": {"red_light_duration": 0, "yellow_light_duration": 0, "green_light_duration": 0},
     }
 }
 
@@ -112,6 +112,19 @@ vehicles_dict = {
     "position": "", #Position of vehicle with repect to the ego vehicle -- lead, ego, follow
 }
 """
+
+traffic_light_dict = {
+    "red_light_duration": 0,
+    "yellow_light_duration": 0,
+    "green_light_duration": 0
+}
+
+vehicles_dict = {
+    "gap": 0.0,
+    "model": "",
+    "color": (0,0,0),
+    "position": "", #Position of vehicle with repect to the ego vehicle -- lead, ego, follow
+}
 
 # import Config.py
 

@@ -181,7 +181,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="back_bttn">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -321,14 +321,14 @@
   <zorder>label</zorder>
   <zorder>intersection_title</zorder>
   <zorder>verticalLayoutWidget</zorder>
-  <zorder>pushButton</zorder>
+  <zorder>back_bttn</zorder>
   <zorder>lane_1_bttn</zorder>
   <zorder>lane_2_bttn</zorder>
   <zorder>lane_3_bttn</zorder>
   <zorder>lane_4_bttn</zorder>
  </widget>
  <resources>
-  <include location="static_images.qrc"/>
+  <include location="staticImages.qrc"/>
  </resources>
  <connections/>
 </ui>
