@@ -29,7 +29,7 @@ freeway_dict = {
 
 intersection_dict = {
     "allow_collision": 0, # Qt:CheckState enum
-    "num_freeway_section": 1,
+    "num_int_section": 1,
     "max_speed": 0.0,
     "safety_distance": 0.0,
     "intersection1": {
