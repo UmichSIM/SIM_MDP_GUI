@@ -69,6 +69,8 @@ class HUD(object):
     Singleton class HUD for gui controls
     """
     __instance = None
+    last_update_time = time.time()
+    data_collect_interval = 1
 
     def __init__(self, width, height):
         self.dim = (width, height)
@@ -165,13 +167,14 @@ class HUD(object):
         # # f.write(str(round(world.imu_sensor.accelerometer[0], 2)))
         # f.write('\n')
         # f.close()
-        
-        with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
-            w = csv.writer(f)
-            timestamp = time.time()
-            value = datetime.datetime.fromtimestamp(timestamp)
-            date_str = value.strftime('%Y-%m-%d %H:%M:%S')
-            w.writerow([date_str, t.location.x, t.location.y])
+        if time.time() - self.last_update_time >= self.data_collect_interval:
+            self.last_update_time = time.time()
+            with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
+                w = csv.writer(f)
+                timestamp = time.time()
+                value = datetime.datetime.fromtimestamp(timestamp)
+                date_str = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+                w.writerow([date_str, t.location.x, t.location.y])
 
 
 
