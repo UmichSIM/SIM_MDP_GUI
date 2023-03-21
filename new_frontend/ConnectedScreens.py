@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import sys
+import json
 from Config import freeway_dict, intersection_dict
 
 #Main windows
@@ -75,20 +76,23 @@ class fmain(QMainWindow, Ui_FullDisplay):
 
 
 class editFreeway(QMainWindow, Ui_EditFreeway):
+    curLane = 1
     def get(self, laneNum): 
-        # freeway_dict['lane'+str(laneNum)]["subject_lane_vehicle"] = self.
-        # freeway_dict['lane'+str(laneNum)]["left_lane_vehicle"] = self.
-        return
+        freeway_dict['lane'+str(laneNum)]["subject_lane_vehicle"] = self.section_id_spin.currentText()
+        freeway_dict['lane'+str(laneNum)]["left_lane_vehicle"] = self.section_id_spin.currentText()
+        #Will be executed before switching screens, done by retaining current laneNum
     
     def set(self, laneNum):
         subjectLaneVehicle = freeway_dict['lane'+str(laneNum)]["subject_lane_vehicle"]
         leftLaneVehicle = freeway_dict['lane'+str(laneNum)]['left_lane_vehicle']
-
+        self.section_id_spin.setCurrentText(subjectLaneVehicle)
         print('Lane Number:', laneNum)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        for i in range (1,6):
+            freeway_dict['lane'+str(i)]["subject_lane_vehicle"] = self.section_id_spin.currentText()
         self.show()
         
 class editIntersection(QMainWindow, Ui_SingleIntersection):
@@ -138,12 +142,15 @@ class addVehicleIntersection(QMainWindow, Ui_AddVehicleSettings):
         
 class MainApp(QWidget):
     def changeFreewayLanes(self, laneNum):
-        self.stack.setCurrentWidget(self.editFreeway)
+        self.editFreeway.get(self.editFreeway.curLane)
+        self.editFreeway.curLane = laneNum
         self.editFreeway.set(laneNum)
+        self.stack.setCurrentWidget(self.editFreeway)
         return
     
     def editFreewayLaneVehicle(self, laneNum):
         self.stack.setCurrentWidget(self.addVehicleFreeway)
+
         #Add input to config file
         return
 
@@ -247,3 +254,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     x = MainApp()
     sys.exit(app.exec())
+
