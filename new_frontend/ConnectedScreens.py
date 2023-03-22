@@ -16,10 +16,12 @@ from generated_ui.EditFreeway import Ui_Widget as Ui_EditFreeway
 from generated_ui.AddVehicles import Ui_Widget as Ui_AddVehicleFreeway
 
 #Intersection 
-from generated_ui.EditSingleVehicleIntsctn import Ui_EditSingleVehicleInsctn as Ui_IntersectionSpawnVehicle
+from generated_ui.EditSingleVehicleIntsctn import Ui_EditSingleVehicleInsctn as Ui_EditSingleVehicleInsctn
 from generated_ui.SingleIntersection import Ui_Form as Ui_SingleIntersection
 from generated_ui.AddVehicleIntersection import Ui_Form as Ui_AddVehicleSettings
 from generated_ui.TrafficLightSettings import Ui_TrafficLightSettings as Ui_Traffic
+from generated_ui.TrafficLightSettingPopUp import Ui_TrafficLightSettingPopUp as Ui_TrafficLightSettingPopUp
+from generated_ui.AddVehiclePopUp import Ui_addVehiclePopUp as Ui_addVehiclePopUp
 
 #Other 
 from PyQt6.QtWidgets import QWidget, QApplication, QMainWindow, QStackedWidget, QHBoxLayout
@@ -139,6 +141,24 @@ class addVehicleIntersection(QMainWindow, Ui_AddVehicleSettings):
         super().__init__(parent)
         self.setupUi(self)
         self.show()
+
+class trafficLightSettingPopUp(QMainWindow, Ui_TrafficLightSettingPopUp):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.show()
+
+class addVehiclePopUp(QMainWindow, Ui_addVehiclePopUp):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.show()
+
+class editSingleVehicleIntsctn(QMainWindow, Ui_EditSingleVehicleInsctn):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.show()
         
 class MainApp(QWidget):
     def changeFreewayLanes(self, laneNum):
@@ -176,6 +196,11 @@ class MainApp(QWidget):
         self.Traffic2 = Traffic()
         self.Traffic3 = Traffic()
         self.Traffic4 = Traffic()
+
+        self.trafficLightSettingPopUp = trafficLightSettingPopUp()
+        self.addVehiclePopUpTraffic = addVehiclePopUp()
+        self.addVehiclePopUpFreeway = addVehiclePopUp()
+        self.editSingleVehicleIntsctn = editSingleVehicleIntsctn()
         
 
         self.stack = QStackedWidget()
@@ -197,9 +222,17 @@ class MainApp(QWidget):
         self.fmain.Fway_5_bttn.clicked.connect(lambda: self.changeFreewayLanes(5))
         self.editFreeway.back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.fmain))
 
-        #Add Vehicle Freeway
+        #Edit Freeway Section
         self.editFreeway.add_vehicles_btn.clicked.connect(lambda: self.editFreewayLaneVehicle(1))
         self.addVehicleFreeway.back_bttn.clicked.connect(lambda: self.changeFreewayLanes(1))
+
+
+        #Add Freeway Vehicle
+        self.addVehicleFreeway.addSubjectVehicle_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpFreeway))
+        self.addVehiclePopUpFreeway.buttonBox.clicked.connect(lambda: self.stack.setCurrentWidget(self.addVehicleFreeway))
+        self.addVehicleFreeway.addLeftLaneVehicle_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpFreeway))
+        self.addVehiclePopUpFreeway.buttonBox.clicked.connect(lambda: self.stack.setCurrentWidget(self.addVehicleFreeway))
+
         
         #Intersection
         self.mainScreen.Instcn_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.mainIntersection))
@@ -218,6 +251,28 @@ class MainApp(QWidget):
         #Add Vehicle Intersection
         self.editIntersection.vehicles_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehicleIntersection))
         self.addVehicleIntersection.back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(1)))
+
+        #Add Vehicle Inersection
+        self.addVehicleIntersection.addSubject_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpTraffic))
+        self.addVehiclePopUpTraffic.buttonBox.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehicleIntersection))
+        self.addVehicleIntersection.addAhead_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpTraffic))
+        self.addVehiclePopUpTraffic.buttonBox.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehicleIntersection))
+        self.addVehicleIntersection.addLeft_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpTraffic))
+        self.addVehiclePopUpTraffic.buttonBox.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehicleIntersection))
+        self.addVehicleIntersection.addRight_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehiclePopUpTraffic))
+        self.addVehiclePopUpTraffic.buttonBox.clicked.connect(lambda:self.stack.setCurrentWidget(self.addVehicleIntersection))
+
+
+        #Edit Single Vehicle Intersection
+        self.editIntersection.lane_1_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.editSingleVehicleIntsctn))
+        self.editSingleVehicleIntsctn.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(1)))
+        self.editIntersection.lane_2_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.editSingleVehicleIntsctn))
+        self.editSingleVehicleIntsctn.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(2)))
+        self.editIntersection.lane_3_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.editSingleVehicleIntsctn))
+        self.editSingleVehicleIntsctn.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(3)))
+        self.editIntersection.lane_4_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.editSingleVehicleIntsctn))
+        self.editSingleVehicleIntsctn.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(4)))
+
         
         #Traffic
         self.editIntersection.trafficLight_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.Traffic1))
@@ -228,6 +283,10 @@ class MainApp(QWidget):
         self.Traffic3.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(1)))
         self.editIntersection.trafficLight_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.Traffic4))
         self.Traffic4.Back_bttn.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(1)))
+
+        #Traffic Light Pop Up
+        self.editIntersection.trafficLight_bttn.clicked.connect(lambda:self.stack.setCurrentWidget(self.trafficLightSettingPopUp))
+        self.trafficLightSettingPopUp.buttonBox.clicked.connect(lambda: self.stack.setCurrentWidget(self.changeIntersections(1)))
 
 
         # Add All Screens to Stack
@@ -242,7 +301,10 @@ class MainApp(QWidget):
         self.stack.addWidget(self.Traffic3)
         self.stack.addWidget(self.Traffic4)
         self.stack.addWidget(self.addVehicleIntersection)
-    
+        self.stack.addWidget(self.trafficLightSettingPopUp)
+        self.stack.addWidget(self.addVehiclePopUpTraffic)
+        self.stack.addWidget(self.addVehiclePopUpFreeway)
+        self.stack.addWidget(self.editSingleVehicleIntsctn)
 
         # Set Initial Settings
         self.stack.resize(800,800)

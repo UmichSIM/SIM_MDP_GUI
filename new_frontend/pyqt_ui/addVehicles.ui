@@ -61,7 +61,7 @@
      </spacer>
     </item>
     <item>
-     <widget class="QPushButton" name="addVehicle_2">
+     <widget class="QPushButton" name="addSubjectVehicle_bttn">
       <property name="text">
        <string>Add Vehicle</string>
       </property>
@@ -105,7 +105,7 @@
      </spacer>
     </item>
     <item>
-     <widget class="QPushButton" name="addVehicle_bttn">
+     <widget class="QPushButton" name="addLeftLaneVehicle_bttn">
       <property name="text">
        <string>Add Vehicle</string>
       </property>
