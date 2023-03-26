@@ -2,19 +2,21 @@
 Implementation of the configuration class according to "Configuration Class Proposal"
 """
 
-from typing import *
+from typing import TypedDict, Tuple, List, Dict
 from enum import Enum
 from dataclasses import dataclass
 
 # ENUMs, for..
 # Vehicle
-Type = Enum('Type', ['EGO', 'LEAD', 'FOLLOW',
-                     'AHEAD_LEAD', 'AFTER_FOLLOW', 'ADJACENT_LEAD', 'ADJACENT_FOLLOW', 'AHEAD_ADJACENT_LEAD', 'SPEED_BARRIER'])
+VehicleType = Enum('Type', ['EGO', 'LEAD', 'FOLLOW',
+                     'AHEAD_LEAD', 'AFTER_FOLLOW', 'ADJACENT_LEAD', 'ADJACENT_FOLLOW',
+                            'AHEAD_ADJACENT_LEAD', 'SPEED_BARRIER'])
 # Vehicle (intersection)
 Direction = Enum('Direction', ['STRAIGHT', 'LEFT', 'RIGHT'])
-Stop = Enum('Stop', ['NORMAL_STOP, ABRUPT_STOP', 'SLOW_INTRUDE', 'RUN_RED_LIGHT'])
+Stop = Enum('Stop', ['NORMAL_STOP', 'ABRUPT_STOP', 'SLOW_INTRUDE', 'RUN_RED_LIGHT'])
 # Vehicle (freeway)
-Behavior = Enum('Behavior', ['KEEP_SAME_SPEED', 'AC_OR_DECELERATE', 'CHANGE_LANE', 'PULL_OFF_STOP', 'ENTER_ADJACENT'])
+Behavior = Enum('Behavior', ['KEEP_SAME_SPEED', 'AC_OR_DECELERATE', 'CHANGE_LANE',
+                             'PULL_OFF_STOP', 'ENTER_ADJACENT'])
 # Others
 Task = Enum('Task', ['INTERSECTION', 'FREEWAY'])
 Weather = Enum('Weather', ['SUNNY', 'CLOUDY', 'RAINY', 'SNOWY'])
@@ -23,16 +25,23 @@ TrafficLightColor = Enum('TrafficLightColor', ['GREEN', 'YELLOW', 'RED'])
 TrafficLightTrigger = Enum('TrafficLightTrigger', ['TIME', 'DISTANCE'])
 
 # Vehicle.exp_settings structure in TypedDict
-class VehicleExpSettingsDict(TypedDict):
-    # applies to all types of experiments?
-    type: Type
-    # specific to intersection experiment
+@dataclass
+class VehicleExpSettings:
+    """Vehicle experiment-specific settings, applied to all types of experiments."""
+    vehicle_type: VehicleType
+
+@dataclass
+class VehicleExpSettingsIntersection(VehicleExpSettings):
+    """Vehicle experiment-specific settings, applied to intersection experiment."""
     follow_traffic_rule: bool
     direction: Direction
     stop: Stop
-    # specific to freeway experiment
-    behavior: Behavior
 
+@dataclass
+class VehicleExpSettingsFreeway(VehicleExpSettings):
+    """Vehicle experiment-specific settings, applied to freeway experiment."""
+    behavior: Behavior
+    
 @dataclass
 class Vehicle:
     location: int  # integer that represents a specific location in a freeway or intersection
@@ -41,7 +50,7 @@ class Vehicle:
     color: Tuple[int, int, int]  # RGB
     speed: float
     acceleration: float
-    exp_settings: VehicleExpSettingsDict  # experiment-specific setting variables
+    exp_settings: VehicleExpSettings  # experiment-specific setting variables
 
 @dataclass
 class TrafficLight:
