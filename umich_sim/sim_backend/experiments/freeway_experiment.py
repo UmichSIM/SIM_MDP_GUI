@@ -7,7 +7,7 @@ Summary: The FreewayExperiment class is a class that derives from the base Exper
 """
 
 # Local Imports
-from umich_sim.sim_backend.helpers import VehicleType, ExperimentType
+from umich_sim.sim_config import VehicleType, Task
 from umich_sim.sim_backend.vehicle_control import freeway_control
 from umich_sim.sim_backend.carla_modules import Vehicle
 from .experiment import Experiment
@@ -27,7 +27,7 @@ class FreewayExperiment(Experiment):
 
     def __init__(self, headless: bool) -> None:
         super(FreewayExperiment, self).__init__(headless)
-        self.experiment_type = ExperimentType.FREEWAY
+        self.experiment_type = Task.FREEWAY
 
     def initialize_experiment(self,
                               configuration: Dict[int,

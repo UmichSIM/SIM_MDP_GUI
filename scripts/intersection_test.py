@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from umich_sim.sim_backend.experiments import IntersectionExperiment
-from umich_sim.sim_backend.helpers import VehicleType
+from umich_sim.sim_config import VehicleType
 import hydra
 from hydra.conf import ConfigStore
 from omegaconf import OmegaConf

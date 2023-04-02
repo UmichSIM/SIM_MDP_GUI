@@ -8,9 +8,9 @@ Summary: The Vehicle class represents a single vehicle in the CARLA simulation e
 """
 
 # Local Imports
-from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
-                                           to_numpy_vector, rotate_vector,
+from umich_sim.sim_backend.helpers import (to_numpy_vector, rotate_vector,
                                            ORANGE, RED)
+from umich_sim.sim_config import (VehicleType, WorldDirection)
 from .world import World
 
 # Library Imports

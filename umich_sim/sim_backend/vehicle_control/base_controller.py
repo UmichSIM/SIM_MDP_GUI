@@ -8,8 +8,8 @@ Summary: The Controller class is a static base class that implements control ove
 """
 
 # Local Imports
-from umich_sim.sim_backend.helpers import (to_numpy_vector, smooth_path,
-                                           VehicleType)
+from umich_sim.sim_backend.helpers import (to_numpy_vector, smooth_path)
+from umich_sim.sim_config import VehicleType
 from umich_sim.sim_backend.carla_modules import Vehicle
 
 # Library Imports

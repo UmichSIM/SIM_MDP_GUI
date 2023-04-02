@@ -14,8 +14,8 @@ from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle, EgoVehicle
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
 from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoController)
 from umich_sim.sim_backend.sections import Section
-from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType,
-                                           smooth_path, project_forward)
+from umich_sim.sim_backend.helpers import (smooth_path, project_forward)
+from umich_sim.sim_config import Task, VehicleType
 from umich_sim.sim_config import ConfigPool, Config
 from umich_sim.wizard import Wizard
 
@@ -34,7 +34,7 @@ class Experiment(metaclass=ABCMeta):
     MAP = "Town05"
 
     # The Type of Experiment that is currently running
-    experiment_type: ExperimentType = None
+    experiment_type: Task = None
 
     def __init__(self, headless: bool):
 
@@ -82,7 +82,7 @@ class Experiment(metaclass=ABCMeta):
                                                pygame.HWSURFACE | pygame.DOUBLEBUF)
         try:
             client = carla.Client(config.server_addr, config.carla_port)
-            client.set_timeout(2.0)
+            client.set_timeout(4.0)
 
             hud = HUD(*config.client_resolution)
             world: World = World(client, hud, config.car_filter, self.MAP)
