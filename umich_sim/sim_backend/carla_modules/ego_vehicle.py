@@ -3,12 +3,11 @@ from time import time
 import carla
 from umich_sim.wizard.inputs import ClientMode, InputPacket, InputDevice, create_input_device
 from umich_sim.sim_config import ConfigPool, Config
-# from umich_sim.sim_backend.helpers import VehicleType
 from .vehicle import Vehicle
 from .hud import HUD
-from umich_sim.sim_backend.helpers import (WorldDirection, VehicleType,
-                                           to_numpy_vector, rotate_vector,
+from umich_sim.sim_backend.helpers import (to_numpy_vector, rotate_vector,
                                            ORANGE, RED)
+from umich_sim.sim_config import VehicleType
 from pygame import mixer
 from datetime import datetime, timedelta
 

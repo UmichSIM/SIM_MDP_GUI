@@ -26,23 +26,6 @@ ORANGE = carla.Color(252, 177, 3)
 RED = carla.Color(255, 0, 0)
 
 
-# Enumerated class specifying the different types of Vehicles
-class VehicleType(IntEnum):
-    EGO = 0
-    EGO_MANUAL_STEER = auto()
-    EGO_FULL_MANUAL = auto()
-    LEAD = auto()
-    FOLLOWER = auto()
-    GENERIC = auto()
-
-
-# Enumerated class specifying the different directions in the World
-class WorldDirection(IntEnum):
-    FORWARD = 0
-    BACKWARD = auto()
-    LEFT = auto()
-    RIGHT = auto()
-
 
 # TODO: REMOVE THIS SHIT
 class ExperimentType(IntEnum):

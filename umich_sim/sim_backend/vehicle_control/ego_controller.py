@@ -11,7 +11,7 @@ Summary: The EgoController class inherits from the base Controller class. It imp
 from .base_controller import VehicleController
 from .freeway_controller import freeway_control
 from umich_sim.sim_backend.carla_modules import Vehicle
-from umich_sim.sim_backend.helpers import VehicleType, ExperimentType
+from umich_sim.sim_config import VehicleType, Task
 from umich_sim.wizard import Wizard
 
 # Library Imports
@@ -23,7 +23,7 @@ class EgoController:
 
     @staticmethod
     def update_control(current_vehicle: Vehicle,
-                       experiment_type: ExperimentType) -> None:
+                       experiment_type: Task) -> None:
         """
         Implementation of the update_control class for the Ego Vehicle type
 
@@ -39,7 +39,7 @@ class EgoController:
 
         # If the Ego vehicle is not manually driven, apply automatic control
         if current_vehicle.type_id == VehicleType.EGO:
-            if experiment_type == ExperimentType.FREEWAY:
+            if experiment_type == Task.FREEWAY:
                 freeway_control(current_vehicle)
             else:
                 raise Exception(

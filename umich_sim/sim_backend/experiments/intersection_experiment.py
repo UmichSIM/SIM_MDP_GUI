@@ -11,7 +11,7 @@ Summary: The IntersectionExperiment class is a class that derives from the base 
 from .experiment import Experiment
 from umich_sim.sim_backend.sections import Intersection
 from umich_sim.sim_backend.vehicle_control import intersection_control
-from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType, project_forward, smooth_path)
+from umich_sim.sim_config import Task
 from umich_sim.sim_backend.carla_modules import World, Vehicle
 from umich_sim.sim_config import ConfigPool, Config
 
@@ -24,7 +24,7 @@ class IntersectionExperiment(Experiment):
 
     def __init__(self, headless: bool) -> None:
         super(IntersectionExperiment, self).__init__(headless)
-        self.experiment_type = ExperimentType.INTERSECTION
+        self.experiment_type = Task.INTERSECTION
 
     def initialize_experiment(self, configuration: Dict[int, Dict[int, str]] = None) -> None:
         """

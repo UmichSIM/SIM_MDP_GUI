@@ -10,7 +10,7 @@ Summary: The FreewayController class inherits from the base Controller class. It
 
 # Local Imports
 from .base_controller import VehicleController
-from umich_sim.sim_backend.helpers import VehicleType
+from umich_sim.sim_config import VehicleType
 from umich_sim.sim_backend.carla_modules import Vehicle
 
 # Library Imports
