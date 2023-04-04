@@ -12,6 +12,8 @@ import datetime
 import math
 import csv
 import time
+import threading
+from threading import Thread
 from .module_helper import get_actor_display_name
 
 class FadingText(object):
@@ -70,7 +72,9 @@ class HUD(object):
     """
     __instance = None
     last_update_time = time.time()
-    data_collect_interval = 1
+    data_collect_interval = 0.03
+    data_thread = None
+    vehicle = None
 
     def __init__(self, width, height):
         self.dim = (width, height)
@@ -95,17 +99,8 @@ class HUD(object):
         else:
             raise Exception("Error: Reinitialization of HUD")
         
-        with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
-            print("[INFO] Initial Ouput")
-            w = csv.writer(f)
-            
-            timestamp = time.time()
-            value = datetime.datetime.fromtimestamp(timestamp)
-            date_str = value.strftime('%Y-%m-%d %H:%M:%S')
-            
-            w.writerow([])
-            w.writerow([f"DATE: {date_str}"])
-            w.writerow(["Time", "Ego Position X", "Ego Position Y"])
+        self.data_thread = Thread(target=self.data_collection)
+        self.data_thread.start()
 
     @staticmethod
     def get_instance():
@@ -125,10 +120,10 @@ class HUD(object):
         self._notifications.tick(world, clock)
         if not self._show_info:
             return
-        vehicle: EgoVehicle = EgoVehicle.get_instance()
-        t = vehicle.get_transform()
-        v = vehicle.get_velocity()
-        c = vehicle.get_control()
+        self.vehicle: EgoVehicle = EgoVehicle.get_instance()
+        t = self.vehicle.get_transform()
+        v = self.vehicle.get_velocity()
+        c = self.vehicle.get_control()
         heading = 'N' if abs(t.rotation.yaw) < 89.5 else ''
         heading += 'S' if abs(t.rotation.yaw) > 90.5 else ''
         heading += 'E' if 179.5 > t.rotation.yaw > 0.5 else ''
@@ -140,7 +135,7 @@ class HUD(object):
         vehicles = world.world.get_actors().filter('vehicle.*')
 
         self._info_text = [
-            'Driver: % 20s' % vehicle.get_driver_name(),
+            'Driver: % 20s' % self.vehicle.get_driver_name(),
             'Server:  % 16.0f FPS' % self.server_fps,
             'Client:  % 16.0f FPS' % clock.get_fps(),
             '',
@@ -167,16 +162,6 @@ class HUD(object):
         # # f.write(str(round(world.imu_sensor.accelerometer[0], 2)))
         # f.write('\n')
         # f.close()
-        if time.time() - self.last_update_time >= self.data_collect_interval:
-            self.last_update_time = time.time()
-            with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
-                w = csv.writer(f)
-                timestamp = time.time()
-                value = datetime.datetime.fromtimestamp(timestamp)
-                date_str = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-                w.writerow([date_str, t.location.x, t.location.y])
-
-
 
         if isinstance(c, carla.VehicleControl):
             self._info_text += [('Throttle:', c.throttle, 0.0, 1.0),
@@ -200,10 +185,10 @@ class HUD(object):
                                            (l.z - t.location.z)**2)
             vehicles = [(distance(x.get_location()), x) for x in vehicles
                         if x.id != vehicle.carla_vehicle.id]
-            for d, vehicle in sorted(vehicles):
+            for d, self.vehicle in sorted(vehicles):
                 if d > 200.0:
                     break
-                vehicle_type = get_actor_display_name(vehicle, truncate=22)
+                vehicle_type = get_actor_display_name(self.vehicle, truncate=22)
                 self._info_text.append('% 4dm %s' % (d, vehicle_type))
 
     def toggle_info(self):
@@ -262,3 +247,30 @@ class HUD(object):
                 v_offset += 18
         self._notifications.render(display)
         self.help.render(display)
+        
+    def data_collection(self):
+        """Collect Data."""
+        with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
+            print("[INFO] Initial Ouput")
+            w = csv.writer(f)
+            
+            timestamp = time.time()
+            value = datetime.datetime.fromtimestamp(timestamp)
+            date_str = value.strftime('%Y-%m-%d %H:%M:%S')
+            
+            w.writerow([])
+            w.writerow([f"DATE: {date_str}"])
+            w.writerow(["Timestamp", "Time", "Ego Position X", "Ego Position Y"])
+            
+        
+        while True: 
+            if time.time() - self.last_update_time >= self.data_collect_interval:
+                self.last_update_time = time.time()
+                if self.vehicle is not None:
+                    t = self.vehicle.get_transform()
+                    with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
+                        w = csv.writer(f)
+                        timestamp = time.time()
+                        value = datetime.datetime.fromtimestamp(timestamp)
+                        date_str = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+                        w.writerow([date_str, str(timestamp) , t.location.x, t.location.y])
