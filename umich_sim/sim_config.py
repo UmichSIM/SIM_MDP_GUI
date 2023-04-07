@@ -129,7 +129,7 @@ class VehicleExpSettings:
 class VehicleExpSettingsIntersection(VehicleExpSettings):
     """Vehicle experiment-specific settings, applied to intersection experiment."""
     follow_traffic_rule: bool
-    # direction: WorldDirection
+    direction: WorldDirection
     stop: Stop
     #sections: List[WorldDirection]
     sections: Dict[int, str]
