@@ -79,15 +79,19 @@ class TrafficLight:
 @dataclass
 class Intersection:
     subject_lane_traffic_light: TrafficLight
-    subject_lane_vehicles: List[Vehicle]
-    left_lane_vehicles: List[Vehicle]
-    right_lane_vehicles: List[Vehicle]
-    ahead_lane_vehicles: List[Vehicle]
+    # subject_lane_vehicles: List[Vehicle]
+    # left_lane_vehicles: List[Vehicle]
+    # right_lane_vehicles: List[Vehicle]
+    # ahead_lane_vehicles: List[Vehicle]
+    # 0: subject_lane, 1: ahead_lane, 2: left_lane, 3: right_lane
+    vehicles: List[List[Vehicle]]
 
 @dataclass
 class Freeway:
-    left_lane_vehicles: List[Vehicle]
-    subject_lane_vehicles: List[Vehicle]
+    # left_lane_vehicles: List[Vehicle]
+    # subject_lane_vehicles: List[Vehicle]
+    # 0: left_lane, 1: subject_lane
+    vehicles: List[List[Vehicle]]
 
 # BASE CLASS
 @dataclass
