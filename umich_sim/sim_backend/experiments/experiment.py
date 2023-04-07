@@ -16,7 +16,7 @@ from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoControl
 from umich_sim.sim_backend.sections import Section
 from umich_sim.sim_backend.helpers import (smooth_path, project_forward)
 from umich_sim.sim_config import Task, VehicleType
-from umich_sim.sim_config import ConfigPool, Config
+from umich_sim.sim_config import ConfigPool, Config, ScenarioConfig
 from umich_sim.wizard import Wizard
 
 # Library Imports
@@ -309,46 +309,37 @@ class Experiment(metaclass=ABCMeta):
 
             return new_vehicle
 
-    def add_vehicles_from_configuration(self, configuration: Dict[int,
-                                                                  Dict[int,
-                                                                       str]]):
+    def add_vehicles_from_configuration(self, sconfig: ScenarioConfig):
         """
         Adds vehicles to the Experiment according to the configuration dictionary.
-
         :param configuration:
         :return:
         """
+        units = sconfig.intersections if sconfig.task == Task.INTERSECTION else sconfig.freeways
+        for unit in units:
+            # unit is either intersection or freeway
+            for lane_vehicles in unit.vehicles:
+                for vehicle in lane_vehicles:
+                    # set up spawn points
+                    spawn_point = self.spawn_points[vehicle.spawn_point]
+                    if vehicle.spawn_offset != 0.0:
+                        spawn_point = project_forward(spawn_point, vehicle.spawn_offset)
 
-        for i in range(configuration["number_of_vehicles"]):
-            vehicle_configuration = configuration[i]
+                    # create vehicle
+                    is_ego = vehicle.exp_settings.vehicle_type in (VehicleType.EGO, VehicleType.EGO_FULL_MANUAL, VehicleType.EGO_MANUAL_STEER)
+                    vehicle_created: Vehicle = \
+                        self.add_vehicle(spawn_location = spawn_point, ego=is_ego, type_id=vehicle.exp_settings.vehicle_type)
 
-            # Set up the Vehicle's spawn point
-            spawn_point = self.spawn_points[
-                vehicle_configuration["spawn_point"]]
-            if "spawn_offset" in vehicle_configuration and vehicle_configuration[
-                "spawn_offset"] != 0.0:
-                spawn_point = project_forward(
-                    spawn_point, vehicle_configuration["spawn_offset"])
+                    # Set which sections the vehicle will be active at
+                    starting_section = min(vehicle.sections.keys())
+                    ending_section = max(vehicle.sections.keys())
+                    vehicle_created.set_active_sections(self.section_list[starting_section], self.section_list[ending_section])
 
-            # Create the vehicle
-            is_ego = vehicle_configuration["type"] in (
-                VehicleType.EGO, VehicleType.EGO_FULL_MANUAL,
-                VehicleType.EGO_FULL_MANUAL, VehicleType.EGO_MANUAL_STEER)
-            vehicle = self.add_vehicle(spawn_point,
-                                       ego=is_ego,
-                                       type_id=vehicle_configuration["type"])
-
-            # Set which sections the vehicle will be active at
-            starting_section = min(vehicle_configuration["sections"].keys())
-            ending_section = max(vehicle_configuration["sections"].keys())
-            vehicle.set_active_sections(self.section_list[starting_section],
-                                        self.section_list[ending_section])
-
-            # Set the initial lane index that the vehicle is starting in
-            # (this currently doesn't exist in the IntersectionExperiment but it should be added)
-            if "initial_lane_index" in vehicle_configuration:
-                vehicle.current_lane = vehicle_configuration[
-                    "initial_lane_index"]
+                    # Set the initial lane index that the vehicle is starting in
+                    # (this currently doesn't exist in the IntersectionExperiment but it should be added)
+                    # if "initial_lane_index" in vehicle:
+                    #     vehicle.current_lane = vehicle["initial_lane_index"]
+                    pass
 
     def add_section(self, new_section: Section) -> None:
         """

@@ -9,6 +9,83 @@ from typing import Union
 from hydra.conf import ConfigStore
 from umich_sim.wizard.inputs import ClientMode, InputDevType, ClientMode
 
+# FREEWAY SAMPLE
+# configuration_dictionary = {
+#     "debug": True,
+#     "number_of_vehicles": 2,
+#     # Ego vehicle that simply goes straight through each Freeway section
+#     0: {
+#         "type": VehicleType.EGO_FULL_MANUAL,
+#         "spawn_point": 13,
+#         "spawn_offset": -10.0,
+#         "initial_lane_index": 1,
+#         "sections": {0: "straight"},
+#     },
+#     # Initial lead vehicle that turns right at the second intersection
+#     1: {
+#         "type": VehicleType.LEAD,
+#         "spawn_point": 13,
+#         "spawn_offset": 0.0,
+#         "initial_lane_index": 1,
+#         "sections": {0: "straight"},
+#     },
+# }
+# INTERSECTION SAMPLE
+# configuration_dictionary = {
+#     "debug": True,
+#     "number_of_vehicles": 5,
+#     # Ego vehicle that simply goes straight through each intersection
+#     0: {
+#         "type": VehicleType.EGO_FULL_MANUAL,
+#         "spawn_point": 188,
+#         "spawn_offset": 0.0,
+#         "sections": {
+#             0: 'straight',
+#             1: 'straight',
+#             2: 'straight',
+#             3: 'straight'
+#         }
+#     },
+#     # Initial lead vehicle that turns right at the second intersection
+#     1: {
+#         "type": VehicleType.LEAD,
+#         "spawn_point": 188,
+#         "spawn_offset": 10.0,
+#         "sections": {
+#             0: 'straight',
+#             1: 'right'
+#         }
+#     },
+#     # Vehicle that turns right at initial intersection
+#     2: {
+#         "type": VehicleType.GENERIC,
+#         "spawn_point": 59,
+#         "spawn_offset": 0.0,
+#         "sections": {
+#             0: 'right'
+#         }
+#     },
+#     # Vehicle that turns right at the second intersection
+#     3: {
+#         "type": VehicleType.GENERIC,
+#         "spawn_point": 253,
+#         "spawn_offset": 0.0,
+#         "sections": {
+#             1: 'right'
+#         }
+#     },
+#     # Vehicle that turns left at the third intersection
+#     4: {
+#         "type": VehicleType.GENERIC,
+#         "spawn_point": 277,
+#         "spawn_offset": 0.0,
+#         "sections": {
+#             2: 'left',
+#             3: 'left'  # Current this is left due to some weirdness with Carla lanes, it actually goes straight
+#         }
+#     }
+# }
+
 # Enumerated class specifying the different types of Vehicles
 class VehicleType(IntEnum):
     EGO = 0
@@ -52,17 +129,20 @@ class VehicleExpSettings:
 class VehicleExpSettingsIntersection(VehicleExpSettings):
     """Vehicle experiment-specific settings, applied to intersection experiment."""
     follow_traffic_rule: bool
-    direction: WorldDirection
+    # direction: WorldDirection
     stop: Stop
+    #sections: List[WorldDirection]
+    sections: Dict[int, str]
 
 @dataclass
 class VehicleExpSettingsFreeway(VehicleExpSettings):
     """Vehicle experiment-specific settings, applied to freeway experiment."""
     behavior: Behavior
-    
+
 @dataclass
 class Vehicle:
-    location: int  # integer that represents a specific location in a freeway or intersection
+    spawn_point: int # integer that represents a specific location in a freeway or intersection
+    spawn_offset: float
     gap: float  # gap of its front
     model: str
     color: Tuple[int, int, int]  # RGB
