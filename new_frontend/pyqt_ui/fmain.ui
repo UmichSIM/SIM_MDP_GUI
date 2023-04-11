@@ -61,9 +61,9 @@
   <widget class="QLabel" name="GeneralFreewaySettings_title">
    <property name="geometry">
     <rect>
-     <x>460</x>
+     <x>400</x>
      <y>20</y>
-     <width>451</width>
+     <width>581</width>
      <height>61</height>
     </rect>
    </property>
@@ -73,7 +73,7 @@
     </font>
    </property>
    <property name="text">
-    <string>General Freeway Settings</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:48pt;&quot;&gt;General Freeway Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -82,10 +82,10 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>240</y>
-     <width>181</width>
-     <height>31</height>
+     <x>30</x>
+     <y>180</y>
+     <width>341</width>
+     <height>81</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="AllowCollisions_lyout">
@@ -103,7 +103,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Allow Collisions</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;Allow Collisions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
@@ -489,10 +489,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>30</x>
      <y>270</y>
-     <width>321</width>
-     <height>351</height>
+     <width>361</width>
+     <height>361</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -506,7 +506,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Number of Freeway Sections</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;# of Freeway Sections&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -552,7 +552,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Maximum Speed (m/s)</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;Maximum Speed (m/s)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -592,7 +592,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Minimum Speed (m/s)</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;Minimum Speed (m/s)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -635,7 +635,10 @@
          </font>
         </property>
         <property name="text">
-         <string>Safety Distance (m)</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;Safety Distance (m)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

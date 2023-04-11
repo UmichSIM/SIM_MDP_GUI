@@ -1,5 +1,6 @@
-# Start GUI 
-python3 ConnectedScreens.py
+# Start GUI
+- current working directory needs to SIM_MDP_GUI
+python3 new_frontend/ConnectedScreens.py
 
 # Convert UI files to Python
 pyuic6 input.ui -o output.py
