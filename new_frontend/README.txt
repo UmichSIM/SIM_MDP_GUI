@@ -7,7 +7,7 @@ pyuic6 input.ui -o output.py
 pyuic6 input.ui -o ../generated_ui/output.py
 
 #Files   
-- generated_ui: All of the screens we converted to python fiels from pyuic6 command 
+- generated_ui: All of the screens we converted to python files from pyuic6 command 
 - pyqt_ui: All of the ui screens exported from pyqt creator 
 - Config.py: Where we store all of our information (dictionarie) to send to backend 
 - ConnectedScreens.py: Where the screens are connected and config dictionaries being updated 
