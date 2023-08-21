@@ -171,11 +171,11 @@ def project_forward(transform: carla.Transform,
     :return: a new carla.Transform that represents the transform projected forward
     """
 
-    x_component = math.cos(transform.rotation.yaw * (math.pi / 180))
+    x_component= math.cos(transform.rotation.yaw * (math.pi / 180))
     y_component = math.sin(transform.rotation.yaw * (math.pi / 180))
 
     projected_location = carla.Location(
-        x=transform.location.x + distance * x_component,
+        x=transform.location.x + distance * x_component ,
         y=transform.location.y + distance * y_component,
         z=transform.location.z)
 

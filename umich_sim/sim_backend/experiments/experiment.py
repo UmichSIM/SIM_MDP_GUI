@@ -10,9 +10,15 @@ Summary: The Experiment class is a base class that describes the high level inte
 """
 
 # Local Imports
-from umich_sim.sim_backend.carla_modules import (HUD, World, Vehicle, EgoVehicle, )
+from umich_sim.sim_backend.carla_modules import (
+    HUD,
+    World,
+    Vehicle,
+    EgoVehicle,
+)
 from umich_sim.sim_backend.vehicle_control.base_controller import WAYPOINT_SEPARATION
-from umich_sim.sim_backend.vehicle_control import (VehicleController, EgoController)
+from umich_sim.sim_backend.vehicle_control import (VehicleController,
+                                                   EgoController)
 from umich_sim.sim_backend.sections import Section
 from umich_sim.sim_backend.helpers import (ExperimentType, VehicleType,
                                            smooth_path, project_forward)
@@ -78,11 +84,17 @@ class Experiment(metaclass=ABCMeta):
         pygame.init()
         pygame.font.init()
 
-        self.display = pygame.display.set_mode(config.client_resolution,
-                                               pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.display = pygame.display.set_mode(
+            config.client_resolution, pygame.HWSURFACE | pygame.DOUBLEBUF)
         try:
             client = carla.Client(config.server_addr, config.carla_port)
-            client.set_timeout(2.0)
+
+            client.set_timeout(5.0)
+            self.tm = client.get_trafficmanager()  # create a TM object
+            self.tm.global_percentage_speed_difference(
+                10.0)  # set the global speed limitation
+            self.tm_port = self.tm.get_port(
+            )  # get the port of tm. we need add vehicle to tm by this port
 
             hud = HUD(*config.client_resolution)
             world: World = World(client, hud, config.car_filter, self.MAP)
@@ -105,7 +117,7 @@ class Experiment(metaclass=ABCMeta):
                 if waypoint.is_junction:
                     if waypoint.get_junction().id not in self.junctions:
                         self.junctions[waypoint.get_junction().
-                        id] = waypoint.get_junction()
+                                       id] = waypoint.get_junction()
 
             self.server_initialized = True
         finally:
@@ -192,6 +204,18 @@ class Experiment(metaclass=ABCMeta):
         hud: HUD = HUD.get_instance()
         world.restart()
 
+        # Update the speed of vehicle in traffic manager
+        for vehicle in self.vehicle_list:
+            vehicle.carla_vehicle.set_autopilot(True, self.tm_port)
+            self.tm.ignore_lights_percentage(vehicle.carla_vehicle, 0)
+            #self.tm.distance_to_leading_vehicle(vehicle.carla_vehicle, 20)
+            #self.tm.vehicle_percentage_speed_difference(vehicle.carla_vehicle, -20)
+
+            physics_control = vehicle.carla_vehicle.get_physics_control()
+            physics_control.mass = 100000
+            vehicle.carla_vehicle.apply_physics_control(physics_control)
+            self.tm.set_global_distance_to_leading_vehicle(50)
+            self.tm.global_percentage_speed_difference(-200)
         try:
             # Loop continuously
             clock = pygame.time.Clock()
@@ -240,6 +264,7 @@ class Experiment(metaclass=ABCMeta):
         update control based on specific experiment type
         :param vehicle: the vehicle to update control
         """
+        #vehicle.apply_control(throttle = .4, brake = 0)
         pass
 
     def clean_up_experiment(self) -> None:
@@ -326,7 +351,7 @@ class Experiment(metaclass=ABCMeta):
             spawn_point = self.spawn_points[
                 vehicle_configuration["spawn_point"]]
             if "spawn_offset" in vehicle_configuration and vehicle_configuration[
-                "spawn_offset"] != 0.0:
+                    "spawn_offset"] != 0.0:
                 spawn_point = project_forward(
                     spawn_point, vehicle_configuration["spawn_offset"])
 
@@ -334,9 +359,15 @@ class Experiment(metaclass=ABCMeta):
             is_ego = vehicle_configuration["type"] in (
                 VehicleType.EGO, VehicleType.EGO_FULL_MANUAL,
                 VehicleType.EGO_FULL_MANUAL, VehicleType.EGO_MANUAL_STEER)
-            vehicle = self.add_vehicle(spawn_point,
-                                       ego=is_ego,
-                                       type_id=vehicle_configuration["type"])
+            vehicle = self.add_vehicle(
+                spawn_point,
+                ego=is_ego,
+                type_id=vehicle_configuration["type"],
+                blueprint_id=vehicle_configuration["vehicle"])
+            if is_ego:
+                from umich_sim.sim_backend.carla_modules import EgoVehicle
+                EgoVehicle.get_instance().set_vehicle(vehicle.carla_vehicle)
+                self.ego_vehicle = vehicle
 
             # Set which sections the vehicle will be active at
             starting_section = min(vehicle_configuration["sections"].keys())
