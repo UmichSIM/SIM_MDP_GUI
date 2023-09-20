@@ -75,6 +75,24 @@ class HUD(object):
     data_collect_interval = 0.03
     data_thread = None
     vehicle = None
+    display = None
+    time_list = []
+    speed_list = []
+    
+    # Temp for display testing
+    # Define colors
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+
+    # Define the window size
+    WINDOW_WIDTH = 800
+    WINDOW_HEIGHT = 600
+    
+    # Initialize pygame
+    x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    #y = [1, -1, -2, -3, -4, -5, -6, -7, -8, -9]
+    y = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     def __init__(self, width, height):
         self.dim = (width, height)
@@ -184,7 +202,7 @@ class HUD(object):
                                            (l.y - t.location.y)**2 +
                                            (l.z - t.location.z)**2)
             vehicles = [(distance(x.get_location()), x) for x in vehicles
-                        if x.id != vehicle.carla_vehicle.id]
+                        if x.id != self.vehicle.carla_vehicle.id]
             for d, self.vehicle in sorted(vehicles):
                 if d > 200.0:
                     break
@@ -204,7 +222,8 @@ class HUD(object):
         if self._show_info:
             info_surface = pygame.Surface((220, self.dim[1]))
             info_surface.set_alpha(100)
-            display.blit(info_surface, (0, 0))
+            self.display = display
+            self.display.blit(info_surface, (0, 0))
             v_offset = 4
             bar_h_offset = 100
             bar_width = 106
@@ -215,7 +234,7 @@ class HUD(object):
                     if len(item) > 1:
                         points = [(x + 8, v_offset + 8 + (1.0 - y) * 30)
                                   for x, y in enumerate(item)]
-                        pygame.draw.lines(display, (255, 136, 0), False,
+                        pygame.draw.lines(self.display, (255, 136, 0), False,
                                           points, 2)
                     item = None
                     v_offset += 18
@@ -223,12 +242,12 @@ class HUD(object):
                     if isinstance(item[1], bool):
                         rect = pygame.Rect((bar_h_offset, v_offset + 8),
                                            (6, 6))
-                        pygame.draw.rect(display, (255, 255, 255), rect,
+                        pygame.draw.rect(self.display, (255, 255, 255), rect,
                                          0 if item[1] else 1)
                     else:
                         rect_border = pygame.Rect((bar_h_offset, v_offset + 8),
                                                   (bar_width, 6))
-                        pygame.draw.rect(display, (255, 255, 255), rect_border,
+                        pygame.draw.rect(self.display, (255, 255, 255), rect_border,
                                          1)
                         f = (item[1] - item[2]) / (item[3] - item[2])
                         if item[2] < 0.0:
@@ -238,18 +257,96 @@ class HUD(object):
                         else:
                             rect = pygame.Rect((bar_h_offset, v_offset + 8),
                                                (f * bar_width, 6))
-                        pygame.draw.rect(display, (255, 255, 255), rect)
+                        pygame.draw.rect(self.display, (255, 255, 255), rect)
                     item = item[0]
                 if item:  # At this point has to be a str.
                     surface = self._font_mono.render(item, True,
                                                      (255, 255, 255))
-                    display.blit(surface, (8, v_offset))
+                    self.display.blit(surface, (8, v_offset))
                 v_offset += 18
-        self._notifications.render(display)
-        self.help.render(display)
+                
+                
+                self.drawGraph(self.time_list, self.speed_list, self.time_list[-1], 120, self.time_list[0], (50, 700), 20, 100, self.display)
+        self._notifications.render(self.display)
+        self.help.render(self.display)
+
+    def drawGraph(self, x, y, xmax, ymax, xmin, graph_inter_in, tick_length_in, graph_len_in, screen):
         
+        # Set up the window
+        #screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+        #pygame.display.set_caption("Graph")
+        
+        # Define the function to convert x and y values to screen coordinates
+        def convert_coordinates(x_value, y_value, graphIntersect, xtick_val, ytick_val, tick_length):
+            xnew = ((x_value - xmin)/xtick_val) * tick_length + graphIntersect[0]
+            #print(x_value/xtick_val)
+            ynew = graphIntersect[1] - (y_value/ytick_val) * tick_length
+            return(xnew,ynew)
+            
+        def drawTicks(graphIntersect, graphLength, tickLength, xtickVal, ytickVal):
+            buffer = tickLength
+            tickSize = 10 #height
+            for i in range(int(graphLength/tickLength)):
+                tick_pos = (graphIntersect[0] + buffer*i, graphIntersect[1])
+                pygame.draw.line(screen, self.WHITE, (tick_pos[0], tick_pos[1]+tickSize), (tick_pos[0], tick_pos[1]-tickSize))
+                num_text = str(round(i*xtickVal+xmin,2))
+                num_surface = pygame.font.SysFont(None, 10).render(num_text, True, self.WHITE)
+                num_pos = (tick_pos[0]-num_surface.get_width()//2, tick_pos[1]+tickSize+5)
+                screen.blit(num_surface, num_pos)
+                
+                tick_pos = (graphIntersect[0], graphIntersect[1] - buffer*i)
+                pygame.draw.line(screen, self.WHITE, (tick_pos[0]-tickSize, tick_pos[1]), (tick_pos[0]+tickSize, tick_pos[1]))
+                num_text = str(round(i*ytickVal,2))
+                num_surface = pygame.font.SysFont(None, 20).render(num_text, True, self.WHITE)
+                num_pos = (tick_pos[0]-tickSize-5-num_surface.get_width(), tick_pos[1]-num_surface.get_height()//2)
+                screen.blit(num_surface, num_pos)
+                
+        # Define the main loop
+        done = False
+            # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
+        
+        # Draw the x and y axes
+        tickLength = tick_length_in
+        maxX = xmax
+        maxY = ymax
+        
+        graphIntersect = graph_inter_in
+        graphLength = graph_len_in
+        
+        xtickVal = (maxX-xmin)/(graphLength/tickLength-1)
+        
+        if xtickVal == 0:
+            xtickVal = 0.0001
+        
+        ytickVal = maxY/(graphLength/tickLength-1)
+        
+        if ytickVal == 0:
+            ytickVal = 0.0001
+        
+        pygame.draw.line(screen, self.WHITE, graphIntersect, (graphIntersect[0]+graphLength, graphIntersect[1]))
+        pygame.draw.line(screen, self.WHITE, graphIntersect, (graphIntersect[0], graphIntersect[1]-graphLength))
+        
+        drawTicks(graphIntersect, graphLength, tickLength, xtickVal, ytickVal)
+        #print(convert_coordinates(60, 60, graphIntersect, xtickVal, ytickVal, tickLength))
+        # Draw the x and y values as points
+        for i in range(len(x)-1):
+            convertedCords = convert_coordinates(x[i], y[i], graphIntersect, xtickVal, ytickVal, tickLength)
+            nextCords = convert_coordinates(x[i+1], y[i+1], graphIntersect, xtickVal, ytickVal, tickLength)
+            #print(convert_coordinates(x[i], y[i], graphIntersect, xtickVal, ytickVal, tickLength))
+            # pygame.draw.circle(screen, RED, convertedCords, 5)
+            
+            pygame.draw.line(screen, self.WHITE, convertedCords, nextCords , 2)
+            pygame.display.flip()
+
+
     def data_collection(self):
         """Collect Data."""
+        elm_num = int(10000 / self.data_collect_interval)
+        startTime = time.time()
+        
         with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
             print("[INFO] Initial Ouput")
             w = csv.writer(f)
@@ -260,17 +357,37 @@ class HUD(object):
             
             w.writerow([])
             w.writerow([f"DATE: {date_str}"])
-            w.writerow(["Timestamp", "Time", "Ego Position X", "Ego Position Y"])
+            w.writerow(["Timestamp", "Time (s)", "Ego Position X (m)", "Ego Position Y (m)", "Speed (km/h)", "Steering Wheel Angle", "Throttle Angle", "Brake Angle"])
             
         
         while True: 
+            time.sleep(0.1)
+
             if time.time() - self.last_update_time >= self.data_collect_interval:
                 self.last_update_time = time.time()
                 if self.vehicle is not None:
                     t = self.vehicle.get_transform()
+                    v = self.vehicle.get_velocity()
+                    c = self.vehicle.get_control()
+                    
+                    timestamp = self.last_update_time
+                    value = datetime.datetime.fromtimestamp(timestamp)
+                    date_str = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+                    speed = math.sqrt(v.x**2 + v.y**2 + v.z**2) * 10
+                    steeringAngle = ((c.steer * -1) + 1) * 90
+                    
+                    if len(self.time_list) >= elm_num:
+                        self.time_list.pop()
+                    self.time_list.append(timestamp - startTime)
+                    
+                    if len(self.speed_list) >= elm_num:
+                        self.speed_list.pop()
+                    self.speed_list.append(speed)
+                    
+                    assert(len(self.speed_list) == len(self.time_list))
+                    
+                    
+
                     with open(f'umich_sim/data_output/data.csv', 'a', newline='') as f:
                         w = csv.writer(f)
-                        timestamp = time.time()
-                        value = datetime.datetime.fromtimestamp(timestamp)
-                        date_str = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-                        w.writerow([date_str, str(timestamp) , t.location.x, t.location.y])
+                        w.writerow([date_str, str(timestamp) , t.location.x, t.location.y, speed, steeringAngle, c.throttle, c.brake])
